@@ -1,16 +1,21 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/main_tab.dart';
 import 'screens/call_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
-void main()  async {
-  WidgetsFlutterBinding.ensureInitialized(); // 꼭 먼저 호출
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Android에서 WebView 플랫폼 설정 (SurfaceAndroidWebView 대신 AndroidWebView 사용)
+  // if (Platform.isAndroid) {
+  //   WebView.platform = AndroidWebView();
+  // }
+
   KakaoSdk.init(nativeAppKey: '22e6b88148da0c4cb1293cbe664cecc4');
-  // 현재 해시키 콘솔에 출력
-  final keyHash = await KakaoSdk.origin;
-  print("✅ 현재 해시키: $keyHash");
   runApp(const AlfredApp());
 }
 
@@ -38,4 +43,3 @@ class AlfredApp extends StatelessWidget {
     );
   }
 }
-
