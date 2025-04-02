@@ -13,14 +13,29 @@ class LoginScreen extends StatelessWidget {
 
       print('로그인 성공 ✅ : ${token.accessToken}');
 
-      // 사용자 정보 요청
       User user = await UserApi.instance.me();
-      print('사용자 정보: ${user.kakaoAccount?.profile?.nickname}');
+      print('사용자 전체 정보: ${user.toJson()}');
 
-      // 로그인 성공 시 다음 화면으로 이동
       Navigator.pushReplacementNamed(context, '/main');
-    } catch (e) {
+    } catch (e, stack) {
       print('카카오 로그인 실패 ❌ : $e');
+      print('스택트레이스: $stack');
+    }
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    try {
+      await UserApi.instance.logout();
+      await UserApi.instance.unlink();
+      print('카카오 로그아웃 완료 ✅');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그아웃 되었습니다')),
+      );
+    } catch (e) {
+      print('로그아웃 실패 ❌: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그아웃 실패')),
+      );
     }
   }
 
@@ -33,20 +48,8 @@ class LoginScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                'assets/images/butler_logo.png',
-                // width: 100,
-                // height: 100,
-              ),
+              Image.asset('assets/images/butler_logo.png'),
               const SizedBox(height: 12),
-              // const Text(
-              //   '알프레드',
-              //   style: TextStyle(
-              //     fontSize: 20,
-              //     fontWeight: FontWeight.bold,
-              //     color: Colors.white,
-              //   ),
-              // ),
               const SizedBox(height: 24),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -68,6 +71,18 @@ class LoginScreen extends StatelessWidget {
                   Navigator.pushReplacementNamed(context, '/main');
                 },
                 child: const Text('애플 로그인'),
+              ),
+              const SizedBox(height: 32),
+
+              /// 👉 테스트용 로그아웃 버튼
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                onPressed: () => _logout(context),
+                child: const Text('카카오 로그아웃 (테스트용)'),
               ),
             ],
           ),
