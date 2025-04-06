@@ -1,45 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'screens/splash_screen.dart';
-import 'screens/login_screen.dart';
-import 'screens/main_tab.dart';
-import 'screens/call_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'app.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // ✅ 무조건 제일 먼저 호출
 
-  // Android에서 WebView 플랫폼 설정 (SurfaceAndroidWebView 대신 AndroidWebView 사용)
-  // if (Platform.isAndroid) {
-  //   WebView.platform = AndroidWebView();
-  // }
+  // ✅ Kakao SDK 초기화
+  KakaoSdk.init(
+    nativeAppKey: '22e6b88148da0c4cb1293cbe664cecc4',
+  );
 
-  KakaoSdk.init(nativeAppKey: '22e6b88148da0c4cb1293cbe664cecc4');
+  await dotenv.load();
   runApp(const AlfredApp());
-}
-
-class AlfredApp extends StatelessWidget {
-  const AlfredApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '알프레드',
-      theme: ThemeData(
-        fontFamily: 'Pretendard',
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        primaryColor: const Color(0xFFFF6A00),
-        useMaterial3: true,
-      ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const SplashScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/main': (context) => const MainTab(),
-        '/call': (context) => const CallScreen(),
-      },
-    );
-  }
 }

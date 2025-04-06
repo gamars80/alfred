@@ -1,25 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
-
+import 'package:go_router/go_router.dart'; // ✅ 추가
+import '../data/auth_api.dart' as my_auth;
+import '../model/login_response.dart';
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   Future<void> _loginWithKakao(BuildContext context) async {
     try {
-      bool installed = await isKakaoTalkInstalled();
-      OAuthToken token = installed
-          ? await UserApi.instance.loginWithKakaoTalk()
-          : await UserApi.instance.loginWithKakaoAccount();
+      final user = await UserApi.instance.me();
+      final kakaoId = user.id.toString();
 
-      print('로그인 성공 ✅ : ${token.accessToken}');
+      final loginResponse = await my_auth.AuthApi.loginWithKakaoId(kakaoId);
 
-      User user = await UserApi.instance.me();
-      print('사용자 전체 정보: ${user.toJson()}');
-
-      Navigator.pushReplacementNamed(context, '/main');
+      if (loginResponse.needSignup) {
+        // 회원가입 화면으로 이동
+        print('❌ 회원 가입이 필요합니다');
+        // context.go('/signup');
+      } else if (loginResponse.token != null) {
+        // 로그인 성공 → 홈 화면 이동
+        print('✅ 로그인 성공. 토큰: ${loginResponse.token}');
+        context.go('/main');
+      } else {
+        _showError(context, loginResponse.message ?? '알 수 없는 오류');
+      }
     } catch (e, stack) {
-      print('카카오 로그인 실패 ❌ : $e');
-      print('스택트레이스: $stack');
+      print('❌ 로그인 오류: $e');
+      print('스택: $stack');
+      _showError(context, '서버와 통신에 실패했습니다');
     }
   }
 
@@ -51,14 +59,14 @@ class LoginScreen extends StatelessWidget {
               Image.asset('assets/images/butler_logo.png'),
               const SizedBox(height: 12),
               const SizedBox(height: 24),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFEE500),
-                  foregroundColor: Colors.black,
-                  minimumSize: const Size.fromHeight(48),
+              GestureDetector(
+                onTap: () => _loginWithKakao(context),
+                child: Image.asset(
+                  'assets/images/kakao_login_button.png',
+                  width: double.infinity,
+                  height: 48,
+                  fit: BoxFit.contain,
                 ),
-                onPressed: () => _loginWithKakao(context),
-                child: const Text('카카오 로그인'),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -88,6 +96,12 @@ class LoginScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 }
