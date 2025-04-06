@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'call_screen.dart';
+import 'package:alfred_clean/features/call/presentation/call_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:go_router/go_router.dart';
 
 class MainTab extends StatefulWidget {
   const MainTab({super.key});
@@ -39,8 +40,8 @@ class _MainTabState extends State<MainTab> {
             print('카카오 연결 해제 실패 ❌: $e');
           }
 
-          if (!mounted) return;
-          Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+          if (!context.mounted) return;
+          context.go('/login'); // ✅ 수정된 부분
         },
         child: const Text('카카오 로그아웃'),
       ),

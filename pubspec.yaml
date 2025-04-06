@@ -6,11 +6,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  go_router: ^13.0.0
+  http: ^0.13.6
   cupertino_icons: ^1.0.8
   kakao_flutter_sdk_user: ^1.4.2
   webview_flutter: ^4.10.0
   webview_flutter_android: ^4.3.4  # 기존 3.12.0 대신 최신 버전으로 업데이트
-
+  flutter_dotenv: ^5.0.2
 
 dev_dependencies:
   flutter_test:
@@ -20,7 +22,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - .env
     - assets/images/butler_logo.png
+    - assets/images/kakao_login_button.png
   fonts:
     - family: Pretendard
       fonts:
