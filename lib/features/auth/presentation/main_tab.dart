@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:alfred_clean/features/call/presentation/call_screen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainTab extends StatefulWidget {
   const MainTab({super.key});
@@ -32,17 +33,26 @@ class _MainTabState extends State<MainTab> {
           backgroundColor: Colors.redAccent,
           foregroundColor: Colors.white,
         ),
-        onPressed: () async {
-          try {
-            await UserApi.instance.unlink(); // 카카오 연결 해제
-            print('카카오 연결 해제 완료 ✅');
-          } catch (e) {
-            print('카카오 연결 해제 실패 ❌: $e');
-          }
+          onPressed: () async {
+            try {
+              final hasToken = await AuthApi.instance.hasToken();
+              if (hasToken) {
+                await UserApi.instance.unlink();
+                print('카카오 연결 해제 완료 ✅');
+              } else {
+                print('❗ 카카오 토큰 없음 → unlink 생략');
+              }
+            } catch (e) {
+              print('카카오 연결 해제 실패 ❌: $e');
+            }
 
-          if (!context.mounted) return;
-          context.go('/login'); // ✅ 수정된 부분
-        },
+            // ✅ JWT 토큰 삭제
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.remove('accessToken');
+
+            if (!context.mounted) return;
+            context.go('/login');
+          },
         child: const Text('카카오 로그아웃'),
       ),
     );

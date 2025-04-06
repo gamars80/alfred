@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,35 +13,31 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _checkLoginStatus();
+  }
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        context.go('/login');
+  Future<void> _checkLoginStatus() async {
+    await Future.delayed(const Duration(seconds: 1)); // splash delay
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+
+    if (mounted) {
+      if (token != null && token.isNotEmpty) {
+        context.go('/main'); // 자동 로그인
+      } else {
+        context.go('/login'); // 로그인 필요
       }
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              'assets/images/butler_logo.png',
-              width: 100,
-              height: 100,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '알프레드',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+        child: Text(
+          '🔐 Alfred 로딩 중...',
+          style: TextStyle(fontSize: 18),
         ),
       ),
     );
