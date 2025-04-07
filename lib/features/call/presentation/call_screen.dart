@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/product_api.dart';
 import '../model/product.dart';
+import '../../../common/utils/toast_util.dart';
+import '../logic/call_validator.dart';
 
 class CallScreen extends StatefulWidget {
   const CallScreen({super.key});
@@ -19,7 +21,8 @@ class _CallScreenState extends State<CallScreen> {
   Future<void> _fetchProducts(String query) async {
     setState(() => _isLoading = true);
     try {
-      final products = await ProductApi.fetchRecommendedProducts(query);
+      final api = ProductApi();
+      final products = await api.fetchRecommendedProducts(query);
       setState(() {
         _products = products;
         _showOverlay = false;
@@ -86,24 +89,21 @@ class _CallScreenState extends State<CallScreen> {
             icon: const Icon(Icons.mic),
           ),
         ),
-        if (_showOverlay) _buildOverlayLayer(),
+        if (_showOverlay) _buildOverlayLayer(context),
       ],
     );
   }
 
-  Widget _buildOverlayLayer() {
+  Widget _buildOverlayLayer(BuildContext context) {
     return GestureDetector(
       onTap: () => setState(() => _showOverlay = false),
       child: Container(
-        color: Colors.black54, // 배경 반투명
+        color: Colors.black54,
         child: Center(
           child: GestureDetector(
-            onTap: () {}, // 이벤트 전파 차단
+            onTap: () {},
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 360,
-                maxHeight: 320,
-              ),
+              constraints: const BoxConstraints(maxWidth: 360, maxHeight: 320),
               child: Material(
                 elevation: 8,
                 borderRadius: BorderRadius.circular(20),
@@ -121,8 +121,10 @@ class _CallScreenState extends State<CallScreen> {
                       TextField(
                         controller: _commandController,
                         maxLines: 3,
+                        style: const TextStyle(color: Colors.black, fontSize: 16),
                         decoration: const InputDecoration(
                           hintText: '예: 여름 등산 장비 추천해줘',
+                          hintStyle: TextStyle(color: Colors.grey),
                           border: OutlineInputBorder(),
                         ),
                       ),
@@ -130,7 +132,15 @@ class _CallScreenState extends State<CallScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () => _fetchProducts(_commandController.text),
+                          onPressed: () {
+                            final query = _commandController.text;
+                            final error = CallValidator.validateQuery(query);
+                            if (error != null) {
+                              ToastUtil.showOverlay(context, error); // ✅ 오버레이 토스트 사용
+                              return;
+                            }
+                            _fetchProducts(query);
+                          },
                           child: const Text('명령하기'),
                         ),
                       ),
@@ -144,7 +154,6 @@ class _CallScreenState extends State<CallScreen> {
       ),
     );
   }
-
 
   void _launchUrl(String url) {
     debugPrint('Open URL: $url');
