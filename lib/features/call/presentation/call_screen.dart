@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../data/product_api.dart';
+import '../model/product.dart';
 
 class CallScreen extends StatefulWidget {
   const CallScreen({super.key});
@@ -9,188 +11,142 @@ class CallScreen extends StatefulWidget {
 }
 
 class _CallScreenState extends State<CallScreen> {
-  final TextEditingController _textController = TextEditingController();
-  int _selectedReviewIndex = -1;
-  String? _webUrl;
-  WebViewController? _webViewController;
+  final TextEditingController _commandController = TextEditingController();
+  bool _showOverlay = false;
+  bool _isLoading = false;
+  List<Product> _products = [];
 
-  void _showReviews(int index) {
-    setState(() {
-      _selectedReviewIndex = _selectedReviewIndex == index ? -1 : index;
-    });
+  Future<void> _fetchProducts(String query) async {
+    setState(() => _isLoading = true);
+    try {
+      final products = await ProductApi.fetchRecommendedProducts(query);
+      setState(() {
+        _products = products;
+        _showOverlay = false;
+      });
+    } catch (e) {
+      debugPrint('API 호출 실패: $e');
+    }
+    setState(() => _isLoading = false);
   }
 
-  void _openWebView(String url) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text('상품 상세'),
-            backgroundColor: Colors.black,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
+  void _toggleOverlay() {
+    setState(() => _showOverlay = !_showOverlay);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(title: const Text('상품 추천')),
+          body: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _products.isEmpty
+              ? const Center(child: Text('추천된 상품이 없습니다.'))
+              : Padding(
+            padding: const EdgeInsets.all(12),
+            child: ListView.builder(
+              itemCount: _products.length,
+              itemBuilder: (context, index) {
+                final product = _products[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        product.image,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    title: Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
+                        Text('${product.price}원', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 2),
+                        Text(product.reason, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
+                    ),
+                    onTap: () => _launchUrl(product.link),
+                  ),
+                );
+              },
+            ),
           ),
-          body: WebViewWidget(
-            controller: WebViewController()
-              ..setJavaScriptMode(JavaScriptMode.unrestricted)
-              ..loadRequest(Uri.parse(url)),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: _toggleOverlay,
+            label: const Text('알프레드~'),
+            icon: const Icon(Icons.mic),
+          ),
+        ),
+        if (_showOverlay) _buildOverlayLayer(),
+      ],
+    );
+  }
+
+  Widget _buildOverlayLayer() {
+    return GestureDetector(
+      onTap: () => setState(() => _showOverlay = false),
+      child: Container(
+        color: Colors.black54, // 배경 반투명
+        child: Center(
+          child: GestureDetector(
+            onTap: () {}, // 이벤트 전파 차단
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 360,
+                maxHeight: 320,
+              ),
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        '알프레드에게 명령하세요',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _commandController,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          hintText: '예: 여름 등산 장비 추천해줘',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => _fetchProducts(_commandController.text),
+                          child: const Text('명령하기'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _closeWebView() {
-    setState(() {
-      _webUrl = null;
-      _webViewController = null;
-    });
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('집사호출')),
-      body: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _textController,
-                        decoration: InputDecoration(
-                          hintText: '텍스트를 입력하세요',
-                          filled: true,
-                          fillColor: Colors.white,
-                          hintStyle: const TextStyle(color: Colors.black54),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.black),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        // 명령 로직 구현 예정
-                      },
-                      child: const Text('명령하기'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: 3,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        color: Colors.grey[900],
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: Column(
-                          children: [
-                            ListTile(
-                              leading: SizedBox(
-                                width: 50,
-                                height: 50,
-                                child: Image.network(
-                                  'https://picsum.photos/id/${index + 10}/50/50',
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              title: Text(
-                                '이것은 매우 긴 추천 상품 이름 ${index + 1}입니다',
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('₩99,000', style: TextStyle(color: Colors.white70)),
-                                  const SizedBox(height: 4),
-                                  GestureDetector(
-                                    onTap: () => _showReviews(index),
-                                    child: const Text(
-                                      '리뷰 123개 보기',
-                                      style: TextStyle(color: Colors.orange),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              trailing: const Icon(Icons.chevron_right, color: Colors.white),
-                              onTap: () => _openWebView('https://shop.coupang.com/pulmuonefood/314728?source=brandstore_display_ads&adType=DA&eventId=8zlP4HFwQh9LU1Tj&from=home_C2&traid=home_C2&trcid=11519123&platform=p'),
-                            ),
-                            if (_selectedReviewIndex == index)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                                child: Column(
-                                  children: List.generate(2, (reviewIndex) {
-                                    final hasImage = reviewIndex % 2 == 0;
-                                    return ListTile(
-                                      contentPadding: EdgeInsets.zero,
-                                      leading: hasImage
-                                          ? Image.network(
-                                        'https://picsum.photos/seed/review$reviewIndex/40/40',
-                                        width: 40,
-                                        height: 40,
-                                        fit: BoxFit.cover,
-                                      )
-                                          : null,
-                                      title: const Text('⭐️⭐️⭐️⭐️☆', style: TextStyle(color: Colors.white)),
-                                      subtitle: const Text(
-                                        '정말 좋았어요! 상품 품질이 우수하고 배송도 빨랐습니다.',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(color: Colors.white70),
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              )
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (_webUrl != null && _webViewController != null)
-            Positioned.fill(
-              child: Material(
-                color: Colors.black,
-                child: Column(
-                  children: [
-                    AppBar(
-                      automaticallyImplyLeading: false,
-                      backgroundColor: Colors.black,
-                      title: const Text('상품 상세'),
-                      actions: [
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: _closeWebView,
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                      child: WebViewWidget(controller: _webViewController!),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
+  void _launchUrl(String url) {
+    debugPrint('Open URL: $url');
   }
 }
