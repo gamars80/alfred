@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../model/product.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:alfred_clean/service/token_manager.dart'; // 토큰 매니저 임포트
+import 'package:alfred_clean/service/token_manager.dart';
 
 class ProductApi {
   final String baseUrl;
@@ -12,7 +12,7 @@ class ProductApi {
       : baseUrl = dotenv.env['BASE_URL'] ?? '',
         client = client ?? http.Client();
 
-  Future<List<Product>> fetchRecommendedProducts(String query) async {
+  Future<Map<String, List<Product>>> fetchRecommendedProducts(String query) async {
     if (baseUrl.isEmpty) {
       throw Exception('BASE_URL이 .env에서 설정되지 않았습니다.');
     }
@@ -31,8 +31,12 @@ class ProductApi {
 
     if (response.statusCode == 200) {
       final decoded = utf8.decode(response.bodyBytes);
-      final List<dynamic> jsonList = jsonDecode(decoded) as List;
-      return jsonList.map((json) => Product.fromJson(json)).toList();
+      final Map<String, dynamic> jsonMap = jsonDecode(decoded)['items'];
+
+      return jsonMap.map((category, items) {
+        final productList = (items as List).map((e) => Product.fromJson(e)).toList();
+        return MapEntry(category, productList);
+      });
     } else {
       throw Exception('상품 추천 API 호출 실패: ${response.statusCode} ${response.body}');
     }

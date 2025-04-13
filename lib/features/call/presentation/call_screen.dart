@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+import 'product_webview_screen.dart'; // ✅ import
 import '../data/product_api.dart';
 import '../model/product.dart';
-import '../../../common/utils/toast_util.dart';
-import '../logic/call_validator.dart';
 
 class CallScreen extends StatefulWidget {
   const CallScreen({super.key});
@@ -16,15 +15,16 @@ class _CallScreenState extends State<CallScreen> {
   final TextEditingController _commandController = TextEditingController();
   bool _showOverlay = false;
   bool _isLoading = false;
-  List<Product> _products = [];
+  Map<String, List<Product>> _categorizedProducts = {};
+  final currencyFormatter = NumberFormat('#,###', 'ko_KR');
 
   Future<void> _fetchProducts(String query) async {
     setState(() => _isLoading = true);
     try {
       final api = ProductApi();
-      final products = await api.fetchRecommendedProducts(query);
+      final result = await api.fetchRecommendedProducts(query);
       setState(() {
-        _products = products;
+        _categorizedProducts = result;
         _showOverlay = false;
       });
     } catch (e) {
@@ -42,46 +42,38 @@ class _CallScreenState extends State<CallScreen> {
     return Stack(
       children: [
         Scaffold(
-          appBar: AppBar(title: const Text('상품 추천')),
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            title: const Text('상품 추천'),
+            backgroundColor: Colors.black,
+          ),
           body: _isLoading
               ? const Center(child: CircularProgressIndicator())
-              : _products.isEmpty
-              ? const Center(child: Text('추천된 상품이 없습니다.'))
-              : Padding(
+              : _categorizedProducts.isEmpty
+              ? const Center(
+              child: Text('추천된 상품이 없습니다.',
+                  style: TextStyle(color: Colors.white)))
+              : ListView(
             padding: const EdgeInsets.all(12),
-            child: ListView.builder(
-              itemCount: _products.length,
-              itemBuilder: (context, index) {
-                final product = _products[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        product.image,
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    title: Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text('${product.price}원', style: const TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 2),
-                        Text(product.reason, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                      ],
-                    ),
-                    onTap: () => _launchUrl(product.link),
-                  ),
-                );
-              },
-            ),
+            children: _categorizedProducts.entries.map((entry) {
+              final category = entry.key;
+              final products = entry.value;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(category,
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
+                  const SizedBox(height: 8),
+                  ...products
+                      .map((product) => _buildProductCard(product))
+                      .toList(),
+                  const SizedBox(height: 24),
+                ],
+              );
+            }).toList(),
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: _toggleOverlay,
@@ -94,68 +86,156 @@ class _CallScreenState extends State<CallScreen> {
     );
   }
 
+  Widget _buildProductCard(Product product) {
+    return Card(
+      color: Colors.grey[900],
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ProductWebViewScreen(url: product.link),
+            ),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: Image.network(
+                    product.image,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                if (product.mallName.isNotEmpty)
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        product.mallName,
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(product.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 16, color: Colors.white)),
+                  const SizedBox(height: 6),
+                  Text(
+                    '₩ ${currencyFormatter.format(product.price)}',
+                    style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.amber),
+                  ),
+                  if (product.reason.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(product.reason,
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.grey)),
+                    ),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildOverlayLayer(BuildContext context) {
     return GestureDetector(
       onTap: () => setState(() => _showOverlay = false),
       child: Container(
-        color: Colors.black54,
+        color: Colors.black.withOpacity(0.6),
         child: Center(
-          child: GestureDetector(
-            onTap: () {},
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 360, maxHeight: 320),
-              child: Material(
-                elevation: 8,
-                borderRadius: BorderRadius.circular(20),
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        '알프레드에게 명령하세요',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('어떤 상품을 찾아드릴까요?',
+                      style: TextStyle(color: Colors.white, fontSize: 16)),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _commandController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.grey[800],
+                      hintText: '예: 여름에 어울리는 선물',
+                      hintStyle: const TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
                       ),
-                      const SizedBox(height: 20),
-                      TextField(
-                        controller: _commandController,
-                        maxLines: 3,
-                        style: const TextStyle(color: Colors.black, fontSize: 16),
-                        decoration: const InputDecoration(
-                          hintText: '예: 여름 등산 장비 추천해줘',
-                          hintStyle: TextStyle(color: Colors.grey),
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            final query = _commandController.text;
-                            final error = CallValidator.validateQuery(query);
-                            if (error != null) {
-                              ToastUtil.showOverlay(context, error); // ✅ 오버레이 토스트 사용
-                              return;
-                            }
-                            _fetchProducts(query);
-                          },
-                          child: const Text('명령하기'),
-                        ),
-                      ),
-                    ],
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: () {
+                      final query = _commandController.text.trim();
+                      if (query.isNotEmpty) {
+                        _fetchProducts(query);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('검색어를 입력해주세요.'),
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('명령하기'),
+                  ),
+                ],
               ),
             ),
           ),
         ),
       ),
     );
-  }
-
-  void _launchUrl(String url) {
-    debugPrint('Open URL: $url');
   }
 }
