@@ -2,6 +2,8 @@
     package="com.example.alfred_clean">
     <!-- ✅ 인터넷 권한 (API 요청/웹뷰용) -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="alfred_clean"
         android:name="${applicationName}"

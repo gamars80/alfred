@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'product_webview_screen.dart'; // ✅ import
+import 'package:flutter/services.dart';
 import '../data/product_api.dart';
 import '../model/product.dart';
+import 'product_webview_screen.dart';
 
 class CallScreen extends StatefulWidget {
   const CallScreen({super.key});
@@ -12,9 +13,12 @@ class CallScreen extends StatefulWidget {
 }
 
 class _CallScreenState extends State<CallScreen> {
+  static const platform = MethodChannel('com.alfred/voice');
+
   final TextEditingController _commandController = TextEditingController();
   bool _showOverlay = false;
   bool _isLoading = false;
+  bool _isListening = false;
   Map<String, List<Product>> _categorizedProducts = {};
   final currencyFormatter = NumberFormat('#,###', 'ko_KR');
 
@@ -35,6 +39,21 @@ class _CallScreenState extends State<CallScreen> {
 
   void _toggleOverlay() {
     setState(() => _showOverlay = !_showOverlay);
+  }
+
+  Future<void> _startNativeListening() async {
+    setState(() => _isListening = true);
+    try {
+      final result = await platform.invokeMethod<String>('startListening');
+      if (result != null && result.isNotEmpty) {
+        setState(() {
+          _commandController.text = result;
+        });
+      }
+    } on PlatformException catch (e) {
+      debugPrint("음성 인식 오류: ${e.message}");
+    }
+    setState(() => _isListening = false);
   }
 
   @override
@@ -83,6 +102,102 @@ class _CallScreenState extends State<CallScreen> {
         ),
         if (_showOverlay) _buildOverlayLayer(context),
       ],
+    );
+  }
+
+  Widget _buildOverlayLayer(BuildContext context) {
+    return GestureDetector(
+      onTap: () => setState(() => _showOverlay = false),
+      child: Container(
+        color: Colors.black.withOpacity(0.6),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              padding: const EdgeInsets.all(24), // 더 큰 여백
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('어떤 상품을 찾아드릴까요?',
+                      style: TextStyle(color: Colors.white, fontSize: 16)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _commandController,
+                          style: const TextStyle(color: Colors.white),
+                          minLines: 2,
+                          maxLines: 5,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.grey[800],
+                            hintText: '예: 여름에 어울리는 선물',
+                            hintStyle: const TextStyle(color: Colors.grey),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 14),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: Icon(
+                          Icons.mic,
+                          color:
+                          _isListening ? Colors.redAccent : Colors.white,
+                        ),
+                        onPressed: _startNativeListening,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: () {
+                      final query = _commandController.text.trim();
+                      if (query.isNotEmpty) {
+                        _fetchProducts(query);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('검색어를 입력해주세요.'),
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.black,
+                      ),
+                    )
+                        : const Text('명령하기'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -165,75 +280,6 @@ class _CallScreenState extends State<CallScreen> {
               ),
             )
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOverlayLayer(BuildContext context) {
-    return GestureDetector(
-      onTap: () => setState(() => _showOverlay = false),
-      child: Container(
-        color: Colors.black.withOpacity(0.6),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('어떤 상품을 찾아드릴까요?',
-                      style: TextStyle(color: Colors.white, fontSize: 16)),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _commandController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.grey[800],
-                      hintText: '예: 여름에 어울리는 선물',
-                      hintStyle: const TextStyle(color: Colors.grey),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () {
-                      final query = _commandController.text.trim();
-                      if (query.isNotEmpty) {
-                        _fetchProducts(query);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('검색어를 입력해주세요.'),
-                            backgroundColor: Colors.redAccent,
-                          ),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text('명령하기'),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ),
       ),
     );
