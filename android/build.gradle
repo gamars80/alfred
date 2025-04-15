@@ -1,0 +1,22 @@
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// Flutter 외 커스텀 빌드 디렉토리 지정 (선택 사항)
+def newBuildDir = rootProject.layout.buildDirectory.dir("../../build").get()
+rootProject.layout.buildDirectory.set(newBuildDir)
+
+subprojects {
+    def newSubprojectBuildDir = newBuildDir.dir(project.name)
+    layout.buildDirectory.set(newSubprojectBuildDir)
+    evaluationDependsOn(":app")
+}
+
+// clean task 정의 (필수는 아님, 유지 가능)
+tasks.register("clean", Delete) {
+    delete rootProject.buildDirectory
+}

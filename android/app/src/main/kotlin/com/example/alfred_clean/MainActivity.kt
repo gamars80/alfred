@@ -1,45 +1,45 @@
 package com.example.alfred_clean
-
-import android.os.Bundle
-import io.flutter.embedding.android.FlutterActivity
-import io.flutter.plugin.common.MethodChannel
-
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.speech.RecognizerIntent
 import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 import java.util.Locale
 
 class MainActivity : FlutterActivity() {
+
+
     private val CHANNEL = "com.alfred/voice"
     private var resultHandler: MethodChannel.Result? = null
     private lateinit var speechRecognizer: SpeechRecognizer
     private var hasResponded = false
     private var partialTextBuffer: String = ""
-    private var isUserSpeaking = false  // ✅ 사용자 음성 감지 상태
+    private var isUserSpeaking = false
 
+    // 침묵 타이머 (필요 시 3500ms -> 4000ms 또는 5000ms로 조정 가능)
     private val silenceTimeout = 3500L
     private val silenceHandler = Handler(Looper.getMainLooper())
     private val silenceRunnable = Runnable {
-        if (!hasResponded) {
-            Log.d("Voice", "3.5초간 침묵 - 자동 종료")
-            resultHandler?.success(partialTextBuffer)
-            hasResponded = true
-            speechRecognizer.stopListening()
-        }
+        Log.d("Voice", "3.5초간 침묵 - 자동 종료: stopListening 호출")
+        // 자동 종료 시에는 즉시 결과를 반환하지 않고, stopListening 호출 후 onResults에서 최종 결과를 처리하도록 함.
+        speechRecognizer.stopListening()
     }
 
     override fun configureFlutterEngine(flutterEngine: io.flutter.embedding.engine.FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED
+            != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.RECORD_AUDIO), 100)
         }
@@ -82,6 +82,7 @@ class MainActivity : FlutterActivity() {
 
             override fun onRmsChanged(rmsdB: Float) {
                 if (isUserSpeaking) {
+                    // 사용자의 소리 변화가 있을 때마다 타이머 리셋 (마지막 음성 캡처를 위한 시간 확보)
                     silenceHandler.removeCallbacks(silenceRunnable)
                     silenceHandler.postDelayed(silenceRunnable, silenceTimeout)
                 }
@@ -90,14 +91,17 @@ class MainActivity : FlutterActivity() {
             override fun onBufferReceived(buffer: ByteArray?) {}
 
             override fun onEndOfSpeech() {
-                Log.d("Voice", "onEndOfSpeech (무시)")
+                Log.d("Voice", "onEndOfSpeech: 말하는 끝 감지")
+                // onEndOfSpeech 시 stopListening()을 호출하여 onResults가 호출되도록 유도할 수도 있습니다.
+                // speechRecognizer.stopListening() // 필요 시 주석 해제
             }
 
             override fun onError(error: Int) {
                 Log.e("Voice", "에러 발생: $error")
                 silenceHandler.removeCallbacks(silenceRunnable)
+                // onResults가 호출되지 않은 경우 fallback 처리
                 if (!hasResponded) {
-                    resultHandler?.success(partialTextBuffer)
+                    resultHandler?.success(if (partialTextBuffer.isNotEmpty()) partialTextBuffer else "")
                     hasResponded = true
                 }
             }
@@ -113,12 +117,19 @@ class MainActivity : FlutterActivity() {
             }
 
             override fun onResults(results: Bundle) {
-                Log.d("Voice", "최종 결과 수신됨 (무시됨)")
+                Log.d("Voice", "최종 결과 수신됨")
+                silenceHandler.removeCallbacks(silenceRunnable)
+                val finalText = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.getOrNull(0) ?: ""
+                if (!hasResponded) {
+                    resultHandler?.success(finalText)
+                    hasResponded = true
+                }
             }
 
             override fun onEvent(eventType: Int, params: Bundle?) {}
         })
 
+        // 시작할 때도 타이머 시작
         silenceHandler.removeCallbacks(silenceRunnable)
         silenceHandler.postDelayed(silenceRunnable, silenceTimeout)
 
