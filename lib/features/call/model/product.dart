@@ -25,4 +25,15 @@ class Product {
       mallName: json['mallName'] ?? '', // 🆕 파싱 추가
     );
   }
+
+  factory Product.fromHistoryJson(Map<String, dynamic> json) {
+    return Product(
+      name: json['productName'] ?? '',
+      price: json['productPrice'] ?? 0,
+      image: json['productImage'] ?? '',
+      link: json['productLink'] ?? '',
+      reason: json['reason'] ?? '',
+      mallName: json['mallName'] ?? '', // 🆕 파싱 추가
+    );
+  }
 }

@@ -8,14 +8,18 @@ class ProductWebViewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setUserAgent(
+        "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36",
+      )
+      ..loadRequest(Uri.parse(url));
+
     return Scaffold(
       appBar: AppBar(title: const Text('상품 상세보기')),
       body: SafeArea(
-        child: WebViewWidget(
-          controller: WebViewController()
-            ..setJavaScriptMode(JavaScriptMode.unrestricted)
-            ..loadRequest(Uri.parse(url)),
-        ),
+        child: WebViewWidget(controller: controller),
       ),
     );
   }

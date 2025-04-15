@@ -61,19 +61,21 @@ class _CallScreenState extends State<CallScreen> {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: Colors.black,
+          backgroundColor: Colors.white,
           appBar: AppBar(
-            title: const Text('상품 추천'),
-            backgroundColor: Colors.black,
+            title: const Text('상품 추천', style: TextStyle(color: Colors.black)),
+            backgroundColor: Colors.white,
+            elevation: 0.5,
+            iconTheme: const IconThemeData(color: Colors.black),
           ),
           body: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _categorizedProducts.isEmpty
               ? const Center(
               child: Text('추천된 상품이 없습니다.',
-                  style: TextStyle(color: Colors.white)))
+                  style: TextStyle(color: Colors.grey)))
               : ListView(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             children: _categorizedProducts.entries.map((entry) {
               final category = entry.key;
               final products = entry.value;
@@ -82,9 +84,9 @@ class _CallScreenState extends State<CallScreen> {
                 children: [
                   Text(category,
                       style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white)),
+                          color: Colors.black87)),
                   const SizedBox(height: 8),
                   ...products
                       .map((product) => _buildProductCard(product))
@@ -98,6 +100,7 @@ class _CallScreenState extends State<CallScreen> {
             onPressed: _toggleOverlay,
             label: const Text('알프레드~'),
             icon: const Icon(Icons.mic),
+            backgroundColor: Colors.deepPurple,
           ),
         ),
         if (_showOverlay) _buildOverlayLayer(context),
@@ -109,34 +112,33 @@ class _CallScreenState extends State<CallScreen> {
     return GestureDetector(
       onTap: () => setState(() => _showOverlay = false),
       child: Container(
-        color: Colors.black.withOpacity(0.6),
+        color: Colors.black.withOpacity(0.5),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
-              padding: const EdgeInsets.all(24), // 더 큰 여백
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(16),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text('어떤 상품을 찾아드릴까요?',
-                      style: TextStyle(color: Colors.white, fontSize: 16)),
+                      style: TextStyle(color: Colors.black, fontSize: 18)),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
                         child: TextField(
                           controller: _commandController,
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.black),
                           minLines: 2,
                           maxLines: 5,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: Colors.grey[800],
+                            fillColor: Colors.grey[200],
                             hintText: '예: 여름에 어울리는 선물',
                             hintStyle: const TextStyle(color: Colors.grey),
                             border: OutlineInputBorder(
@@ -152,11 +154,22 @@ class _CallScreenState extends State<CallScreen> {
                       IconButton(
                         icon: Icon(
                           Icons.mic,
-                          color:
-                          _isListening ? Colors.redAccent : Colors.white,
+                          color: _isListening ? Colors.red : Colors.deepPurple,
                         ),
                         onPressed: _startNativeListening,
                       ),
+                      if (_isListening)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            '듣는 중...',
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -175,8 +188,8 @@ class _CallScreenState extends State<CallScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -187,7 +200,7 @@ class _CallScreenState extends State<CallScreen> {
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.black,
+                        color: Colors.white,
                       ),
                     )
                         : const Text('명령하기'),
@@ -203,9 +216,8 @@ class _CallScreenState extends State<CallScreen> {
 
   Widget _buildProductCard(Product product) {
     return Card(
-      color: Colors.grey[900],
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () {
@@ -226,55 +238,70 @@ class _CallScreenState extends State<CallScreen> {
                   const BorderRadius.vertical(top: Radius.circular(16)),
                   child: Image.network(
                     product.image,
-                    height: 180,
+                    height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
                   ),
                 ),
                 if (product.mallName.isNotEmpty)
                   Positioned(
-                    top: 10,
-                    left: 10,
+                    top: 12,
+                    right: 12,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.deepPurple,
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         product.mallName,
                         style: const TextStyle(
-                            color: Colors.white, fontSize: 12),
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(12),
+            Container(
+              width: double.infinity,
+              color: Colors.white,
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(product.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 16, color: Colors.white)),
-                  const SizedBox(height: 6),
+                  Text(
+                    product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     '₩ ${currencyFormatter.format(product.price)}',
                     style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.amber),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepOrange,
+                    ),
                   ),
                   if (product.reason.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(product.reason,
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.grey)),
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        product.reason,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey,
+                        ),
+                      ),
                     ),
                 ],
               ),
