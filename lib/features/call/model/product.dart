@@ -1,5 +1,6 @@
 class Product {
   final String name;
+  final String productId;
   final int price;
   final String image;
   final String link;
@@ -8,6 +9,7 @@ class Product {
 
   Product({
     required this.name,
+    required this.productId,
     required this.price,
     required this.image,
     required this.link,
@@ -18,6 +20,7 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       name: json['name'] ?? '',
+      productId: json['productId'] ?? '',
       price: json['price'] ?? 0,
       image: json['image'] ?? '',
       link: json['link'] ?? '',
@@ -29,6 +32,7 @@ class Product {
   factory Product.fromHistoryJson(Map<String, dynamic> json) {
     return Product(
       name: json['productName'] ?? '',
+      productId: json['productId'] ?? '',
       price: json['productPrice'] ?? 0,
       image: json['productImage'] ?? '',
       link: json['productLink'] ?? '',
