@@ -1,12 +1,12 @@
 enum AgeRange {
-  BABY('BABY', '0~5세'),
-  CHILD('CHILD', '6~9세'),
-  TEEN('TEEN', '10대'),
-  TWENTY('TWENTY', '20대'),
-  THIRTY('THIRTY', '30대'),
-  FORTY('FORTY', '40대'),
-  FIFTY('FIFTY', '50대'),
-  SENIOR('SENIOR', '60대 이상');
+  age0to5('0-5', '0~5세'),
+  age6to9('6-9', '6~9세'),
+  age10s('10s', '10대'),
+  age20s('20s', '20대'),
+  age30s('30s', '30대'),
+  age40s('40s', '40대'),
+  age50s('50s', '50대'),
+  age60s('60s', '60대');
 
   final String code;
   final String description;

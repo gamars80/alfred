@@ -31,42 +31,36 @@ class _CallScreenState extends State<CallScreen> {
   String? _selectedAge;
   String? _errorMessage;
 
+
   Future<void> _fetchProducts(String query, {StateSetter? modalSetState}) async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
-    modalSetState?.call(() {}); // 모달 내부 갱신
+    modalSetState?.call(() {});
 
     try {
       final api = ProductApi();
-      if (_selectedGender != null || _selectedAge != null) {
-        final suffix = [
-          if (_selectedGender != null) _selectedGender,
-          if (_selectedAge != null) _selectedAge,
-        ].join(' ');
-        query = '$query $suffix'.trim();
-      }
-      final result = await api.fetchRecommendedProducts(query);
+      final fullQuery = _appendGenderAndAgeToQuery(query);
+      print('✅ 호출된 Query: $fullQuery'); // 실제 API 호출 전 확인
+
+      final result = await api.fetchRecommendedProducts(fullQuery);
       setState(() {
         _categorizedProducts = result;
         _selectedGender = null;
         _selectedAge = null;
       });
 
-      // 키보드 숨기기: 부모 context 사용
       FocusScope.of(context).unfocus();
       await Future.delayed(const Duration(milliseconds: 100));
       SystemChannels.textInput.invokeMethod('TextInput.hide');
 
-      // API 성공 시 모달 닫기 (부모 context를 사용)
       if (_showingBottomSheet) {
         Navigator.pop(context);
         _showingBottomSheet = false;
       }
     } catch (e) {
       final message = e.toString();
-
       if (message.contains('Not Gender')) {
         setState(() => _errorMessage = 'gender');
       } else if (message.contains('Not Age')) {
@@ -76,35 +70,39 @@ class _CallScreenState extends State<CallScreen> {
       } else {
         debugPrint('API 호출 실패: $e');
       }
-
       if (!_showingBottomSheet) {
         _showingBottomSheet = true;
         _openBottomSheet();
       }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
       modalSetState?.call(() {});
     }
   }
 
-  Future<void> _startNativeListening() async {
-    setState(() => _isListening = true);
+  Future<void> _startNativeListening(StateSetter modalSetState) async {
+    modalSetState(() => _isListening = true);
     try {
       final result = await platform.invokeMethod<String>('startListening');
       if (result != null && result.isNotEmpty) {
-        setState(() {
+        modalSetState(() {
           _commandController.text = result;
         });
       }
     } on PlatformException catch (e) {
-      debugPrint("음성 인식 오류: ${e.message}");
+      debugPrint("음성 인식 오류: \${e.message}");
     }
-    setState(() => _isListening = false);
+    modalSetState(() => _isListening = false);
   }
 
   Future<void> _openBottomSheet() async {
+    setState(() {
+      _commandController.clear();
+      _selectedGender = null;
+      _selectedAge = null;
+      _errorMessage = null;
+      _isListening = false;
+    });
     _bottomSheetContentKey = UniqueKey();
     _showingBottomSheet = true;
 
@@ -113,6 +111,10 @@ class _CallScreenState extends State<CallScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (builderContext) {
+        final availableWidth = MediaQuery
+            .of(context)
+            .size
+            .width - 40;
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter modalSetState) {
             return Container(
@@ -128,7 +130,10 @@ class _CallScreenState extends State<CallScreen> {
                 ],
               ),
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                bottom: MediaQuery
+                    .of(context)
+                    .viewInsets
+                    .bottom + 16,
                 left: 20,
                 right: 20,
                 top: 24,
@@ -143,47 +148,58 @@ class _CallScreenState extends State<CallScreen> {
                     const Text(
                       '🎙️ 명령 입력',
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
-                      ),
+                          fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87),
                     ),
                     const SizedBox(height: 16),
                     if (_errorMessage == null)
-                      VoiceCommandInputWidget(
-                        controller: _commandController,
-                        isListening: _isListening,
-                        isLoading: _isLoading,
-                        onMicPressed: _startNativeListening,
-                        onSubmit: () {
-                          final query = _commandController.text.trim();
-                          if (query.isEmpty) {
-                            Fluttertoast.showToast(
-                              msg: "검색어를 입력해주세요.",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.BOTTOM,
-                              backgroundColor: Colors.redAccent,
-                              textColor: Colors.white,
-                              fontSize: 16.0,
-                            );
-                            return;
-                          }
-                          _fetchProducts(query, modalSetState: modalSetState);
-                        },
+                      SizedBox(
+                        width: availableWidth,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            VoiceCommandInputWidget(
+                              controller: _commandController,
+                              isListening: _isListening,
+                              isLoading: _isLoading,
+                              onMicPressed: () =>
+                                  _startNativeListening(modalSetState),
+                              onSubmit: () {
+                                final query = _commandController.text.trim();
+                                if (query.isEmpty) {
+                                  Fluttertoast.showToast(
+                                    msg: "검색어를 입력해주세요.",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.BOTTOM,
+                                    backgroundColor: Colors.redAccent,
+                                    textColor: Colors.white,
+                                    fontSize: 16.0,
+                                  );
+                                  return;
+                                }
+                                _fetchProducts(
+                                    query, modalSetState: modalSetState);
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     if (_errorMessage != null) ...[
                       _buildExtraInfoInput(modalSetState),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () {
-                          final query = _commandController.text.trim().isEmpty
+                          final query = _commandController.text
+                              .trim()
+                              .isEmpty
                               ? ' '
                               : _commandController.text.trim();
-                          // 필수 선택값 미입력 시 토스트 표시 후 API 호출 차단
-                          if ((_errorMessage == 'gender' && _selectedGender == null) ||
-                              (_errorMessage == 'age' && _selectedAge == null) ||
+                          if ((_errorMessage == 'gender' &&
+                              _selectedGender == null) ||
+                              (_errorMessage == 'age' &&
+                                  _selectedAge == null) ||
                               (_errorMessage == 'both' &&
-                                  (_selectedGender == null || _selectedAge == null))) {
+                                  (_selectedGender == null ||
+                                      _selectedAge == null))) {
                             Fluttertoast.showToast(
                               msg: "필수 선택 항목을 입력해주세요.",
                               toastLength: Toast.LENGTH_SHORT,
@@ -223,62 +239,7 @@ class _CallScreenState extends State<CallScreen> {
         );
       },
     );
-
-    // 모달이 닫히면 _showingBottomSheet를 false로 설정
-    setState(() {
-      _showingBottomSheet = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // ScaffoldMessenger는 부모 Scaffold 안에 자동으로 SnackBar를 표시하지만 여기서는 Fluttertoast를 사용하므로 별도의 설정은 필요 없습니다.
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('상품 추천', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _categorizedProducts.isEmpty
-          ? const Center(
-        child: Text('추천된 상품이 없습니다.',
-            style: TextStyle(color: Colors.grey)),
-      )
-          : ListView(
-        padding: const EdgeInsets.all(16),
-        children: _categorizedProducts.entries.map((entry) {
-          final category = entry.key;
-          final products = entry.value;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                category,
-                style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87),
-              ),
-              const SizedBox(height: 8),
-              ...products
-                  .map((product) => _buildProductCard(product))
-                  .toList(),
-              const SizedBox(height: 24),
-            ],
-          );
-        }).toList(),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openBottomSheet,
-        label: const Text('알프레드~'),
-        icon: const Icon(Icons.mic),
-        backgroundColor: Colors.deepPurple,
-      ),
-    );
+    setState(() => _showingBottomSheet = false);
   }
 
   Widget _buildExtraInfoInput(StateSetter modalSetState) {
@@ -289,32 +250,25 @@ class _CallScreenState extends State<CallScreen> {
           const Text(
             '자세한 추천을 위해 성별을 선택해주세요.',
             style: TextStyle(
-                fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
           ),
           Row(
             children: [
               Radio<String>(
                 value: 'MALE',
                 groupValue: _selectedGender,
-                onChanged: (value) {
-                  if (value != null) {
-                    modalSetState(() {
-                      _selectedGender = value;
-                    });
-                  }
-                },
+                onChanged: (value) =>
+                    modalSetState(() => _selectedGender = value),
               ),
               const Text('남성', style: TextStyle(fontSize: 13, color: Colors.black87)),
               Radio<String>(
                 value: 'FEMALE',
                 groupValue: _selectedGender,
-                onChanged: (value) {
-                  if (value != null) {
-                    modalSetState(() {
-                      _selectedGender = value;
-                    });
-                  }
-                },
+                onChanged: (value) =>
+                    modalSetState(() => _selectedGender = value),
               ),
               const Text('여성', style: TextStyle(fontSize: 13, color: Colors.black87)),
             ],
@@ -325,21 +279,21 @@ class _CallScreenState extends State<CallScreen> {
           const Text(
             '자세한 추천을 위해 연령대를 선택해주세요.',
             style: TextStyle(
-                fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
           ),
           Wrap(
             spacing: 8,
             children: AgeRange.values.map((range) {
               return ChoiceChip(
-                label: Text(range.description, style: const TextStyle(fontSize: 11)),
+                label: Text(
+                    range.description, style: const TextStyle(fontSize: 11)),
                 selected: _selectedAge == range.code,
-                onSelected: (selected) {
-                  if (selected) {
-                    modalSetState(() {
-                      _selectedAge = range.code;
-                    });
-                  }
-                },
+                onSelected: (selected) =>
+                    modalSetState(() =>
+                    _selectedAge = selected ? range.code : null),
               );
             }).toList(),
           ),
@@ -368,8 +322,7 @@ class _CallScreenState extends State<CallScreen> {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   child: Image.network(
                     product.image,
                     height: 200,
@@ -438,10 +391,115 @@ class _CallScreenState extends State<CallScreen> {
                     ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('상품 추천', style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _categorizedProducts.isEmpty
+          ? const Center(
+        child: Text('추천된 상품이 없습니다.', style: TextStyle(color: Colors.grey)),
+      )
+          : ListView(
+        padding: const EdgeInsets.all(16),
+        children: _categorizedProducts.entries.map((entry) {
+          final category = entry.key;
+          final products = entry.value;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                category,
+                style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
+              ),
+              const SizedBox(height: 8),
+              ...products.map((product) => _buildProductCard(product)).toList(),
+              const SizedBox(height: 24),
+            ],
+          );
+        }).toList(),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openBottomSheet,
+        label: const Text('알프레드~'),
+        icon: const Icon(Icons.mic),
+        backgroundColor: Colors.deepPurple,
+      ),
+    );
+  }
+
+  String _appendGenderAndAgeToQuery(String originalQuery) {
+    final List<String> parts = [];
+
+    if (originalQuery.trim().isNotEmpty) {
+      parts.add(originalQuery.trim());
+    }
+
+    final localizedGender = _getLocalizedGender(_selectedGender);
+    final localizedAge = _getLocalizedAge(_selectedAge);
+
+    print('🎯 원본 gender: $_selectedGender → 변환: $localizedGender');
+    print('🎯 원본 age: $_selectedAge → 변환: $localizedAge');
+
+    if (localizedGender != null) parts.add(localizedGender);
+    if (localizedAge != null) parts.add(localizedAge);
+
+    final result = parts.join(' ').trim();
+    print('👉 최종 Query (한글 변환됨) = $result');
+    return result;
+  }
+
+
+
+  String? _getLocalizedGender(String? gender) {
+    switch (gender) {
+      case 'MALE':
+        return '남성';
+      case 'FEMALE':
+        return '여성';
+      default:
+        return null;
+    }
+  }
+
+  String? _getLocalizedAge(String? ageCode) {
+    switch (ageCode) {
+      case '0-5':
+        return '0~5세';
+      case '6-9':
+        return '6~9세';
+      case '10s':
+        return '10대';
+      case '20s':
+        return '20대';
+      case '30s':
+        return '30대';
+      case '40s':
+        return '40대';
+      case '50s':
+        return '50대';
+      case '60s':
+      case '60+':
+        return '60대'; // 또는 '60세'도 가능
+      default:
+        return null;
+    }
   }
 }

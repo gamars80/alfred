@@ -41,4 +41,5 @@ class ProductApi {
       throw Exception('상품 추천 API 호출 실패: ${response.statusCode} ${response.body}');
     }
   }
+
 }
