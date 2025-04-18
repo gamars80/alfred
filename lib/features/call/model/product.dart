@@ -6,6 +6,7 @@ class Product {
   final String link;
   final String reason;
   final String mallName; // 🆕 쇼핑몰 이름 추가
+  final String category;
 
   Product({
     required this.name,
@@ -15,6 +16,7 @@ class Product {
     required this.link,
     required this.reason,
     required this.mallName,
+    required this.category
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -25,7 +27,8 @@ class Product {
       image: json['image'] ?? '',
       link: json['link'] ?? '',
       reason: json['reason'] ?? '',
-      mallName: json['mallName'] ?? '', // 🆕 파싱 추가
+      mallName: json['mallName'] ?? '',
+      category: json['category'] ?? '',
     );
   }
 
@@ -37,7 +40,8 @@ class Product {
       image: json['productImage'] ?? '',
       link: json['productLink'] ?? '',
       reason: json['reason'] ?? '',
-      mallName: json['mallName'] ?? '', // 🆕 파싱 추가
+      mallName: json['mallName'] ?? '',
+      category: json['category'] ?? '',
     );
   }
 }

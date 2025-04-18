@@ -226,11 +226,10 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                               spacing: 8,
                               runSpacing: 4,
                               children: [
-                                // if (product.category.isNotEmpty)
+                                if (product.category.isNotEmpty)
                                   Chip(
                                     label: Text(
-                                      // product.category,
-                                      'sss',
+                                      product.category,
                                       style: const TextStyle(fontSize: 11),
                                     ),
                                     backgroundColor: Colors.white10,
