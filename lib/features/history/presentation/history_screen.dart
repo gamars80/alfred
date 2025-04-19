@@ -119,12 +119,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   horizontal: 16, vertical: 8),
               child: InkWell(
                 onTap: () {
-                  Navigator.push(
+                  Navigator.push<RecommendationHistory>(
                     context,
                     MaterialPageRoute(
                       builder: (_) => HistoryDetailScreen(history: history),
                     ),
-                  );
+                  ).then((updatedHistory) {
+                    if (updatedHistory != null) {
+                      setState(() {
+                        _histories[index] = updatedHistory;
+                      });
+                    }
+                  });
                 },
                 borderRadius: BorderRadius.circular(16),
                 child: Ink(

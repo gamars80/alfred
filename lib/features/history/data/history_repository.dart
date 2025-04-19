@@ -19,6 +19,8 @@ class HistoryRepository {
 
     final uri = Uri.parse(
         '$baseUrl/api/recomendation-history?limit=$limit${nextPageKey != null ? '&nextPageKey=$nextPageKey' : ''}');
+
+
     final response = await http.get(uri, headers: headers);
     if (response.statusCode == 200) {
       final decoded = utf8.decode(response.bodyBytes);
@@ -26,6 +28,34 @@ class HistoryRepository {
       return HistoryResponse.fromJson(data);
     } else {
       throw Exception('히스토리 데이터를 가져오는데 실패했습니다. (status: ${response.statusCode})');
+    }
+  }
+
+
+  Future<void> postLike({
+    required int historyCreatedAt,
+    required String recommendationId,
+    required String productId,
+    required String mallName,
+    required String token,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/likes');
+    final body = json.encode({
+      'historyCreatedAt': '$historyCreatedAt',
+      'recommendationId': recommendationId,
+      'productId': productId,
+      'mallName': mallName,
+    });
+    final resp = await http.post(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: body,
+    );
+    if (resp.statusCode != 200) {
+      throw Exception('좋아요 요청 실패 (${resp.statusCode})');
     }
   }
 }

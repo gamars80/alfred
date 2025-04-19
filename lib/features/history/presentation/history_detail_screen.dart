@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:alfred_clean/features/call/model/product.dart';
 import 'package:alfred_clean/features/call/presentation/product_webview_screen.dart';
+import '../../../service/token_manager.dart';
+import '../data/history_repository.dart';
 import '../model/recommendation_history.dart';
+
 
 class HistoryDetailScreen extends StatefulWidget {
   final RecommendationHistory history;
@@ -13,41 +16,75 @@ class HistoryDetailScreen extends StatefulWidget {
 }
 
 class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
+  final repo = HistoryRepository();
   final Set<String> likedProductIds = {}; // 찜한 상품 ID 저장용
+  String? token;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 1) 서버에서 내려온 liked 플래그로 초기 상태 세팅
+    for (final p in widget.history.recommendations) {
+      if (p.liked) likedProductIds.add(p.productId);
+    }
+
+    // 2) 토큰은 별도 async 메서드에서 로드
+    _loadToken();
+  }
+
+  Future<void> _loadToken() async {
+    final t = await TokenManager.getToken();
+    setState(() {
+      token = t;
+    });
+  }
 
   NumberFormat get currencyFormatter => NumberFormat('#,###', 'ko_KR');
 
   @override
   Widget build(BuildContext context) {
     final recommendations = widget.history.recommendations;
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0.5,
-        title: const Text(
-          '추천 히스토리',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, widget.history); // ✅ 변경된 history 객체 반환
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF121212),
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          elevation: 0.5,
+          title: const Text(
+            '추천 히스토리',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          centerTitle: true,
+          iconTheme: const IconThemeData(color: Colors.white),
+          // ✅ AppBar의 뒤로가기 아이콘도 Navigator.pop을 감지하게 만듦
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context, widget.history),
           ),
         ),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: ListView(
-        children: [
-          _buildSectionTitle('💡 AI가 추천한 상품'),
-          if (recommendations.isNotEmpty) _buildSwipeableProducts(recommendations, context),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {}); // 임시 리로드 트리거
-        },
-        backgroundColor: Colors.deepPurple,
-        child: const Icon(Icons.refresh),
+        body: ListView(
+          children: [
+            _buildSectionTitle('💡 AI가 추천한 상품'),
+            if (recommendations.isNotEmpty)
+              _buildSwipeableProducts(recommendations, context),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            setState(() {});
+          },
+          backgroundColor: Colors.deepPurple,
+          child: const Icon(Icons.refresh),
+        ),
       ),
     );
   }
@@ -193,14 +230,29 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      if (isLiked) {
-                                        likedProductIds.remove(product.productId);
-                                      } else {
-                                        likedProductIds.add(product.productId);
+                                  onTap: () async {
+                                    // token이 아직 로드되지 않았으면 리턴
+                                    if (token == null) return;
+                                    if (!isLiked) {
+                                      try {
+                                        await repo.postLike(
+                                          historyCreatedAt: widget.history.createdAt,
+                                          recommendationId: product.recommendationId,
+                                          productId: product.productId,
+                                          mallName: product.mallName,
+                                          token: token!,
+                                        );
+                                        final updated = product.copyWith(liked: true);
+                                        setState(() {
+                                          likedProductIds.add(product.productId);
+                                          widget.history.recommendations[index] = updated; // 중요!
+                                        });
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('좋아요 실패: $e'))
+                                        );
                                       }
-                                    });
+                                    }
                                   },
                                   child: Icon(
                                     isLiked ? Icons.favorite : Icons.favorite_border,

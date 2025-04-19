@@ -1,4 +1,6 @@
-import 'package:alfred_clean/features/call/model/product.dart';
+
+
+import '../../call/model/product.dart';
 
 class RecommendationHistory {
   final String id;
@@ -17,15 +19,28 @@ class RecommendationHistory {
     required this.recommendations,
   });
 
+  RecommendationHistory copyWith({
+    List<Product>? recommendations,
+  }) {
+    return RecommendationHistory(
+      id: id,
+      userId: userId,
+      createdAt: createdAt,
+      query: query,
+      gptCondition: gptCondition,
+      recommendations: recommendations ?? this.recommendations,
+    );
+  }
+
   factory RecommendationHistory.fromJson(Map<String, dynamic> json) {
     return RecommendationHistory(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      createdAt: json['createdAt'] as int,
-      query: json['query'] as String,
-      gptCondition: json['gptCondition'] as String,
-      recommendations: (json['recommendations'] as List<dynamic>)
-          .map((e) => Product.fromHistoryJson(e as Map<String, dynamic>))
+      id: json['id'],
+      userId: json['userId'],
+      createdAt: json['createdAt'],
+      query: json['query'],
+      gptCondition: json['gptCondition'],
+      recommendations: (json['recommendations'] as List)
+          .map((e) => Product.fromHistoryJson(e))
           .toList(),
     );
   }
