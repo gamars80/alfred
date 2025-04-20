@@ -58,4 +58,36 @@ class HistoryRepository {
       throw Exception('좋아요 요청 실패 (${resp.statusCode})');
     }
   }
+
+  Future<void> deleteLike({
+    required int historyCreatedAt,
+    required String recommendationId,
+    required String productId,
+    required String mallName,
+    required String token,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/likes');
+    final body = json.encode({
+      'historyCreatedAt': '$historyCreatedAt',
+      'recommendationId': recommendationId,
+      'productId': productId,
+      'mallName': mallName,
+    });
+
+    final request = http.Request('DELETE', uri)
+      ..headers.addAll({
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      })
+      ..body = body;
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('좋아요 취소 실패: ${response.statusCode}, ${response.body}');
+    }
+  }
+
+
 }

@@ -6,7 +6,6 @@ import '../../../service/token_manager.dart';
 import '../data/history_repository.dart';
 import '../model/recommendation_history.dart';
 
-
 class HistoryDetailScreen extends StatefulWidget {
   final RecommendationHistory history;
   const HistoryDetailScreen({super.key, required this.history});
@@ -24,12 +23,10 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
   void initState() {
     super.initState();
 
-    // 1) 서버에서 내려온 liked 플래그로 초기 상태 세팅
     for (final p in widget.history.recommendations) {
       if (p.liked) likedProductIds.add(p.productId);
     }
 
-    // 2) 토큰은 별도 async 메서드에서 로드
     _loadToken();
   }
 
@@ -47,7 +44,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
     final recommendations = widget.history.recommendations;
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pop(context, widget.history); // ✅ 변경된 history 객체 반환
+        Navigator.pop(context, widget.history);
         return false;
       },
       child: Scaffold(
@@ -65,7 +62,6 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
           ),
           centerTitle: true,
           iconTheme: const IconThemeData(color: Colors.white),
-          // ✅ AppBar의 뒤로가기 아이콘도 Navigator.pop을 감지하게 만듦
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.pop(context, widget.history),
@@ -140,7 +136,6 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    // 배경 그라데이션
                     Container(
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
@@ -150,8 +145,6 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                         ),
                       ),
                     ),
-
-                    // 상품 이미지
                     Image.network(
                       product.image.isNotEmpty
                           ? product.image
@@ -163,8 +156,6 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                         child: const Icon(Icons.broken_image, color: Colors.white70),
                       ),
                     ),
-
-                    // 몰 이름 띠
                     if (product.mallName.isNotEmpty)
                       Positioned(
                         top: 12,
@@ -185,8 +176,6 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                           ),
                         ),
                       ),
-
-                    // 하단 정보 레이어
                     Positioned(
                       bottom: 0,
                       left: 0,
@@ -231,10 +220,22 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                                 ),
                                 GestureDetector(
                                   onTap: () async {
-                                    // token이 아직 로드되지 않았으면 리턴
                                     if (token == null) return;
-                                    if (!isLiked) {
-                                      try {
+                                    try {
+                                      if (isLiked) {
+                                        await repo.deleteLike(
+                                          historyCreatedAt: widget.history.createdAt,
+                                          recommendationId: product.recommendationId,
+                                          productId: product.productId,
+                                          mallName: product.mallName,
+                                          token: token!,
+                                        );
+                                        final updated = product.copyWith(liked: false);
+                                        setState(() {
+                                          likedProductIds.remove(product.productId);
+                                          widget.history.recommendations[index] = updated;
+                                        });
+                                      } else {
                                         await repo.postLike(
                                           historyCreatedAt: widget.history.createdAt,
                                           recommendationId: product.recommendationId,
@@ -245,13 +246,13 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                                         final updated = product.copyWith(liked: true);
                                         setState(() {
                                           likedProductIds.add(product.productId);
-                                          widget.history.recommendations[index] = updated; // 중요!
+                                          widget.history.recommendations[index] = updated;
                                         });
-                                      } catch (e) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('좋아요 실패: $e'))
-                                        );
                                       }
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('요청 실패: $e')),
+                                      );
                                     }
                                   },
                                   child: Icon(
