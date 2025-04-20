@@ -7,6 +7,8 @@ class LikedProduct {
   final String mallName;
   final String reason;
   final String category;
+  final String historyCreatedAt;
+  final String recommendationId;
 
   LikedProduct({
     required this.productId,
@@ -17,6 +19,8 @@ class LikedProduct {
     required this.mallName,
     required this.reason,
     required this.category,
+    required this.historyCreatedAt,
+    required this.recommendationId
   });
 
   factory LikedProduct.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,8 @@ class LikedProduct {
       mallName: json['mallName'],
       reason: json['reason'],
       category: json['category'],
+      historyCreatedAt: json['historyAddedAt'],
+      recommendationId: json['recommendId'],
     );
   }
 }
