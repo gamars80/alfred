@@ -90,7 +90,7 @@ class _CallScreenState extends State<CallScreen> {
         });
       }
     } on PlatformException catch (e) {
-      debugPrint("음성 인식 오류: \${e.message}");
+      debugPrint("음성 인식 오류: ${e.message}");
     }
     modalSetState(() => _isListening = false);
   }

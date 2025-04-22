@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:alfred_clean/service/token_manager.dart';
@@ -66,6 +67,7 @@ class HistoryRepository {
     required String mallName,
     required String token,
   }) async {
+    debugPrint("ddddddddddd");
     final uri = Uri.parse('$baseUrl/api/likes');
     final body = json.encode({
       'historyCreatedAt': '$historyCreatedAt',
@@ -73,6 +75,8 @@ class HistoryRepository {
       'productId': productId,
       'mallName': mallName,
     });
+
+    debugPrint("body:::::: $body");
 
     final request = http.Request('DELETE', uri)
       ..headers.addAll({

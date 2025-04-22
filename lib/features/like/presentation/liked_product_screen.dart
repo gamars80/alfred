@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+
+import 'package:alfred_clean/service/token_manager.dart';
 import '../../call/presentation/product_webview_screen.dart';
+import '../../history/data/history_repository.dart';
 import '../data/like_repository.dart';
 import '../model/liked_product.dart';
 
@@ -13,18 +16,121 @@ class LikedProductScreen extends StatefulWidget {
 }
 
 class _LikedProductScreenState extends State<LikedProductScreen> {
-  final repo = LikeRepository();
-  late Future<List<LikedProduct>> futureLikes;
+  final likeRepo = LikeRepository();
+  final historyRepo = HistoryRepository();
   final formatter = NumberFormat('#,###', 'ko_KR');
+  final ScrollController _scrollController = ScrollController();
+
+  List<LikedProduct> _likes = [];
+  bool _isInitialLoading = true;
+  bool _isLoadingMore = false;
+  String? _error;
+  int _currentPage = 0;
+  int _totalPages = 1;
 
   @override
   void initState() {
     super.initState();
-    futureLikes = repo.fetchLikedProducts();
+    _setupScroll();
+    _loadInitial();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _setupScroll() {
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200 &&
+          !_isLoadingMore &&
+          _currentPage < _totalPages - 1) {
+        _loadMore();
+      }
+    });
+  }
+
+  Future<void> _loadInitial() async {
+    setState(() {
+      _isInitialLoading = true;
+      _error = null;
+    });
+    try {
+      final pageData = await likeRepo.fetchLikedProducts(page: 0);
+      setState(() {
+        _likes = pageData.content;
+        _currentPage = pageData.page;
+        _totalPages = pageData.totalPages;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isInitialLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_currentPage >= _totalPages - 1) return;
+    setState(() => _isLoadingMore = true);
+    try {
+      final nextPage = _currentPage + 1;
+      final pageData = await likeRepo.fetchLikedProducts(page: nextPage);
+      setState(() {
+        _likes.addAll(pageData.content);
+        _currentPage = pageData.page;
+        _totalPages = pageData.totalPages;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('추가 로딩 실패: $e')),
+      );
+    } finally {
+      setState(() => _isLoadingMore = false);
+    }
+  }
+
+  Future<void> _removeLike(LikedProduct p) async {
+    try {
+      await historyRepo.deleteLike(
+        historyCreatedAt: int.parse(p.historyAddedAt),
+        recommendationId: p.recommendId,
+        productId:        p.productId,
+        mallName:         p.mallName,
+        token:            await TokenManager.getToken()
+      );
+      setState(() {
+        _likes.remove(p);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('좋아요 취소 실패: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isInitialLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF121212),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_error != null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF121212),
+        body: Center(
+          child: Text('에러: $_error', style: GoogleFonts.notoSans(color: Colors.white)),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
@@ -38,133 +144,119 @@ class _LikedProductScreenState extends State<LikedProductScreen> {
           ),
         ),
       ),
-      body: FutureBuilder<List<LikedProduct>>(
-        future: futureLikes,
-        builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
+      body: Padding(
+        padding: const EdgeInsets.all(12),
+        child: GridView.builder(
+          controller: _scrollController,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.55,
+          ),
+          itemCount: _likes.length + (_isLoadingMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index < _likes.length) {
+              final p = _likes[index];
+              return GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProductWebViewScreen(url: p.productLink),
+                  ),
+                ),
+                child: _buildCard(p),
+              );
+            }
             return const Center(child: CircularProgressIndicator());
-          }
-          if (snap.hasError) {
-            return Center(child: Text('에러: ${snap.error}'));
-          }
-          final list = snap.data ?? [];
-          if (list.isEmpty) {
-            return Center(
-              child: Text(
-                '찜한 상품이 없습니다.',
-                style: GoogleFonts.notoSans(color: Colors.white70),
-              ),
-            );
-          }
-          return Padding(
-            padding: const EdgeInsets.all(12),
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.55,  // 높이를 좀 더 확보
-              ),
-              itemCount: list.length,
-              itemBuilder: (_, i) => _buildCard(list[i]),
-            ),
-          );
-        },
+          },
+        ),
       ),
     );
   }
 
   Widget _buildCard(LikedProduct p) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProductWebViewScreen(url: p.productLink),
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.06),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ───────── 이미지 + 하트 오버레이 ─────────
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(20)),
-                  child: Image.network(
-                    p.productImage,
-                    height: 140,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                child: Image.network(
+                  p.productImage,
+                  height: 140,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
                 ),
-                Positioned(
-                  top: 8,
-                  right: 8,
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: () => _removeLike(p),
                   child: Icon(
                     Icons.favorite,
                     color: Colors.pinkAccent.shade100,
                     size: 22,
                   ),
                 ),
-              ],
-            ),
-
-            // ───────── 텍스트 영역 ─────────
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Text(
-                p.productName,
-                maxLines: 1,  // 한 줄로 제한
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.notoSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text(
+              p.productName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.notoSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Text(
-                '₩${formatter.format(p.productPrice.toInt())}',
-                style: GoogleFonts.roboto(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.amberAccent,
-                ),
+          ),
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text(
+              '₩${formatter.format(p.productPrice)}',
+              style: GoogleFonts.roboto(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Colors.amberAccent,
               ),
             ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Text(
-                p.mallName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.notoSans(
-                  fontSize: 13,
-                  color: Colors.white70,
-                ),
+          ),
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text(
+              p.mallName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.notoSans(
+                fontSize: 13,
+                color: Colors.white70,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

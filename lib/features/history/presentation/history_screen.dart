@@ -19,13 +19,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
   String? _nextPageKey;
   bool _isLoadingMore = false;
   bool _hasMore = true;
+  bool _isInitialLoading = true;
   final int _limit = 10;
 
   @override
   void initState() {
     super.initState();
     _loadInitialHistories();
-
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
@@ -44,6 +44,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
       });
     } catch (e) {
       debugPrint('Error loading histories: $e');
+    } finally {
+      setState(() {
+        _isInitialLoading = false;
+      });
     }
   }
 
@@ -67,36 +71,150 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
-  String parseGptCondition(String condition) {
-    if (condition.startsWith("SearchCondition(") && condition.endsWith(")")) {
-      String inner =
-      condition.substring("SearchCondition(".length, condition.length - 1);
-      List<String> parts = inner.split(',');
-      List<String> values = [];
-      for (var part in parts) {
-        List<String> kv = part.split('=');
-        if (kv.length == 2) {
-          String value = kv[1].trim();
-          if (value != "null" && value.isNotEmpty) {
-            values.add(value);
-          }
+  List<String> extractTags(String gptCondition) {
+    final tags = <String>[];
+
+    final pattern = RegExp(r'(\w+)=((\[[^\]]*\])|[^,)]*)');
+    final matches = pattern.allMatches(gptCondition);
+
+    for (final match in matches) {
+      final key = match.group(1);
+      final rawValue = match.group(2)?.trim();
+
+      if (rawValue == null || rawValue == 'null' || rawValue.isEmpty) continue;
+
+      if (rawValue.startsWith('[') && rawValue.endsWith(']')) {
+        // 리스트 항목 처리: [벨트, 청바지]
+        final innerItems = rawValue.substring(1, rawValue.length - 1).split(',');
+        for (var item in innerItems) {
+          final tag = item.trim();
+          if (tag.isNotEmpty) tags.add('#$tag');
         }
+      } else {
+        tags.add('#$rawValue');
       }
-      return values.join(', ');
     }
-    return condition;
+
+    return tags;
+  }
+
+
+
+  Widget buildSkeleton() {
+    return ListView.builder(
+      itemCount: 5,
+      itemBuilder: (context, index) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Container(
+          height: 90,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade300,
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildHistoryCard(RecommendationHistory history, int index) {
+    final tags = extractTags(history.gptCondition);
+    final formattedDate =
+    DateFormat('yyyy-MM-dd HH:mm').format(DateTime.fromMillisecondsSinceEpoch(history.createdAt));
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: InkWell(
+        onTap: () {
+          Navigator.push<RecommendationHistory>(
+            context,
+            MaterialPageRoute(
+              builder: (_) => HistoryDetailScreen(history: history),
+            ),
+          ).then((updatedHistory) {
+            if (updatedHistory != null) {
+              setState(() {
+                _histories[index] = updatedHistory;
+              });
+            }
+          });
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Card(
+          elevation: 1,
+          color: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), // 카드 간 여백 줄임
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), // 패딩 축소
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  history.query,
+                  style: const TextStyle(
+                    fontSize: 14.5, // 텍스트 작게
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: tags.map((tag) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.deepPurple.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        tag,
+                        style: const TextStyle(
+                          color: Colors.deepPurple,
+                          fontSize: 12, // 태그 작게
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      DateFormat('yyyy-MM-dd HH:mm').format(
+                        DateTime.fromMillisecondsSinceEpoch(history.createdAt),
+                      ),
+                      style: const TextStyle(fontSize: 11.5, color: Colors.grey),
+                    ),
+                    const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('히스토리'),
-      ),
+      appBar: AppBar(title: const Text('히스토리')),
       body: RefreshIndicator(
         onRefresh: _loadInitialHistories,
-        child: _histories.isEmpty
-            ? const Center(child: CircularProgressIndicator())
+        child: _isInitialLoading
+            ? buildSkeleton()
+            : (_histories.isEmpty
+            ? const Center(
+          child: Text(
+            '히스토리 데이터가 없습니다.',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        )
             : ListView.builder(
           controller: _scrollController,
           itemCount: _histories.length + (_isLoadingMore ? 1 : 0),
@@ -107,82 +225,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Center(child: CircularProgressIndicator()),
               );
             }
-
-            final history = _histories[index];
-            final formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(
-              DateTime.fromMillisecondsSinceEpoch(history.createdAt),
-            );
-            final conditionParsed = parseGptCondition(history.gptCondition);
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 8),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push<RecommendationHistory>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => HistoryDetailScreen(history: history),
-                    ),
-                  ).then((updatedHistory) {
-                    if (updatedHistory != null) {
-                      setState(() {
-                        _histories[index] = updatedHistory;
-                      });
-                    }
-                  });
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Ink(
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.history, color: Colors.deepPurple),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                conditionParsed,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF6A1B9A), // 딥 퍼플 포인트
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                formattedDate,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
+            return buildHistoryCard(_histories[index], index);
           },
-        ),
+        )),
       ),
     );
   }

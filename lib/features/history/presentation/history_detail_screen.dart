@@ -111,8 +111,10 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
   }
 
   Widget _buildSwipeableProducts(List<Product> products, BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return SizedBox(
-      height: 400,
+      height: screenHeight * 0.7,
       child: PageView.builder(
         itemCount: products.length,
         controller: PageController(viewportFraction: 0.9),
@@ -121,195 +123,174 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
           final isLiked = likedProductIds.contains(product.productId);
 
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ProductWebViewScreen(url: product.link),
-                  ),
-                );
-              },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF1E1E1E), Color(0xFF2D2D2D)],
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            child: Column(
+              children: [
+                // 🔝 이미지 (크게)
+                SizedBox(
+                  height: screenHeight * 0.35,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProductWebViewScreen(url: product.link),
+                        ),
+                      ),
+                      child: Image.network(
+                        product.image.isNotEmpty
+                            ? product.image
+                            : 'https://via.placeholder.com/800x600',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: Colors.grey.shade800,
+                          alignment: Alignment.center,
+                          child: const Icon(Icons.broken_image, color: Colors.white70),
                         ),
                       ),
                     ),
-                    Image.network(
-                      product.image.isNotEmpty
-                          ? product.image
-                          : 'https://via.placeholder.com/800x600',
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey.shade800,
-                        alignment: Alignment.center,
-                        child: const Icon(Icons.broken_image, color: Colors.white70),
-                      ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // 🧾 정보 카드
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    if (product.mallName.isNotEmpty)
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.deepPurple,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            product.mallName,
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            product.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
                             ),
                           ),
-                        ),
-                      ),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.5),
-                              Colors.transparent,
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '₩ ${currencyFormatter.format(product.price)}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  isLiked ? Icons.favorite : Icons.favorite_border,
+                                  size: 18,
+                                  color: isLiked ? Colors.pinkAccent : Colors.grey,
+                                ),
+                                onPressed: () async {
+                                  if (token == null) return;
+                                  try {
+                                    if (isLiked) {
+                                      await repo.deleteLike(
+                                        historyCreatedAt: widget.history.createdAt,
+                                        recommendationId: product.recommendationId,
+                                        productId: product.productId,
+                                        mallName: product.mallName,
+                                        token: token!,
+                                      );
+                                      final updated = product.copyWith(liked: false);
+                                      setState(() {
+                                        likedProductIds.remove(product.productId);
+                                        widget.history.recommendations[index] = updated;
+                                      });
+                                    } else {
+                                      await repo.postLike(
+                                        historyCreatedAt: widget.history.createdAt,
+                                        recommendationId: product.recommendationId,
+                                        productId: product.productId,
+                                        mallName: product.mallName,
+                                        token: token!,
+                                      );
+                                      final updated = product.copyWith(liked: true);
+                                      setState(() {
+                                        likedProductIds.add(product.productId);
+                                        widget.history.recommendations[index] = updated;
+                                      });
+                                    }
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('요청 실패: $e')),
+                                    );
+                                  }
+                                },
+                              ),
                             ],
                           ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              product.name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '₩ ${currencyFormatter.format(product.price)}',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white70,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () async {
-                                    if (token == null) return;
-                                    try {
-                                      if (isLiked) {
-                                        await repo.deleteLike(
-                                          historyCreatedAt: widget.history.createdAt,
-                                          recommendationId: product.recommendationId,
-                                          productId: product.productId,
-                                          mallName: product.mallName,
-                                          token: token!,
-                                        );
-                                        final updated = product.copyWith(liked: false);
-                                        setState(() {
-                                          likedProductIds.remove(product.productId);
-                                          widget.history.recommendations[index] = updated;
-                                        });
-                                      } else {
-                                        await repo.postLike(
-                                          historyCreatedAt: widget.history.createdAt,
-                                          recommendationId: product.recommendationId,
-                                          productId: product.productId,
-                                          mallName: product.mallName,
-                                          token: token!,
-                                        );
-                                        final updated = product.copyWith(liked: true);
-                                        setState(() {
-                                          likedProductIds.add(product.productId);
-                                          widget.history.recommendations[index] = updated;
-                                        });
-                                      }
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('요청 실패: $e')),
-                                      );
-                                    }
-                                  },
-                                  child: Icon(
-                                    isLiked ? Icons.favorite : Icons.favorite_border,
-                                    color: isLiked ? Colors.pinkAccent : Colors.white54,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (product.reason.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 6),
-                                child: Text(
-                                  '🧠 ${product.reason}',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.white60,
-                                    fontStyle: FontStyle.italic,
-                                  ),
+                          if (product.reason.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                '🧠 ${product.reason}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.black54,
                                 ),
                               ),
-                            const SizedBox(height: 6),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 4,
-                              children: [
-                                if (product.category.isNotEmpty)
-                                  Chip(
-                                    label: Text(
-                                      product.category,
-                                      style: const TextStyle(fontSize: 11),
-                                    ),
-                                    backgroundColor: Colors.white10,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                  ),
+                            ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              if (product.category.isNotEmpty)
                                 Chip(
-                                  label: const Text(
-                                    'AI추천',
-                                    style: TextStyle(fontSize: 11),
+                                  label: Text(
+                                    product.category,
+                                    style: const TextStyle(fontSize: 10),
                                   ),
-                                  backgroundColor: Colors.deepPurple.shade100.withOpacity(0.3),
+                                  backgroundColor: Colors.grey.shade300,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
+                              Chip(
+                                label: const Text(
+                                  'AI추천',
+                                  style: TextStyle(fontSize: 10),
+                                ),
+                                backgroundColor: Colors.deepPurple.shade100.withOpacity(0.4),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
           );
         },
       ),
     );
   }
+
+
 }
