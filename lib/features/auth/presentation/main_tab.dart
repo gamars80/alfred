@@ -5,6 +5,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../home/presentation/home_screen.dart';
 import '../../like/presentation/liked_product_screen.dart';
 
 class MainTab extends StatefulWidget {
@@ -26,7 +27,7 @@ class _MainTabState extends State<MainTab> {
       const CallScreen(),
       const HistoryScreen(),
       const LikedProductScreen(),
-      const Center(child: Text('홈 화면')),
+      const HomeScreen(),
       _buildMyPage(),
     ]);
   }

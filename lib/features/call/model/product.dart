@@ -9,6 +9,7 @@ class Product {
   final String mallName;
   final String category;
   final bool liked;
+  final int reviewCount;
 
   Product({
     required this.recommendationId,
@@ -21,6 +22,7 @@ class Product {
     required this.mallName,
     required this.category,
     required this.liked,
+    required this.reviewCount,
   });
 
   Product copyWith({
@@ -36,6 +38,7 @@ class Product {
       reason: reason,
       mallName: mallName,
       category: category,
+      reviewCount: reviewCount,
       liked: liked ?? this.liked,
     );
   }
@@ -51,6 +54,7 @@ class Product {
       reason: json['reason'] ?? '',
       mallName: json['mallName'] ?? '',
       category: json['category'] ?? '',
+      reviewCount: _parseReviewCount(json['reviewCount']),
       liked: json['liked'] as bool? ?? false,
     );
   }
@@ -66,7 +70,15 @@ class Product {
       reason: json['reason'] ?? '',
       mallName: json['mallName'] ?? '',
       category: json['category'] ?? '',
+      reviewCount: _parseReviewCount(json['reviewCount']),
       liked: json['liked'] ?? false,
     );
+  }
+
+  static int _parseReviewCount(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
   }
 }
