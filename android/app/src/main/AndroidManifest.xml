@@ -37,17 +37,7 @@
                     android:scheme="kakao22e6b88148da0c4cb1293cbe664cecc4"
                     android:host="oauth"/>
             </intent-filter>
-
-
-            <!-- ✅ 아뜨랑스 attrangs.com 딥링크 -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="https" android:host="attrangs.co.kr" />
-                <data android:scheme="https" android:host="www.attrangs.co.kr" />
-                <data android:scheme="https" android:host="m.attrangs.co.kr" />
-            </intent-filter>
+            
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
