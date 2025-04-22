@@ -324,7 +324,7 @@ class _CallScreenState extends State<CallScreen> {
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   child: Image.network(
-                    product.image,
+                    _getValidImageUrl(product.image),
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -500,6 +500,17 @@ class _CallScreenState extends State<CallScreen> {
         return '60대'; // 또는 '60세'도 가능
       default:
         return null;
+    }
+  }
+
+  String _getValidImageUrl(String url) {
+    if (url.startsWith('//')) {
+      return 'https:$url';
+    } else if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    } else {
+      // fallback 또는 로컬 에셋 대체
+      return 'https://via.placeholder.com/200x200.png?text=No+Image';
     }
   }
 }

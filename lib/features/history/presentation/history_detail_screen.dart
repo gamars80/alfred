@@ -135,9 +135,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                             ),
                           ),
                           child: Image.network(
-                            product.image.isNotEmpty
-                                ? product.image
-                                : 'https://via.placeholder.com/800x600',
+                            _getValidImageUrl(product.image),
                             fit: BoxFit.cover,
                             width: double.infinity,
                             errorBuilder: (_, __, ___) => Container(
@@ -311,6 +309,17 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('요청 실패: $e')),
       );
+    }
+  }
+
+  String _getValidImageUrl(String url) {
+    if (url.startsWith('//')) {
+      return 'https:$url';
+    } else if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    } else {
+      // fallback 또는 로컬 에셋 대체
+      return 'https://via.placeholder.com/200x200.png?text=No+Image';
     }
   }
 }
