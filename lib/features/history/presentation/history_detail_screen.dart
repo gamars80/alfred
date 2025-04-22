@@ -312,14 +312,19 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
     }
   }
 
-  String _getValidImageUrl(String url) {
-    if (url.startsWith('//')) {
-      return 'https:$url';
-    } else if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    } else {
-      // fallback 또는 로컬 에셋 대체
+  String _getValidImageUrl(String? url) {
+    if (url == null || url.isEmpty) {
       return 'https://via.placeholder.com/200x200.png?text=No+Image';
     }
+
+    if (url.startsWith('//')) {
+      return 'https:$url';
+    }
+
+    if (!url.startsWith('http')) {
+      return 'https://via.placeholder.com/200x200.png?text=Invalid+URL';
+    }
+
+    return url;
   }
 }

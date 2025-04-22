@@ -197,7 +197,7 @@ class _LikedProductScreenState extends State<LikedProductScreen> {
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                 child: Image.network(
-                  p.productImage,
+                  _getValidImageUrl(p.productImage,),
                   height: 140,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -259,5 +259,21 @@ class _LikedProductScreenState extends State<LikedProductScreen> {
         ],
       ),
     );
+  }
+
+  String _getValidImageUrl(String? url) {
+    if (url == null || url.isEmpty) {
+      return 'https://via.placeholder.com/200x200.png?text=No+Image';
+    }
+
+    if (url.startsWith('//')) {
+      return 'https:$url';
+    }
+
+    if (!url.startsWith('http')) {
+      return 'https://via.placeholder.com/200x200.png?text=Invalid+URL';
+    }
+
+    return url;
   }
 }

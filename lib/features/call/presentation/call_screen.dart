@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
@@ -323,11 +324,16 @@ class _CallScreenState extends State<CallScreen> {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: Image.network(
-                    _getValidImageUrl(product.image),
+                  child: CachedNetworkImage( // ✅ 캐시 이미지로 변경
+                    imageUrl: _getValidImageUrl(product.image),
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
+                    errorWidget: (context, url, error) {
+                      debugPrint('🛑 이미지 로딩 오류: $url');
+                      return const Icon(Icons.broken_image, size: 60);
+                    },
                   ),
                 ),
                 if (product.mallName.isNotEmpty)
@@ -411,14 +417,15 @@ class _CallScreenState extends State<CallScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _categorizedProducts.isEmpty
-          ? const Center(
-        child: Text('추천된 상품이 없습니다.', style: TextStyle(color: Colors.grey)),
-      )
-          : ListView(
+          ? const Center(child: Text('추천된 상품이 없습니다.', style: TextStyle(color: Colors.grey)))
+          : ListView.builder( // ✅ 변경된 부분
         padding: const EdgeInsets.all(16),
-        children: _categorizedProducts.entries.map((entry) {
+        itemCount: _categorizedProducts.entries.length,
+        itemBuilder: (context, index) {
+          final entry = _categorizedProducts.entries.elementAt(index);
           final category = entry.key;
           final products = entry.value;
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -434,7 +441,7 @@ class _CallScreenState extends State<CallScreen> {
               const SizedBox(height: 24),
             ],
           );
-        }).toList(),
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openBottomSheet,
@@ -503,14 +510,19 @@ class _CallScreenState extends State<CallScreen> {
     }
   }
 
-  String _getValidImageUrl(String url) {
-    if (url.startsWith('//')) {
-      return 'https:$url';
-    } else if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    } else {
-      // fallback 또는 로컬 에셋 대체
+  String _getValidImageUrl(String? url) {
+    if (url == null || url.isEmpty) {
       return 'https://via.placeholder.com/200x200.png?text=No+Image';
     }
+
+    if (url.startsWith('//')) {
+      return 'https:$url';
+    }
+
+    if (!url.startsWith('http')) {
+      return 'https://via.placeholder.com/200x200.png?text=Invalid+URL';
+    }
+
+    return url;
   }
 }
