@@ -102,7 +102,6 @@ class _LikedProductScreenState extends State<LikedProductScreen> {
         recommendationId: p.recommendId,
         productId:        p.productId,
         mallName:         p.mallName,
-        token:            await TokenManager.getToken()
       );
       setState(() {
         _likes.remove(p);

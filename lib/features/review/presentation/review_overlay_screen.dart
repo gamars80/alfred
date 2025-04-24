@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../call/model/product.dart';
 import '../data/review_repository.dart';
@@ -5,9 +6,8 @@ import '../model/review.dart';
 
 class ReviewOverlayScreen extends StatefulWidget {
   final Product product;
-  final String token;
 
-  const ReviewOverlayScreen({super.key, required this.product, required this.token});
+  const ReviewOverlayScreen({super.key, required this.product});
 
   @override
   State<ReviewOverlayScreen> createState() => _ReviewOverlayScreenState();
@@ -20,7 +20,11 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
   @override
   void initState() {
     super.initState();
-    reviewsFuture = repo.fetchReviews(widget.product.productId, widget.token);
+    reviewsFuture = repo.fetchReviews(
+      productId: widget.product.productId,
+      mallName: widget.product.mallName,
+      productLink: widget.product.link,
+    );
   }
 
   @override
@@ -56,6 +60,7 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
                   final reviews = snapshot.data!;
                   return ListView.builder(
                     padding: const EdgeInsets.all(12),
+                    physics: const BouncingScrollPhysics(),
                     itemCount: reviews.length,
                     itemBuilder: (_, i) {
                       final review = reviews[i];
@@ -107,12 +112,14 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
                                 const SizedBox(height: 12),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    review.imageUrls.first,
+                                  child: CachedNetworkImage(
+                                    imageUrl: review.imageUrls.first,
                                     width: double.infinity,
                                     height: 200,
                                     fit: BoxFit.cover,
-                                  ),
+                                    placeholder: (_, __) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                    errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
+                                  )
                                 ),
                               ],
                             ],
