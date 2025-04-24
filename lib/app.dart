@@ -1,5 +1,5 @@
+import 'package:alfred_clean/routing/router.dart';
 import 'package:flutter/material.dart';
-import 'routing/router.dart';
 
 class AlfredApp extends StatelessWidget {
   const AlfredApp({super.key});
@@ -7,16 +7,12 @@ class AlfredApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: '알프레드',
-      routerConfig: router,
+      title: 'Alfred',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: 'Pretendard',
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        primaryColor: const Color(0xFFFF6A00),
-        useMaterial3: true,
-      ),
+      theme: ThemeData.dark(),
+      routerDelegate: router.routerDelegate,
+      routeInformationParser: router.routeInformationParser,
+      routeInformationProvider: router.routeInformationProvider,
     );
   }
 }

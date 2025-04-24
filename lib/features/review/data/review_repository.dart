@@ -1,22 +1,36 @@
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
+import '../../auth/common/dio/dio_client.dart';
 import '../model/review.dart';
 
 class ReviewRepository {
-  final String baseUrl = dotenv.env['BASE_URL'] ?? '';
+  final Dio _dio = DioClient.dio;
 
-  Future<List<Review>> fetchReviews(String productId, String token) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/reviews/$productId'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+  Future<List<Review>> fetchReviews({
+    required String productId,
+    required String mallName,
+    required String productLink,
+  }) async {
+    final queryParams = {
+      'source': mallName,
+    };
 
-    if (response.statusCode == 200) {
-      final List data = jsonDecode(utf8.decode(response.bodyBytes));
-      return data.map((e) => Review.fromJson(e)).toList();
-    } else {
-      throw Exception('리뷰 로딩 실패');
+    if (mallName == 'HOTPING') {
+      final encodedLink = Uri.encodeComponent(productLink);
+      queryParams['encodedLink'] = encodedLink;
     }
+
+    try {
+      final response = await _dio.get(
+        '/api/reviews/$productId',
+        queryParameters: queryParams,
+      );
+      return (response.data as List).map((e) => Review.fromJson(e)).toList();
+    } on DioException catch (e) {
+      debugPrint('[리뷰 에러] ${e.response?.statusCode} - ${e.response?.data}');
+      rethrow;
+    }
+
+    // return (response.data as List).map((e) => Review.fromJson(e)).toList();
   }
 }

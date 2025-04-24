@@ -1,31 +1,16 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import '../common/dio/dio_client.dart';
 import '../model/login_response.dart';
 import '../model/signup_response.dart';
+
+
 class AuthApi {
-  static final _baseUrl = dotenv.env['BASE_URL'] ?? '';
+  static final Dio _dio = DioClient.dio;
 
   static Future<LoginResponse> loginWithKakaoId(String loginId) async {
-    if (_baseUrl.isEmpty) {
-      throw Exception('BASE_URL이 .env에서 설정되지 않았습니다.');
-    }
-
-    final url = Uri.parse('$_baseUrl/auth/login');
-
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'loginId': loginId}),
-    );
-
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-      return LoginResponse.fromJson(json);
-    } else {
-      throw Exception('백엔드 로그인 실패: ${response.body}');
-    }
+    final response = await _dio.post('/auth/login', data: {'loginId': loginId});
+    return LoginResponse.fromJson(response.data);
   }
 
   static Future<SignupResponse> registerKakaoUser({
@@ -34,27 +19,13 @@ class AuthApi {
     required String name,
     required String phoneNumber,
   }) async {
-    final url = Uri.parse('$_baseUrl/auth/signup');
-
-    final body = {
+    final response = await _dio.post('/auth/signup', data: {
       'loginId': loginId,
       'email': email,
       'name': name,
       'phoneNumber': phoneNumber,
       'joinType': 'KAKAO',
-    };
-
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
-
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-      return SignupResponse.fromJson(json);
-    } else {
-      throw Exception('회원가입 실패: ${response.body}');
-    }
+    });
+    return SignupResponse.fromJson(response.data);
   }
 }
