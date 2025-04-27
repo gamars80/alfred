@@ -11,6 +11,8 @@ class ReviewRepository {
     required String mallName,
     required String productLink,
   }) async {
+    print('[리뷰 요청 시작] productId: $productId, mall: $mallName');
+
     final queryParams = {
       'source': mallName,
     };
@@ -25,12 +27,12 @@ class ReviewRepository {
         '/api/reviews/$productId',
         queryParameters: queryParams,
       );
+      print('[리뷰 응답 수신] ${response.data}');
       return (response.data as List).map((e) => Review.fromJson(e)).toList();
     } on DioException catch (e) {
-      debugPrint('[리뷰 에러] ${e.response?.statusCode} - ${e.response?.data}');
+      print('[리뷰 에러] ${e.response?.statusCode} - ${e.response?.data}');
       rethrow;
     }
-
-    // return (response.data as List).map((e) => Review.fromJson(e)).toList();
   }
+
 }

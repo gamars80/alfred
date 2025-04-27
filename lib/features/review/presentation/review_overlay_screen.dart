@@ -22,9 +22,22 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
     super.initState();
     reviewsFuture = repo.fetchReviews(
       productId: widget.product.productId,
-      mallName: widget.product.mallName,
+      mallName: _normalizeMallName(widget.product.mallName),
       productLink: widget.product.link,
     );
+  }
+
+  String _normalizeMallName(String mallName) {
+    switch (mallName) {
+      case '지그재그':
+        return 'ZIGZAG';
+      case '핫핑':
+        return 'HOTPING';
+      case '에이인':
+        return 'AIN';
+      default:
+        return mallName.toUpperCase();
+    }
   }
 
   @override
@@ -91,22 +104,32 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 10),
-                              Text(
-                                firstLine,
-                                style: const TextStyle(fontSize: 13, color: Colors.black87),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                secondLine,
-                                style: const TextStyle(fontSize: 13, color: Colors.black87),
-                              ),
+
+                              // ✅ firstLine이 있을 때만
+                              if (firstLine.isNotEmpty) ...[
+                                const SizedBox(height: 10),
+                                Text(
+                                  firstLine,
+                                  style: const TextStyle(fontSize: 13, color: Colors.black87),
+                                ),
+                                const SizedBox(height: 4),
+                              ],
+
+                              // ✅ secondLine이 있을 때만
+                              if (secondLine.isNotEmpty) ...[
+                                const SizedBox(height: 10),
+                                Text(
+                                  secondLine,
+                                  style: const TextStyle(fontSize: 13, color: Colors.black87),
+                                ),
+                                const SizedBox(height: 4),
+                              ],
                               const SizedBox(height: 12),
                               const Divider(color: Colors.black12, height: 1),
                               const SizedBox(height: 12),
                               Text(
                                 review.content,
-                                style: const TextStyle(fontSize: 14, color: Colors.black87),
+                                style: const TextStyle(fontSize: 9, color: Colors.black87),
                               ),
                               if (review.imageUrls.isNotEmpty) ...[
                                 const SizedBox(height: 12),
