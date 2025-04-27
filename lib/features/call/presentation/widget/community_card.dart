@@ -40,7 +40,7 @@ class _CommunityCardState extends State<CommunityCard> {
             children: [
               Text(
                 displayText,
-                style: const TextStyle(fontSize: 12, height: 1.4, color: Colors.black87),
+                style: const TextStyle(fontSize: 10, height: 1.4, color: Colors.black87),
               ),
               if (isLong) ...[
                 const SizedBox(height: 4),

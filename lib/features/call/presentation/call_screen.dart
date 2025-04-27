@@ -11,7 +11,7 @@ import '../model/product.dart';
 import '../model/community_post.dart';
 import '../model/age_range.dart';
 import '../model/youtube_video.dart';
-import '../widget/voice_command_input_widget.dart';
+import 'widget/voice_command_input_widget.dart';
 
 class CallScreen extends StatefulWidget {
   const CallScreen({Key? key}) : super(key: key);
@@ -199,25 +199,37 @@ class _CallScreenState extends State<CallScreen> {
           key: _bottomSheetKey,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 1) 항상 보여줄 카테고리 선택
             _buildCategorySelector(setModalState),
             const SizedBox(height: 16),
-            VoiceCommandInputWidget(
-              controller: _commandController,
-              isListening: _isListening,
-              isLoading: _isLoading,
-              onMicPressed: () => _startNativeListening(setModalState),
-              onSubmit: () {
-                final q = _commandController.text.trim();
-                if (q.isEmpty) {
-                  Fluttertoast.showToast(msg: '검색어를 입력해주세요.', gravity: ToastGravity.BOTTOM);
-                  return;
-                }
-                if (_selectedCategory == '쇼핑') _fetchProducts(q, setModalState: setModalState);
-                else _fetchCommunity(q, setModalState: setModalState);
-              },
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 16),
+
+            // 2) 에러 없을 때: 음성/텍스트 입력 위젯만
+            if (_errorMessage == null) ...[
+              VoiceCommandInputWidget(
+                controller: _commandController,
+                isListening: _isListening,
+                isLoading: _isLoading,
+                onMicPressed: () => _startNativeListening(setModalState),
+                onSubmit: () {
+                  final q = _commandController.text.trim();
+                  if (q.isEmpty) {
+                    Fluttertoast.showToast(
+                      msg: '검색어를 입력해주세요.',
+                      gravity: ToastGravity.BOTTOM,
+                    );
+                    return;
+                  }
+                  if (_selectedCategory == '쇼핑') {
+                    _fetchProducts(q, setModalState: setModalState);
+                  } else {
+                    _fetchCommunity(q, setModalState: setModalState);
+                  }
+                },
+                category: _selectedCategory,
+              ),
+            ] else ...[
+
+              // 3) 에러 있을 때: 성별/연령대 보충 + 전송 버튼만
               _buildExtraInfoInput(setModalState),
               const SizedBox(height: 16),
               _buildSubmitButton(setModalState),
@@ -227,6 +239,7 @@ class _CallScreenState extends State<CallScreen> {
       ),
     );
   }
+
 
   /// 바텀시트가 떠 있는 상태라면 닫아줍니다.
   void _closeBottomSheet() {
@@ -272,38 +285,63 @@ class _CallScreenState extends State<CallScreen> {
     child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('명령하기'),
   );
 
-  Widget _buildExtraInfoInput(StateSetter setModalState) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      if (_errorMessage == 'gender' || _errorMessage == 'both')
-        Row(
-          children: [
-            const Text('성별 선택:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            Radio<String>(value: 'MALE', groupValue: _selectedGender, onChanged: (v) => setModalState(() => _selectedGender = v)),
-            const Text('남'),
-            Radio<String>(value: 'FEMALE', groupValue: _selectedGender, onChanged: (v) => setModalState(() => _selectedGender = v)),
-            const Text('여'),
-          ],
-        ),
-      if (_errorMessage == 'age' || _errorMessage == 'both')
-        Row(
-          children: AgeRange.values
-              .map((r) => ChoiceChip(
-            label: Text(r.description),
-            selected: _selectedAge == r.code,
-            onSelected: (s) => setModalState(() => _selectedAge = s ? r.code : null),
-          ))
-              .toList(),
-        ),
-    ],
-  );
+
+  // 성별/연령대 보충 입력 UI
+  Widget _buildExtraInfoInput(StateSetter setModalState) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 성별 선택
+        if (_errorMessage == 'gender' || _errorMessage == 'both')
+          Row(
+            children: [
+              const Text(
+                '성별 선택:',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(width: 8),
+              Radio<String>(
+                value: 'MALE',
+                groupValue: _selectedGender,
+                onChanged: (v) => setModalState(() => _selectedGender = v),
+              ),
+              const Text('남'),
+              const SizedBox(width: 16),
+              Radio<String>(
+                value: 'FEMALE',
+                groupValue: _selectedGender,
+                onChanged: (v) => setModalState(() => _selectedGender = v),
+              ),
+              const Text('여'),
+            ],
+          ),
+
+        // 연령대 선택
+        if (_errorMessage == 'age' || _errorMessage == 'both')
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: AgeRange.values.map((r) {
+              return ChoiceChip(
+                label: Text(r.description),
+                selected: _selectedAge == r.code,
+                onSelected: (selected) =>
+                    setModalState(() => _selectedAge = selected ? r.code : null),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('추천 결과', style: TextStyle(color: Colors.black)),
+        title: const Text('추천 결과', style: TextStyle(fontSize:15, color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 0.5,
         iconTheme: const IconThemeData(color: Colors.black),
