@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
-class VoiceCommandInputWidget extends StatelessWidget {
+class VoiceCommandInputWidget extends StatefulWidget {
   final TextEditingController controller;
   final bool isListening;
   final bool isLoading;
   final VoidCallback onMicPressed;
   final VoidCallback onSubmit;
-  final String category; // 추가된 파라미터
+  final String category;
 
-  // const 제거
-  VoiceCommandInputWidget({
+  const VoiceCommandInputWidget({
     Key? key,
     required this.controller,
     required this.isListening,
@@ -20,86 +19,86 @@ class VoiceCommandInputWidget extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<VoiceCommandInputWidget> createState() => _VoiceCommandInputWidgetState();
+}
+
+class _VoiceCommandInputWidgetState extends State<VoiceCommandInputWidget> {
+  @override
   Widget build(BuildContext context) {
-    final promptText = category == '시술커뮤니티'
+    final promptText = widget.category == '시술커뮤니티'
         ? '어떤 고민이 있으신가요?'
         : '어떤 상품을 찾아드릴까요?';
 
-    final hintText = category == '시술커뮤니티'
+    final hintText = widget.category == '시술커뮤니티'
         ? '코가 낮아서 이참에 수술을 해볼까 생각중이야'
         : '예: 20대 여자친구에게 선물할 원피스 추천해줘';
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            promptText,
-            style: const TextStyle(color: Colors.black, fontSize: 14),
-          ),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: controller,
-          style: const TextStyle(color: Colors.black),
-          minLines: 3,
-          maxLines: 5,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.grey[200],
-            hintText: hintText,
-            hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFFDFDFD),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, -4))],
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        left: 20,
+        right: 20,
+        top: 24,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextButton.icon(
-              onPressed: onMicPressed,
-              icon: Icon(
-                Icons.mic,
-                color: isListening ? Colors.red : Colors.deepPurple,
+            Text(promptText, style: const TextStyle(color: Colors.black, fontSize: 14)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: widget.controller,
+              style: const TextStyle(color: Colors.black),
+              minLines: 3,
+              maxLines: 5,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.grey[200],
+                hintText: hintText,
+                hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
               ),
-              label: Text(
-                isListening ? '듣는 중...' : '음성 인식',
-                style: TextStyle(
-                  color: isListening ? Colors.red : Colors.deepPurple,
-                  fontWeight: FontWeight.bold,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                TextButton.icon(
+                  onPressed: widget.onMicPressed,
+                  icon: Icon(Icons.mic, color: widget.isListening ? Colors.red : Colors.deepPurple),
+                  label: Text(
+                    widget.isListening ? '듣는 중...' : '음성 인식',
+                    style: TextStyle(
+                      color: widget.isListening ? Colors.red : Colors.deepPurple,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: widget.onSubmit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
+              child: const Text('명령하기'),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        ElevatedButton(
-          onPressed: onSubmit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurple,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: isLoading
-              ? const SizedBox(
-            height: 20,
-            width: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Colors.white,
-            ),
-          )
-              : const Text('명령하기'),
-        ),
-      ],
+      ),
     );
   }
 }
