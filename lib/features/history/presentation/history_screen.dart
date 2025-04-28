@@ -1,7 +1,10 @@
+// lib/features/history/presentation/history_screen.dart
 import 'package:flutter/material.dart';
 import 'package:alfred_clean/features/history/data/history_repository.dart';
 import 'package:alfred_clean/features/history/model/recommendation_history.dart';
+import 'package:alfred_clean/features/history/model/beauty_history.dart';
 import 'package:alfred_clean/features/history/presentation/widget/history_card.dart';
+import 'package:alfred_clean/features/history/presentation/widget/beauty_history_card.dart';
 import 'package:alfred_clean/features/history/presentation/history_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -13,25 +16,46 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   final HistoryRepository repository = HistoryRepository();
-  final ScrollController _scrollController = ScrollController();
+  final ScrollController _shoppingController = ScrollController();
+  final ScrollController _communityController = ScrollController();
 
+  // 쇼핑 탭 상태
   List<RecommendationHistory> _histories = [];
   String? _nextPageKey;
   bool _isLoadingMore = false;
   bool _hasMore = true;
   bool _isInitialLoading = true;
+
+  // 시술커뮤니티 탭 상태
+  List<BeautyHistory> _beautyHistories = [];
+  String? _beautyNextPageKey;
+  bool _isBeautyLoadingMore = false;
+  bool _hasMoreBeauty = true;
+  bool _isBeautyInitialLoading = true;
+
   final int _limit = 10;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
+
+    // 쇼핑 탭 스크롤 리스너
+    _shoppingController.addListener(() {
+      if (_shoppingController.position.pixels >=
+          _shoppingController.position.maxScrollExtent - 200) {
         _loadMore();
       }
     });
     _loadInitialHistories();
+
+    // 시술커뮤니티 탭 스크롤 리스너
+    _communityController.addListener(() {
+      if (_communityController.position.pixels >=
+          _communityController.position.maxScrollExtent - 200) {
+        _loadMoreBeauty();
+      }
+    });
+    _loadInitialBeautyHistories();
   }
 
   Future<void> _loadInitialHistories() async {
@@ -43,7 +67,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         _hasMore = (_nextPageKey != null && _nextPageKey!.isNotEmpty);
       });
     } catch (e) {
-      debugPrint('Error loading histories: $e');
+      debugPrint('Error loading histories: \$e');
     } finally {
       setState(() => _isInitialLoading = false);
     }
@@ -63,27 +87,45 @@ class _HistoryScreenState extends State<HistoryScreen> {
         _hasMore = (_nextPageKey != null && _nextPageKey!.isNotEmpty);
       });
     } catch (e) {
-      debugPrint('Error loading more histories: $e');
+      debugPrint('Error loading more histories: \$e');
     } finally {
       setState(() => _isLoadingMore = false);
     }
   }
 
-  List<String> _extractTags(String gptCondition) {
-    final tags = <String>[];
-    final pattern = RegExp(r'(\w+)=((\[[^\]]*\])|[^,)]*)');
-    for (final m in pattern.allMatches(gptCondition)) {
-      final raw = m.group(2)?.trim();
-      if (raw == null || raw == 'null' || raw.isEmpty) continue;
-      if (raw.startsWith('[') && raw.endsWith(']')) {
-        for (var item in raw.substring(1, raw.length - 1).split(',')) {
-          if (item.trim().isNotEmpty) tags.add('#${item.trim()}');
-        }
-      } else {
-        tags.add('#$raw');
-      }
+  Future<void> _loadInitialBeautyHistories() async {
+    try {
+      final response = await repository.fetchBeautyHistories(limit: _limit);
+      setState(() {
+        _beautyHistories = response.histories;
+        _beautyNextPageKey = response.nextPageKey;
+        _hasMoreBeauty = (_beautyNextPageKey != null && _beautyNextPageKey!.isNotEmpty);
+      });
+    } catch (e) {
+      debugPrint('Error loading beauty histories: \$e');
+    } finally {
+      setState(() => _isBeautyInitialLoading = false);
     }
-    return tags;
+  }
+
+  Future<void> _loadMoreBeauty() async {
+    if (_isBeautyLoadingMore || !_hasMoreBeauty) return;
+    setState(() => _isBeautyLoadingMore = true);
+    try {
+      final response = await repository.fetchBeautyHistories(
+        limit: _limit,
+        nextPageKey: _beautyNextPageKey,
+      );
+      setState(() {
+        _beautyHistories.addAll(response.histories);
+        _beautyNextPageKey = response.nextPageKey;
+        _hasMoreBeauty = (_beautyNextPageKey != null && _beautyNextPageKey!.isNotEmpty);
+      });
+    } catch (e) {
+      debugPrint('Error loading more beauty histories: \$e');
+    } finally {
+      setState(() => _isBeautyLoadingMore = false);
+    }
   }
 
   Widget _buildSkeleton() {
@@ -107,19 +149,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF9F9F9), // 전체 배경을 따뜻한 연회색으로
+        backgroundColor: const Color(0xFFF9F9F9),
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0.5,
           centerTitle: true,
-          title: const Text(
-            '히스토리',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          title: const Text('히스토리',
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold)),
           iconTheme: const IconThemeData(color: Colors.black),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(60),
@@ -132,24 +171,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               child: TabBar(
                 indicator: BoxDecoration(
-                  color: Theme.of(context).primaryColor, // 선택된 탭은 진한 앱 메인컬러
+                  color: Theme.of(context).primaryColor,
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(context).primaryColor.withOpacity(0.3),
+                      color:
+                      Theme.of(context).primaryColor.withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     )
                   ],
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
-                labelColor: Colors.white, // 선택 탭 텍스트는 흰색
-                unselectedLabelColor: Colors.grey, // 비선택 탭은 회색
-                labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                tabs: const [
-                  Tab(text: '쇼핑'),
-                  Tab(text: '시술커뮤니티'),
-                ],
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.grey,
+                labelStyle: const TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w600),
+                tabs: const [Tab(text: '쇼핑'), Tab(text: '시술커뮤니티')],
               ),
             ),
           ),
@@ -163,8 +201,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ),
       ),
     );
-
-
   }
 
   Widget _buildShoppingTab() {
@@ -174,13 +210,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ? _buildSkeleton()
           : _histories.isEmpty
           ? const Center(
-        child: Text(
-          '히스토리 데이터가 없습니다.',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
+        child: Text('히스토리 데이터가 없습니다.',
+            style: TextStyle(fontSize: 16, color: Colors.grey)),
       )
           : ListView.builder(
-        controller: _scrollController,
+        controller: _shoppingController,
         itemCount: _histories.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, idx) {
           if (idx == _histories.length) {
@@ -196,7 +230,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               final updated = await Navigator.push<RecommendationHistory>(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => HistoryDetailScreen(history: _histories[idx]),
+                  builder: (_) => HistoryDetailScreen(
+                      history: _histories[idx]),
                 ),
               );
               if (updated != null) {
@@ -210,11 +245,52 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildCommunityTab() {
-    return const Center(
-      child: Text(
-        '시술커뮤니티 콘텐츠 준비 중',
-        style: TextStyle(fontSize: 16, color: Colors.grey),
+    return RefreshIndicator(
+      onRefresh: _loadInitialBeautyHistories,
+      child: _isBeautyInitialLoading
+          ? _buildSkeleton()
+          : _beautyHistories.isEmpty
+          ? const Center(
+        child: Text('시술커뮤니티 데이터가 없습니다.',
+            style: TextStyle(fontSize: 16, color: Colors.grey)),
+      )
+          : ListView.builder(
+        controller: _communityController,
+        itemCount: _beautyHistories.length +
+            (_isBeautyLoadingMore ? 1 : 0),
+        itemBuilder: (context, idx) {
+          if (idx == _beautyHistories.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          final history = _beautyHistories[idx];
+          return BeautyHistoryCard(
+            history: history,
+            onTap: () {
+              // 필요시 상세 화면 이동 구현
+            },
+          );
+        },
       ),
     );
+  }
+
+  List<String> _extractTags(String gptCondition) {
+    final tags = <String>[];
+    final pattern = RegExp(r'(\w+)=((\[[^\]]*\])|[^,)]*)');
+    for (final m in pattern.allMatches(gptCondition)) {
+      final raw = m.group(2)?.trim();
+      if (raw == null || raw == 'null' || raw.isEmpty) continue;
+      if (raw.startsWith('[') && raw.endsWith(']')) {
+        for (var item in raw.substring(1, raw.length - 1).split(',')) {
+          if (item.trim().isNotEmpty) tags.add('#${item.trim()}');
+        }
+      } else {
+        tags.add('#$raw');
+      }
+    }
+    return tags;
   }
 }
