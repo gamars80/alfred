@@ -1,4 +1,5 @@
 import 'package:alfred_clean/features/call/presentation/widget/community_card.dart';
+import 'package:alfred_clean/features/call/presentation/widget/event_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/product_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/youtube_list.dart';
 import 'package:alfred_clean/features/call/presentation/widget/voice_command_input_widget.dart';
@@ -10,6 +11,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../../../common/overay/alfred_loading_overlay.dart';
 import '../data/product_api.dart';
 import '../data/beauty_api.dart';
+import '../model/event.dart';
 import '../model/product.dart';
 import '../model/community_post.dart';
 import '../model/age_range.dart';
@@ -31,6 +33,7 @@ class _CallScreenState extends State<CallScreen> {
 
   Map<String, List<Product>> _categorizedProducts = {};
   List<CommunityPost> _communityPosts = [];
+  List<Event> _events = [];
   List<YouTubeVideo> _youtubeVideos = [];
 
   String? _selectedGender;
@@ -66,21 +69,54 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   Widget _buildMainContent() {
-    if (_communityPosts.isNotEmpty) {
-      return SingleChildScrollView(
-        child: Column(
-          children: [
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              itemCount: _communityPosts.length,
-              itemBuilder: (c, i) => CommunityCard(post: _communityPosts[i]),
+    if (_communityPosts.isNotEmpty || _events.isNotEmpty) {
+      final List<Widget> items = [];
+
+      // 커뮤니티 게시글 추가
+      for (final post in _communityPosts) {
+        items.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: AnimatedOpacity(
+              opacity: 1.0,
+              duration: const Duration(milliseconds: 500),
+              child: CommunityCard(post: post),
             ),
-            const SizedBox(height: 16),
-            if (_youtubeVideos.isNotEmpty) YouTubeList(videos: _youtubeVideos),
-          ],
-        ),
+          ),
+        );
+      }
+
+      // 이벤트 추가
+      for (final event in _events) {
+        items.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: AnimatedOpacity(
+              opacity: 1.0,
+              duration: const Duration(milliseconds: 500),
+              child: EventCard(event: event),
+            ),
+          ),
+        );
+      }
+
+      // 유튜브 추가
+      if (_youtubeVideos.isNotEmpty) {
+        items.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 16, bottom: 24),
+            child: AnimatedOpacity(
+              opacity: 1.0,
+              duration: const Duration(milliseconds: 500),
+              child: YouTubeList(videos: _youtubeVideos),
+            ),
+          ),
+        );
+      }
+
+      return ListView(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        children: items,
       );
     }
 
@@ -318,6 +354,7 @@ class _CallScreenState extends State<CallScreen> {
     final result = await api.fetchBeautyData(query);
     setState(() {
       _communityPosts = result.communityPosts;
+      _events = result.events;
       _youtubeVideos = result.youtubeVideos;
     });
   }
