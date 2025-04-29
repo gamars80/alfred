@@ -69,87 +69,70 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   Widget _buildMainContent() {
-    if (_communityPosts.isNotEmpty || _events.isNotEmpty) {
-      final List<Widget> items = [];
+    final List<Widget> items = [];
 
-      // 커뮤니티 게시글 추가
-      for (final post in _communityPosts) {
-        items.add(
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: AnimatedOpacity(
-              opacity: 1.0,
-              duration: const Duration(milliseconds: 500),
-              child: CommunityCard(post: post),
-            ),
-          ),
-        );
-      }
+    if (_communityPosts.isNotEmpty) {
+      items.add(_buildSectionTitle('추천 커뮤니티'));
+      items.addAll(_communityPosts.map((post) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: CommunityCard(post: post),
+      )));
+    }
 
-      // 이벤트 추가
-      for (final event in _events) {
-        items.add(
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: AnimatedOpacity(
-              opacity: 1.0,
-              duration: const Duration(milliseconds: 500),
-              child: EventCard(event: event),
-            ),
-          ),
-        );
-      }
+    if (_events.isNotEmpty) {
+      items.add(_buildSectionTitle('추천 이벤트'));
+      items.addAll(_events.map((event) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: EventCard(event: event),
+      )));
+    }
 
-      // 유튜브 추가
-      if (_youtubeVideos.isNotEmpty) {
-        items.add(
-          Padding(
-            padding: const EdgeInsets.only(top: 16, bottom: 24),
-            child: AnimatedOpacity(
-              opacity: 1.0,
-              duration: const Duration(milliseconds: 500),
-              child: YouTubeList(videos: _youtubeVideos),
-            ),
-          ),
-        );
-      }
-
-      return ListView(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        children: items,
-      );
+    if (_youtubeVideos.isNotEmpty) {
+      items.add(_buildSectionTitle('추천 Youtube 영상'));
+      items.add(Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: YouTubeList(videos: _youtubeVideos),
+      ));
     }
 
     if (_categorizedProducts.isNotEmpty) {
-      return ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _categorizedProducts.length,
-        itemBuilder: (context, index) {
-          final entry = _categorizedProducts.entries.elementAt(index);
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                entry.key,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Column(
-                children: entry.value.map((p) => ProductCard(product: p)).toList(),
-              ),
-              const SizedBox(height: 24),
-            ],
-          );
-        },
+      items.addAll(_categorizedProducts.entries.map((entry) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle(entry.key),
+            const SizedBox(height: 8),
+            ...entry.value.map((p) => ProductCard(product: p)).toList(),
+            const SizedBox(height: 24),
+          ],
+        ),
+      )));
+    }
+
+    if (items.isEmpty) {
+      return const Center(
+        child: Text('추천된 데이터가 없습니다.', style: TextStyle(color: Colors.grey)),
       );
     }
 
-    return const Center(
-      child: Text('추천된 데이터가 없습니다.', style: TextStyle(color: Colors.grey)),
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      children: items,
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, top: 24, bottom: 8),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.deepPurple,
+        ),
+      ),
     );
   }
 

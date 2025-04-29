@@ -6,6 +6,8 @@ class Event {
   final String hospitalName;
   final int discountedPrice;
   final int discountRate;
+  final String rating;
+  final int ratingCount;
 
   Event({
     required this.id,
@@ -15,6 +17,8 @@ class Event {
     required this.hospitalName,
     required this.discountedPrice,
     required this.discountRate,
+    required this.rating,
+    required this.ratingCount,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class Event {
       hospitalName: json['hospitalName'],
       discountedPrice: json['discountedPrice'],
       discountRate: json['discountRate'],
+      rating: json['rating'],
+      ratingCount: json['ratingCount'],
     );
   }
 }
