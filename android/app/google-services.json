@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "249528163122",
+    "project_id": "alfred-693f8",
+    "storage_bucket": "alfred-693f8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:249528163122:android:7f2873720f607c44dc552b",
+        "android_client_info": {
+          "package_name": "com.example.alfred_clean"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArDvMHlUtvuEEZBuFA4HTD5k_bOFSeTIM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
