@@ -30,7 +30,7 @@ class Event {
       hospitalName: json['hospitalName'],
       discountedPrice: json['discountedPrice'],
       discountRate: json['discountRate'],
-      rating: (json['rating'] != null) ? double.tryParse(json['rating'].toString()) : null,
+      rating: double.tryParse(json['rating']?.toString() ?? ''),
       ratingCount: json['ratingCount'],
     );
   }

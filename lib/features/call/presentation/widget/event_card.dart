@@ -57,45 +57,87 @@ class EventCard extends StatelessWidget {
 
   Widget _buildThumbnail() {
     return ClipRRect(
-      borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
-      child: AspectRatio(
-        aspectRatio: 3 / 2,
-        child: CachedNetworkImage(
-          imageUrl: event.thumbnailUrl,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          placeholder: (_, __) => Container(color: Colors.grey[300]),
-          errorWidget: (_, __, ___) => Container(
-            color: Colors.grey[400],
-            child: const Icon(Icons.error, color: Colors.white),
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(16),
+        topRight: Radius.circular(16),
+      ),
+      child: Stack(
+        children: [
+          CachedNetworkImage(
+            imageUrl: event.thumbnailUrl,
+            width: double.infinity,
+            height: 160,
+            fit: BoxFit.cover,
+            fadeInDuration: const Duration(milliseconds: 300),
+            placeholder: (context, url) => Container(
+              width: double.infinity,
+              height: 160,
+              color: Colors.grey[200],
+              child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            ),
+            errorWidget: (context, url, error) => Container(
+              width: double.infinity,
+              height: 160,
+              color: Colors.grey[400],
+              child: const Icon(Icons.error, color: Colors.white),
+            ),
           ),
-        ),
+          // 👇 좌측 상단 Source 띠
+          Positioned(
+            top: 8,
+            left: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                '강남언니',
+                style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+
 
   Widget _buildPriceSection() {
     final formatter = NumberFormat('#,###', 'ko_KR');
     return Row(
       children: [
         if (event.discountRate > 0)
-          Text('${event.discountRate}%', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.orange)),
+          Text(
+            '${event.discountRate}%',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.orange),
+          ),
         if (event.discountRate > 0) const SizedBox(width: 4),
-        Text('${formatter.format(event.discountedPrice)}원',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black)),
+        Text(
+          '${formatter.format(event.discountedPrice)}원',
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black),
+        ),
       ],
     );
   }
 
   Widget _buildRatingSection() {
+    final ratingStr = (event.rating ?? 0.0).toStringAsFixed(1);
+
     return Row(
       children: [
         const Icon(Icons.star, size: 14, color: Colors.amber),
         const SizedBox(width: 2),
-        Text(event.rating,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+        Text(
+          ratingStr,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
         const SizedBox(width: 4),
-        Text('(${event.ratingCount})', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        Text(
+          '(${event.ratingCount})',
+          style: const TextStyle(fontSize: 11, color: Colors.grey),
+        ),
       ],
     );
   }
