@@ -1,9 +1,11 @@
 // lib/features/history/data/history_repository.dart
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import '../../auth/common/dio/dio_client.dart';
 import '../model/history_response.dart';
 import '../model/beauty_history.dart';
+
 
 /// 히스토리 전반(쇼핑 + 시술커뮤니티) API 호출용 리포지토리
 class HistoryRepository {
@@ -77,6 +79,7 @@ extension BeautyHistoryApi on HistoryRepository {
       '/api/recomendation-history/beauty-history',
       queryParameters: queryParams,
     );
+
     return BeautyHistoryResponse.fromJson(response.data);
   }
 }

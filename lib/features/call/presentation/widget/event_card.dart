@@ -112,7 +112,7 @@ class EventCard extends StatelessWidget {
                         const Icon(Icons.star, size: 14, color: Colors.amber),
                         const SizedBox(width: 2),
                         Text(
-                          event.rating,
+                          event.rating.toString(),
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,

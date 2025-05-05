@@ -7,6 +7,8 @@ import 'package:alfred_clean/features/history/presentation/widget/history_card.d
 import 'package:alfred_clean/features/history/presentation/widget/beauty_history_card.dart';
 import 'package:alfred_clean/features/history/presentation/history_detail_screen.dart';
 
+import 'beauty_history_detail_screen.dart';
+
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
 
@@ -269,7 +271,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
           return BeautyHistoryCard(
             history: history,
             onTap: () {
-              // 필요시 상세 화면 이동 구현
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BeautyHistoryDetailScreen(history: history),
+                ),
+              );
             },
           );
         },
