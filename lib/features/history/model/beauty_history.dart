@@ -1,24 +1,26 @@
-import 'package:flutter/foundation.dart';
+import '../../call/model/community_post.dart';
+import '../../call/model/event.dart';
+import '../../call/model/youtube_video.dart';
 
-/// 시술커뮤니티 히스토리 모델
+
 class BeautyHistory {
-  /// 고유 ID
   final String id;
-
-  /// 원본 쿼리(사용자 질문)
   final String query;
-
-  /// GPT가 추출한 키워드
   final String keyword;
-
-  /// 생성 시각 (밀리초)
   final int createdAt;
+
+  final List<CommunityPost> recommendedPostsByGangnam;
+  final List<Event> recommendedEventByGangNam;
+  final List<YouTubeVideo> recommendedVideos;
 
   BeautyHistory({
     required this.id,
     required this.query,
     required this.keyword,
     required this.createdAt,
+    this.recommendedPostsByGangnam = const [],
+    this.recommendedEventByGangNam = const [],
+    this.recommendedVideos = const [],
   });
 
   factory BeautyHistory.fromJson(Map<String, dynamic> json) {
@@ -27,16 +29,25 @@ class BeautyHistory {
       query: json['query'] as String,
       keyword: json['keyword'] as String,
       createdAt: json['createdAt'] as int,
+      recommendedPostsByGangnam:
+      (json['recommendedPostsByGangnam'] as List<dynamic>?)
+          ?.map((e) => CommunityPost.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+      recommendedEventByGangNam:
+      (json['recommendedEventByGangNam'] as List<dynamic>?)
+          ?.map((e) => Event.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+
+      recommendedVideos:
+      (json['recommendedVideos'] as List<dynamic>?)
+          ?.map((e) => YouTubeVideo.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
     );
   }
 }
 
-/// 시술커뮤니티 히스토리 API 응답
 class BeautyHistoryResponse {
-  /// 히스토리 목록
   final List<BeautyHistory> histories;
-
-  /// 다음 페이지 키 (페이징)
   final String? nextPageKey;
 
   BeautyHistoryResponse({
@@ -46,7 +57,6 @@ class BeautyHistoryResponse {
 
   factory BeautyHistoryResponse.fromJson(Map<String, dynamic> json) {
     final List<dynamic> items = json['histories'] as List<dynamic>;
-    // 최신순으로 정렬
     items.sort((a, b) =>
         (b['createdAt'] as int).compareTo(a['createdAt'] as int));
     return BeautyHistoryResponse(

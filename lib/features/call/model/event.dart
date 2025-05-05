@@ -6,7 +6,7 @@ class Event {
   final String hospitalName;
   final int discountedPrice;
   final int discountRate;
-  final String rating;
+  final double? rating;
   final int ratingCount;
 
   Event({
@@ -17,7 +17,7 @@ class Event {
     required this.hospitalName,
     required this.discountedPrice,
     required this.discountRate,
-    required this.rating,
+    this.rating,
     required this.ratingCount,
   });
 
@@ -30,7 +30,7 @@ class Event {
       hospitalName: json['hospitalName'],
       discountedPrice: json['discountedPrice'],
       discountRate: json['discountRate'],
-      rating: json['rating'],
+      rating: (json['rating'] != null) ? double.tryParse(json['rating'].toString()) : null,
       ratingCount: json['ratingCount'],
     );
   }
