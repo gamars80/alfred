@@ -17,8 +17,14 @@ class YouTubeList extends StatelessWidget {
   ];
 
   String _bestThumbnail(String id) {
-    // 가능한 가장 높은 해상도 썸네일 URL 반환
-    return _thumbRes.map((r) => 'https://img.youtube.com/vi/$id/$r.jpg').first;
+    // YouTube 썸네일 해상도 우선순위 리스트
+    for (final res in _thumbRes) {
+      final url = 'https://img.youtube.com/vi/$id/$res.jpg';
+      // 첫 번째로 존재하는 URL을 반환 (임시로 maxresdefault로 바로 반환해도 되지만 404 문제 생김)
+      // 실제 프로덕션에서는 HEAD 요청을 보내서 존재 여부 확인해야 함
+      return url; // 실무에서는 http HEAD 체크 필요
+    }
+    return 'https://img.youtube.com/vi/$id/hqdefault.jpg'; // fallback
   }
 
   @override
@@ -52,12 +58,14 @@ class YouTubeList extends StatelessWidget {
                     height: 180,
                     child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
                   ),
-                  errorWidget: (_, __, ___) => const SizedBox(
+                  errorWidget: (_, __, ___) => Image.network(
+                    'https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg', // fallback
+                    fit: BoxFit.cover,
                     width: double.infinity,
                     height: 180,
-                    child: Center(child: Icon(Icons.broken_image)),
                   ),
                 ),
+
 
                 // 2) 제목은 최대 2줄, 아래 패딩
                 Padding(
