@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import '../../model/hostpital.dart';
 
 class HospitalCard extends StatelessWidget {
@@ -29,33 +30,36 @@ class HospitalCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 썸네일
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: CachedNetworkImage(
-              imageUrl: hospital.thumbnailUrl,
-              height: 160,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => Container(
+          /// ✅ 이미지 클릭 시 상세 페이지 이동
+          GestureDetector(
+            onTap: () {
+              context.push('/hospital-detail/${hospital.id}', extra: hospital);
+            },
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: CachedNetworkImage(
+                imageUrl: hospital.thumbnailUrl,
                 height: 160,
-                color: Colors.grey[200],
-                child: const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
-              ),
-              errorWidget: (_, __, ___) => Container(
-                height: 160,
-                color: Colors.grey,
-                child: const Center(child: Icon(Icons.error, color: Colors.white)),
+                width: double.infinity,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  height: 160,
+                  color: Colors.grey[200],
+                  child: const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  height: 160,
+                  color: Colors.grey,
+                  child: const Center(child: Icon(Icons.error, color: Colors.white)),
+                ),
               ),
             ),
           ),
-          // 본문
           Padding(
             padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 병원명
                 Text(
                   hospital.title,
                   style: const TextStyle(
@@ -65,7 +69,6 @@ class HospitalCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 1),
-                // 위치
                 Text(
                   '${hospital.location} · ${hospital.hospitalName}',
                   style: const TextStyle(
@@ -74,19 +77,17 @@ class HospitalCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 5),
-                // 지표들 한 줄
                 Wrap(
                   spacing: 10,
                   runSpacing: 4,
                   children: [
-                    _iconText(Icons.star, '${hospital.rating}점',),
+                    _iconText(Icons.star, '${hospital.rating}점'),
                     _iconText(Icons.reviews, '${hospital.ratingCount}건'),
                     _iconText(Icons.event_available, '${hospital.doctorCount}명의 의사'),
                     _iconText(Icons.question_answer, '${hospital.counselCount}건 상담'),
                   ],
                 ),
                 const SizedBox(height: 2),
-                // 설명 (해시태그)
                 Wrap(
                   spacing: 6,
                   runSpacing: 4,
