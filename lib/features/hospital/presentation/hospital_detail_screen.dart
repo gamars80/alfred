@@ -1,6 +1,5 @@
 // hospital_detail_screen.dart
 import 'package:alfred_clean/features/hospital/presentation/widget/hospital_detail_widgets.dart';
-import 'package:alfred_clean/features/hospital/presentation/widget/hospital_info_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../call/model/hostpital.dart';
@@ -54,7 +53,13 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            title: Text(hospital.hospitalName),
+            title: Text(hospital.hospitalName,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+                color: Colors.black,
+              ),
+            ),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => context.pop(),
@@ -74,42 +79,35 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                     Text(
                       hospital.hospitalName,
                       style: const TextStyle(
-                        fontSize: 22,
+                        fontSize: 18,
                         fontWeight: FontWeight.w900,
                         color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
                       children: [
                         const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
                         Text(
                           hospital.location,
-                          style: const TextStyle(fontSize: 13, color: Colors.grey),
+                          style: const TextStyle(fontSize: 11, color: Colors.grey),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    Row(
+                    const SizedBox(height: 2),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 6,
                       children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${double.tryParse(hospital.rating) ?? 0.0}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '(${hospital.ratingCount}명)',
-                          style: const TextStyle(fontSize: 12, color: Colors.black54),
-                        ),
+                        _iconText(Icons.star, '${hospital.rating}점'),
+                        _iconText(Icons.reviews, '${hospital.ratingCount}건'),
+                        _iconText(Icons.event_available, '${hospital.doctorCount}명의 의사'),
+                        _iconText(Icons.question_answer, '${hospital.counselCount}건 상담'),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 2),
                     Wrap(
                       spacing: 6,
                       runSpacing: 4,
@@ -135,7 +133,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
               ),
               const Divider(height: 1),
               const SizedBox(height: 12),
-              HospitalEventList(events: data.events),
+              HospitalEventList(events: data.events, hospitalId: widget.hospitalId),
               const Divider(),
               HospitalReviewList(reviews: data.reviews),
               const Divider(),
@@ -144,6 +142,20 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _iconText(IconData icon, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: Colors.deepPurple),
+        const SizedBox(width: 4),
+        Text(
+          text,
+          style: const TextStyle(fontSize: 12, color: Colors.black87),
+        ),
+      ],
     );
   }
 }
