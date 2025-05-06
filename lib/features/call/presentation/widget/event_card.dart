@@ -27,7 +27,7 @@ class EventCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GestureDetector(onTap: _openWebView, child: _buildThumbnail()),
+          GestureDetector(onTap: _openWebView, child: _buildThumbnail(context)),
           Padding(
             padding: const EdgeInsets.all(10),
             child: Column(
@@ -55,7 +55,7 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildThumbnail() {
+  Widget _buildThumbnail(BuildContext context) {
     return ClipRRect(
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(16),
@@ -68,6 +68,8 @@ class EventCard extends StatelessWidget {
             width: double.infinity,
             height: 160,
             fit: BoxFit.cover,
+            filterQuality: FilterQuality.low,
+            memCacheWidth: MediaQuery.of(context).size.width.toInt(),
             fadeInDuration: const Duration(milliseconds: 300),
             placeholder: (context, url) => Container(
               width: double.infinity,
@@ -82,19 +84,22 @@ class EventCard extends StatelessWidget {
               child: const Icon(Icons.error, color: Colors.white),
             ),
           ),
-          // 👇 좌측 상단 Source 띠
           Positioned(
             top: 8,
             left: 8,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: const Color.fromRGBO(0, 0, 0, 0.6), // ✅ equivalent
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
-                '강남언니',
-                style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+              child: Text(
+                event.source,
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -102,7 +107,6 @@ class EventCard extends StatelessWidget {
       ),
     );
   }
-
 
   Widget _buildPriceSection() {
     final formatter = NumberFormat('#,###', 'ko_KR');
