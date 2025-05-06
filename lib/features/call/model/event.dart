@@ -1,6 +1,7 @@
 class Event {
   final int id;
   final String title;
+  final String source;
   final String thumbnailUrl;
   final String location;
   final String hospitalName;
@@ -12,6 +13,7 @@ class Event {
   Event({
     required this.id,
     required this.title,
+    required this.source,
     required this.thumbnailUrl,
     required this.location,
     required this.hospitalName,
@@ -25,6 +27,7 @@ class Event {
     return Event(
       id: json['id'],
       title: json['title'],
+      source: json['source'],
       thumbnailUrl: json['thumbnailUrl'],
       location: json['location'],
       hospitalName: json['hospitalName'],
