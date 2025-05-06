@@ -267,6 +267,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               child: Center(child: CircularProgressIndicator()),
             );
           }
+
           final history = _beautyHistories[idx];
           return BeautyHistoryCard(
             history: history,
