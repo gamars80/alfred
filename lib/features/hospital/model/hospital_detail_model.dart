@@ -25,25 +25,32 @@ class HospitalDetailResponse {
 class Event {
   final String name;
   final String image;
+  final String? bannerImage;
   final double rating;
   final int reviewCount;
   final int discountPrice;
+  final int discountRate;
+
 
   Event({
     required this.name,
     required this.image,
+    required this.bannerImage,
     required this.rating,
     required this.reviewCount,
     required this.discountPrice,
+    required this.discountRate,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
       name: json['name'],
       image: json['image'],
+      bannerImage: json['banner_image'],
       rating: json['rating'].toDouble(),
       reviewCount: json['review_count'],
       discountPrice: json['discount_price'],
+      discountRate: json['discount_rate'],
     );
   }
 }
@@ -70,7 +77,7 @@ class Review {
 
 class Doctor {
   final String name;
-  final String specialist;
+  final String? specialist;
   final String profilePhoto;
 
   Doctor({
@@ -82,7 +89,7 @@ class Doctor {
   factory Doctor.fromJson(Map<String, dynamic> json) {
     return Doctor(
       name: json['name'],
-      specialist: json['specialist'],
+      specialist: json['specialist'] as String?,
       profilePhoto: json['profile_photo'],
     );
   }

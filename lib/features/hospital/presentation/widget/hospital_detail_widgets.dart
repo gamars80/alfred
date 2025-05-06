@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../auth/presentation/webview_screen.dart';
 import '../../model/hospital_detail_model.dart';
 
 class HospitalImageCarousel extends StatelessWidget {
@@ -20,20 +23,153 @@ class HospitalImageCarousel extends StatelessWidget {
 
 class HospitalEventList extends StatelessWidget {
   final List<Event> events;
+  final int hospitalId;
 
-  const HospitalEventList({super.key, required this.events});
+  const HospitalEventList({
+    super.key,
+    required this.events,
+    required this.hospitalId,
+  });
 
+  String _formatPrice(int price) {
+    final formatter = NumberFormat('#,###');
+    return formatter.format(price);
+  }
+
+  void _openExternalWebView(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('외부 브라우저를 열 수 없습니다')),
+      );
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
+    if (events.isEmpty) return const SizedBox.shrink();
+
     return Column(
-      children: events.map((event) {
-        return ListTile(
-          leading: Image.network(event.image, width: 60),
-          title: Text(event.name),
-          subtitle: Text('${event.rating}⭐️ · ${event.reviewCount}건'),
-          trailing: Text('${event.discountPrice}원'),
-        );
-      }).toList(),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 섹션 타이틀
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Text(
+            '이벤트',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+        ...events.map((event) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+            child: Card(
+              color: Colors.grey.shade100,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 1.5,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 썸네일 (3)
+                    Flexible(
+                      flex: 3,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: event.bannerImage != null
+                            ? Image.network(event.bannerImage!, height: 80, fit: BoxFit.cover)
+                            : Container(
+                          height: 80,
+                          color: Colors.grey.shade300,
+                          child: const Icon(Icons.image_not_supported),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // 텍스트 영역 (7)
+                    Flexible(
+                      flex: 7,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            event.name,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${event.rating}⭐️ · ${event.reviewCount}건',
+                            style: const TextStyle(color: Colors.black54),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${_formatPrice(event.discountPrice)}원',
+                                  style: const TextStyle(
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${event.discountRate}% 할인',
+                                style: const TextStyle(
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+          child: SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple, // 💜 보라 계열
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                final url = 'https://web.babitalk.com/hospitals/$hospitalId?tab=event&category_type=SURGERY';
+                _openExternalWebView(context, url);
+              },
+              child: const Text(
+                '이벤트 더 보러가기',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -68,7 +204,7 @@ class HospitalDoctorInfo extends StatelessWidget {
         return ListTile(
           leading: CircleAvatar(backgroundImage: NetworkImage(doctor.profilePhoto)),
           title: Text(doctor.name),
-          subtitle: Text(doctor.specialist),
+          subtitle: Text(doctor.specialist ?? '전문의 정보 없음'),
         );
       }).toList(),
     );
