@@ -13,5 +13,9 @@ class TokenManager {
     return token;
   }
 
+  static Future<void> clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('accessToken');
+  }
 // 필요에 따라 토큰 저장, 삭제 메서드도 추가할 수 있습니다.
 }

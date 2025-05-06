@@ -1,3 +1,5 @@
+import 'hostpital.dart';
+
 class Event {
   final int id;
   final String title;
@@ -35,6 +37,21 @@ class Event {
       discountRate: json['discountRate'],
       rating: double.tryParse(json['rating']?.toString() ?? ''),
       ratingCount: json['ratingCount'],
+    );
+  }
+
+  Hospital toHospital() {
+    return Hospital(
+      id: id,
+      title: title,
+      thumbnailUrl: thumbnailUrl,
+      location: location,
+      hospitalName: hospitalName,
+      rating: (rating ?? 0).toString(),
+      ratingCount: ratingCount,
+      counselCount: 0,
+      doctorCount: 0,
+      description: '',
     );
   }
 }

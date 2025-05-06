@@ -6,13 +6,9 @@ import 'package:go_router/go_router.dart';
 import '/main.dart';
 
 class DioClient {
-
   static final Dio dio = Dio(
-
-
     BaseOptions(
       baseUrl: dotenv.env['BASE_URL'] ?? '',
-
       headers: {
         'Content-Type': 'application/json',
       },
@@ -22,8 +18,8 @@ class DioClient {
   )..interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {
-
-        final isPublic = options.path.contains('/auth/login') || options.path.contains('/auth/signup');
+        final isPublic = options.path.contains('/auth/login') ||
+            options.path.contains('/auth/signup');
         if (!isPublic) {
           final token = await TokenManager.getToken();
           if (token != null && token.isNotEmpty) {
@@ -34,16 +30,22 @@ class DioClient {
         }
         handler.next(options);
       },
-      onError: (error, handler) {
-        if (error.response?.statusCode == 401) {
-          debugPrint('[Dio] 401 Unauthorized → GoRouter로 이동');
-          final context = navigatorKey.currentContext;
-          if (context != null) {
-            context.go('/login'); // ✅ 핵심 라인
+        onError: (error, handler) async {
+          if (error.response?.statusCode == 401) {
+            debugPrint('[Dio] 401 Unauthorized → 자동 로그아웃 처리');
+
+            await TokenManager.clearToken();
+
+            final context = navigatorKey.currentContext;
+            if (context != null) {
+              context.go('/login'); // ✅ 무조건 로그인 화면으로 이동
+            }
+
+            return; // handler.next(error) 호출하지 않음
           }
+
+          handler.next(error);
         }
-        handler.next(error);
-      },
     ),
   );
 }
