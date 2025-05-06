@@ -5,7 +5,9 @@ import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/main_tab.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/auth/presentation/webview_screen.dart';
+import '../features/call/model/hostpital.dart';
 import '../features/call/presentation/call_screen.dart';
+import '../features/hospital/presentation/hospital_detail_screen.dart';
 import '../main.dart';
 
 final router = GoRouter(
@@ -25,6 +27,15 @@ final router = GoRouter(
           url: params['url'] ?? '',
           title: params['title'] ?? '웹뷰',
         );
+      },
+    ),
+    /// ✅ 병원 상세 화면 추가
+    GoRoute(
+      path: '/hospital-detail/:id',
+      builder: (context, state) {
+        final id = int.parse(state.pathParameters['id']!);
+        final hospital = state.extra as Hospital;
+        return HospitalDetailScreen(hospitalId: id, hospital: hospital);
       },
     ),
   ],

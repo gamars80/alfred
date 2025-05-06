@@ -38,4 +38,5 @@ class Hospital {
       description: json['description'],
     );
   }
+
 }
