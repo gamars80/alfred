@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// 전체 화면 이미지 갤러리 페이지
 class GalleryPage extends StatefulWidget {
@@ -53,15 +56,37 @@ class _GalleryPageState extends State<GalleryPage> {
           setState(() => _currentIndex = idx);
         },
         itemBuilder: (context, index) {
-          return InteractiveViewer(
-            child: Center(
-              child: CachedNetworkImage(
-                imageUrl: widget.images[index],
-                placeholder: (c, url) =>
-                const CircularProgressIndicator(color: Colors.white),
-                errorWidget: (c, url, err) =>
-                const Icon(Icons.broken_image, color: Colors.white),
+          final imageUrl = widget.images[index];
+          final isBlurred = widget.images.length > 1 && index > 0;
+
+          final blurredImage = Stack(
+            children: [
+              Positioned.fill(
+                child: ImageFiltered(
+                  imageFilter: ImageFilter.blur(sigmaX: 16, sigmaY: 16), // 블러 강도 ↑↑
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black.withOpacity(0.75), // 블라인드 덮기 더 어둡게
+                ),
+              ),
+            ],
+          );
+
+          return InteractiveViewer(
+            child: isBlurred
+                ? blurredImage
+                : CachedNetworkImage(
+              imageUrl: imageUrl,
+              placeholder: (c, url) =>
+              const CircularProgressIndicator(color: Colors.white),
+              errorWidget: (c, url, err) =>
+              const Icon(Icons.broken_image, color: Colors.white),
             ),
           );
         },
