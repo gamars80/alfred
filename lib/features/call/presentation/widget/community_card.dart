@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../model/community_post.dart';
 import 'gallery_page.dart';
+import 'dart:ui';
 
 class CommunityCard extends StatefulWidget {
   final CommunityPost post;
@@ -13,15 +15,12 @@ class CommunityCard extends StatefulWidget {
 
 class _CommunityCardState extends State<CommunityCard> {
   static const _limit = 100;
-  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     final content = widget.post.content;
     final isLong = content.length > _limit;
-    final displayText = isLong && !_isExpanded
-        ? content.substring(0, _limit) + '...'
-        : content;
+    final displayText = isLong ? content.substring(0, _limit) + '...' : content;
 
     return RepaintBoundary(
       child: Card(
@@ -45,13 +44,23 @@ class _CommunityCardState extends State<CommunityCard> {
               if (isLong) ...[
                 const SizedBox(height: 4),
                 GestureDetector(
-                  onTap: () => setState(() => _isExpanded = !_isExpanded),
-                  child: Text(
-                    _isExpanded ? '[접기]' : '[더보기]',
-                    style: const TextStyle(
+                  onTap: () async {
+                    final uri = Uri.parse('https://www.gangnamunni.com/community/${widget.post.id}');
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('URL을 열 수 없습니다.')),
+                      );
+                    }
+                  },
+                  child: const Text(
+                    '[더보기]',
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.deepPurple,
+                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ),
@@ -66,26 +75,73 @@ class _CommunityCardState extends State<CommunityCard> {
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (_, i) {
                       final url = widget.post.photoUrls[i];
+                      final showBlur = i > 0 && widget.post.photoUrls.length > 1;
+
                       return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => GalleryPage(
-                                images: widget.post.photoUrls,
-                                initialIndex: i,
+                        onTap: () async {
+                          if (showBlur) {
+                            final uri = Uri.parse('https://www.gangnamunni.com/community/${widget.post.id}');
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(uri, mode: LaunchMode.externalApplication);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('URL을 열 수 없습니다.')),
+                              );
+                            }
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => GalleryPage(
+                                  images: widget.post.photoUrls,
+                                  initialIndex: i,
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: ColorFiltered(
+                                colorFilter: showBlur
+                                    ? ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken)
+                                    : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+                                child: ImageFiltered(
+                                  imageFilter: showBlur
+                                      ? ImageFilter.blur(sigmaX: 6, sigmaY: 6)
+                                      : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                                  child: CachedNetworkImage(
+                                    imageUrl: url,
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                               ),
                             ),
-                          );
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: CachedNetworkImage(
-                            imageUrl: url,
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                          ),
+                            if (showBlur)
+                              Positioned.fill(
+                                child: Center(
+                                  child: Text(
+                                    'Click',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black54,
+                                          offset: Offset(1, 1),
+                                          blurRadius: 2,
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       );
                     },
@@ -108,6 +164,14 @@ class _CommunityCardState extends State<CommunityCard> {
                   _IconText(
                     icon: Icons.visibility,
                     count: widget.post.viewCount,
+                  ),
+                  const Spacer(), // 좌측 아이콘 그룹과 출처 사이 간격 확보
+                  Text(
+                    '출처: 강남언니',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
                 ],
               ),
