@@ -2,6 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../auth/common/dio/dio_client.dart';
+import '../../../hospital/presentation/event_image_viewer_screen.dart';
+import '../../../hospital/presentation/event_multi_images_viewer_screen.dart';
 import '../../model/event.dart';
 
 class EventCard extends StatelessWidget {
@@ -15,6 +18,44 @@ class EventCard extends StatelessWidget {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     }
   }
+
+  Future<void> _openDetailImage(BuildContext context) async {
+    try {
+      debugPrint('[EventCard] 요청 ID: ${event.id}');
+
+      final response = await DioClient.dio.get(
+        '/api/events/${event.id}/detail-image',
+      );
+
+      // 응답 데이터가 List<dynamic> 형식이라고 가정
+      final List<dynamic> data = response.data;
+
+      // String만 추출
+      final List<String> imageUrls = data.whereType<String>().toList();
+
+      debugPrint('[EventCard] 응답: $imageUrls');
+
+      if (imageUrls.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MultiImageWebViewScreen(imageUrls: imageUrls),
+          ),
+        );
+      } else {
+        debugPrint('[EventCard] Empty image list');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미지를 불러오지 못했습니다.')),
+        );
+      }
+    } catch (e) {
+      debugPrint('[EventCard] Error fetching detail-image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('서버 오류가 발생했습니다.')),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +74,46 @@ class EventCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  event.title,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        event.title,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        if (event.source == '바비톡') {
+                          // 바비톡인 경우 event.detailImage 사용
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ImageWebViewScreen(
+                                imageUrl: event.detailImage,
+                              ),
+                            ),
+                          );
+                        } else {
+                          // 그 외는 API 호출
+                          await _openDetailImage(context);
+                        }
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(50, 30),
+                      ),
+                      child: const Text(
+                        '상세보기',
+                        style: TextStyle(fontSize: 12, color: Colors.blue),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -90,7 +168,7 @@ class EventCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color.fromRGBO(0, 0, 0, 0.6), // ✅ equivalent
+                color: const Color.fromRGBO(0, 0, 0, 0.6),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(

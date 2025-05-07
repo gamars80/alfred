@@ -6,7 +6,6 @@ import 'package:alfred_clean/features/history/model/beauty_history.dart';
 import 'package:alfred_clean/features/history/presentation/widget/history_card.dart';
 import 'package:alfred_clean/features/history/presentation/widget/beauty_history_card.dart';
 import 'package:alfred_clean/features/history/presentation/history_detail_screen.dart';
-
 import 'beauty_history_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -16,7 +15,9 @@ class HistoryScreen extends StatefulWidget {
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
   final HistoryRepository repository = HistoryRepository();
   final ScrollController _shoppingController = ScrollController();
   final ScrollController _communityController = ScrollController();
@@ -40,24 +41,37 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
+    // TabController 직접 초기화
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabSelection);
 
-    // 쇼핑 탭 스크롤 리스너
+    // 스크롤 리스너 설정
     _shoppingController.addListener(() {
       if (_shoppingController.position.pixels >=
           _shoppingController.position.maxScrollExtent - 200) {
         _loadMore();
       }
     });
-    _loadInitialHistories();
-
-    // 시술커뮤니티 탭 스크롤 리스너
     _communityController.addListener(() {
       if (_communityController.position.pixels >=
           _communityController.position.maxScrollExtent - 200) {
         _loadMoreBeauty();
       }
     });
-    _loadInitialBeautyHistories();
+
+    // 첫 번째 탭 초기 로딩
+    _loadInitialHistories();
+  }
+
+  void _handleTabSelection() {
+    if (_tabController.indexIsChanging) return;
+    if (_tabController.index == 0) {
+      setState(() => _isInitialLoading = true);
+      _loadInitialHistories();
+    } else if (_tabController.index == 1) {
+      setState(() => _isBeautyInitialLoading = true);
+      _loadInitialBeautyHistories();
+    }
   }
 
   Future<void> _loadInitialHistories() async {
@@ -66,10 +80,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
       setState(() {
         _histories = response.histories;
         _nextPageKey = response.nextPageKey;
-        _hasMore = (_nextPageKey != null && _nextPageKey!.isNotEmpty);
+        _hasMore = (_nextPageKey?.isNotEmpty ?? false);
       });
     } catch (e) {
-      debugPrint('Error loading histories: \$e');
+      debugPrint('Error loading histories: $e');
     } finally {
       setState(() => _isInitialLoading = false);
     }
@@ -86,10 +100,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
       setState(() {
         _histories.addAll(response.histories);
         _nextPageKey = response.nextPageKey;
-        _hasMore = (_nextPageKey != null && _nextPageKey!.isNotEmpty);
+        _hasMore = (_nextPageKey?.isNotEmpty ?? false);
       });
     } catch (e) {
-      debugPrint('Error loading more histories: \$e');
+      debugPrint('Error loading more histories: $e');
     } finally {
       setState(() => _isLoadingMore = false);
     }
@@ -101,10 +115,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
       setState(() {
         _beautyHistories = response.histories;
         _beautyNextPageKey = response.nextPageKey;
-        _hasMoreBeauty = (_beautyNextPageKey != null && _beautyNextPageKey!.isNotEmpty);
+        _hasMoreBeauty = (_beautyNextPageKey?.isNotEmpty ?? false);
       });
     } catch (e) {
-      debugPrint('Error loading beauty histories: \$e');
+      debugPrint('Error loading beauty histories: $e');
     } finally {
       setState(() => _isBeautyInitialLoading = false);
     }
@@ -121,10 +135,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
       setState(() {
         _beautyHistories.addAll(response.histories);
         _beautyNextPageKey = response.nextPageKey;
-        _hasMoreBeauty = (_beautyNextPageKey != null && _beautyNextPageKey!.isNotEmpty);
+        _hasMoreBeauty = (_beautyNextPageKey?.isNotEmpty ?? false);
       });
     } catch (e) {
-      debugPrint('Error loading more beauty histories: \$e');
+      debugPrint('Error loading more beauty histories: $e');
     } finally {
       setState(() => _isBeautyLoadingMore = false);
     }
@@ -147,60 +161,66 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   @override
+  void dispose() {
+    _tabController.dispose();
+    _shoppingController.dispose();
+    _communityController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF9F9F9),
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0.5,
-          centerTitle: true,
-          title: const Text('히스토리',
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold)),
-          iconTheme: const IconThemeData(color: Colors.black),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(60),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9F9F9),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        centerTitle: true,
+        title: const Text('히스토리',
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 17,
+                fontWeight: FontWeight.bold)),
+        iconTheme: const IconThemeData(color: Colors.black),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicator: BoxDecoration(
+                color: Theme.of(context).primaryColor,
                 borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).primaryColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ],
               ),
-              child: TabBar(
-                indicator: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color:
-                      Theme.of(context).primaryColor.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    )
-                  ],
-                ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.grey,
-                labelStyle: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w600),
-                tabs: const [Tab(text: '쇼핑'), Tab(text: '시술커뮤니티')],
-              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.grey,
+              labelStyle: const TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.w600),
+              tabs: const [Tab(text: '쇼핑'), Tab(text: '쁘띠')],
             ),
           ),
         ),
-        body: TabBarView(
-          physics: const BouncingScrollPhysics(),
-          children: [
-            _buildShoppingTab(),
-            _buildCommunityTab(),
-          ],
-        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        physics: const BouncingScrollPhysics(),
+        children: [
+          _buildShoppingTab(),
+          _buildCommunityTab(),
+        ],
       ),
     );
   }
@@ -258,8 +278,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
       )
           : ListView.builder(
         controller: _communityController,
-        itemCount: _beautyHistories.length +
-            (_isBeautyLoadingMore ? 1 : 0),
+        itemCount:
+        _beautyHistories.length + (_isBeautyLoadingMore ? 1 : 0),
         itemBuilder: (context, idx) {
           if (idx == _beautyHistories.length) {
             return const Padding(

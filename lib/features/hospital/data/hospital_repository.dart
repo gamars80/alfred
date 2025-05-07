@@ -9,6 +9,7 @@ class HospitalRepository {
     try {
       final response = await DioClient.dio.get('/api/hospitals/$id/detail');
       // debugPrint(response.data);
+      debugPrint('📦 API 응답 데이터:\n${response.data}');
       return HospitalDetailResponse.fromJson(response.data);
     } catch (e, stack) {
       debugPrint('❌ 병원 상세 요청 실패: $e');
