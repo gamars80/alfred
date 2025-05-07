@@ -11,6 +11,7 @@ class Event {
   final int discountRate;
   final double? rating;
   final int ratingCount;
+  final String detailImage;
 
   Event({
     required this.id,
@@ -23,6 +24,7 @@ class Event {
     required this.discountRate,
     this.rating,
     required this.ratingCount,
+    required this.detailImage,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -37,6 +39,7 @@ class Event {
       discountRate: json['discountRate'],
       rating: double.tryParse(json['rating']?.toString() ?? ''),
       ratingCount: json['ratingCount'],
+      detailImage: json['detailImage'] ?? '',
     );
   }
 
@@ -52,6 +55,7 @@ class Event {
       counselCount: 0,
       doctorCount: 0,
       description: '',
+
     );
   }
 }

@@ -135,9 +135,12 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
               const SizedBox(height: 12),
               HospitalEventList(events: data.events, hospitalId: widget.hospitalId),
               const Divider(),
-              HospitalReviewList(reviews: data.reviews),
+              HospitalReviewList(reviews: data.reviews, hospitalId: widget.hospitalId),
               const Divider(),
-              HospitalDoctorInfo(doctors: data.doctors),
+              HospitalDoctorList(doctors: data.doctors, hospitalId: widget.hospitalId),
+              const Divider(),
+              if (data.youtubes.isNotEmpty)
+                HospitalYoutubeList(youtubes: data.youtubes, hospitalId: widget.hospitalId),
             ],
           ),
         );

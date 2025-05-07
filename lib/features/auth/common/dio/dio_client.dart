@@ -22,6 +22,10 @@ class DioClient {
             options.path.contains('/auth/signup');
         if (!isPublic) {
           final token = await TokenManager.getToken();
+          // 🚨 여기에 로그 추가!
+          debugPrint('[Dio] 요청 URL: ${options.uri}');
+          debugPrint('[Dio] Authorization 헤더: Bearer $token');
+
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           } else {
