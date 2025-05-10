@@ -21,33 +21,7 @@ class HistoryRepository {
     return HistoryResponse.fromJson(response.data);
   }
 
-  Future<void> postLike({
-    required int historyCreatedAt,
-    required String recommendationId,
-    required String productId,
-    required String mallName,
-  }) async {
-    await _dio.post('/api/likes', data: {
-      'historyCreatedAt': '$historyCreatedAt',
-      'recommendationId': recommendationId,
-      'productId': productId,
-      'mallName': mallName,
-    });
-  }
 
-  Future<void> deleteLike({
-    required int historyCreatedAt,
-    required String recommendationId,
-    required String productId,
-    required String mallName,
-  }) async {
-    await _dio.delete('/api/likes', data: {
-      'historyCreatedAt': '$historyCreatedAt',
-      'recommendationId': recommendationId,
-      'productId': productId,
-      'mallName': mallName,
-    });
-  }
 
   // ✅ 시술커뮤니티 히스토리 API
   Future<BeautyHistoryResponse> fetchBeautyHistories({

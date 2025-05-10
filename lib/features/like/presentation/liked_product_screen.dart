@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-import 'package:alfred_clean/service/token_manager.dart';
 import '../../call/presentation/product_webview_screen.dart';
 import '../../history/data/history_repository.dart';
 import '../data/like_repository.dart';
@@ -97,7 +96,7 @@ class _LikedProductScreenState extends State<LikedProductScreen> {
 
   Future<void> _removeLike(LikedProduct p) async {
     try {
-      await historyRepo.deleteLike(
+      await likeRepo.deleteLike(
         historyCreatedAt: int.parse(p.historyAddedAt),
         recommendationId: p.recommendId,
         productId:        p.productId,

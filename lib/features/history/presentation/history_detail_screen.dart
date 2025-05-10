@@ -4,6 +4,7 @@ import 'package:alfred_clean/features/call/model/product.dart';
 import 'package:alfred_clean/features/call/presentation/product_webview_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../service/token_manager.dart';
+import '../../like/data/like_repository.dart';
 import '../../review/presentation/review_overlay_screen.dart';
 import '../data/history_repository.dart';
 import '../model/recommendation_history.dart';
@@ -18,6 +19,7 @@ class HistoryDetailScreen extends StatefulWidget {
 
 class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
   final repo = HistoryRepository();
+  final likeRepo = LikeRepository();
   final Set<String> likedProductIds = {};
   String? token;
 
@@ -106,7 +108,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
     if (token == null) return;
     try {
       if (likedProductIds.contains(product.productId)) {
-        await repo.deleteLike(
+        await likeRepo.deleteLike(
           historyCreatedAt: widget.history.createdAt,
           recommendationId: product.recommendationId,
           productId: product.productId,
@@ -117,7 +119,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
           widget.history.recommendations[index] = product.copyWith(liked: false);
         });
       } else {
-        await repo.postLike(
+        await likeRepo.postLike(
           historyCreatedAt: widget.history.createdAt,
           recommendationId: product.recommendationId,
           productId: product.productId,
