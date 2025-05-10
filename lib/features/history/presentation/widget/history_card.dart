@@ -27,7 +27,7 @@ class HistoryCard extends StatelessWidget {
         child: Card(
           color: Colors.white,
           elevation: 6, // 그림자 더 강하게
-          shadowColor: Colors.black.withOpacity(0.15), // 그림자 더 진하게
+          shadowColor: const Color.fromRGBO(0, 0, 0, 0.15), // 그림자 더 진하게
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24), // 둥글기 더 강조
           ),
@@ -66,7 +66,7 @@ class HistoryCard extends StatelessWidget {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 5),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
