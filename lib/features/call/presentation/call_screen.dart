@@ -44,10 +44,10 @@ class _CallScreenState extends State<CallScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text('추천 결과', style: TextStyle(fontSize: 16, color: Colors.black)),
+          title: const Text('추천 결과', style: TextStyle(fontSize: 20, color: Colors.black)),
           backgroundColor: Colors.white,
           elevation: 0.5,
-          // iconTheme: const IconThemeData(color: Colors.black),
+          iconTheme: const IconThemeData(color: Colors.black),
         ),
         body: Stack(
           children: [

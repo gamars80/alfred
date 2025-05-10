@@ -1,3 +1,4 @@
+// ✅ call_screen_body.dart
 import 'package:alfred_clean/features/call/presentation/widget/community_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/event_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/hospital_card.dart';
@@ -9,6 +10,7 @@ import '../model/event.dart';
 import '../model/hostpital.dart';
 import '../model/product.dart';
 import '../model/youtube_video.dart';
+
 
 class CallScreenBody extends StatelessWidget {
   final int createdAt;
@@ -37,9 +39,13 @@ class CallScreenBody extends StatelessWidget {
     final List<Widget> items = [];
 
     if (communityPosts.isNotEmpty) {
-      items.add(_buildSectionTitle('추천 커뮤니티'));
+      items.add(Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
+        child: _buildSectionTitle('추천 커뮤니티'),
+      ));
+
       items.addAll(communityPosts.map((post) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         child: CommunityCard(
           post: post,
           source: post.source,
@@ -50,37 +56,38 @@ class CallScreenBody extends StatelessWidget {
     }
 
     if (events.isNotEmpty || hospitals.isNotEmpty) {
-      items.add(_buildSectionTitle('추천 시술'));
+      items.add(Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
+        child: _buildSectionTitle('추천 시술'),
+      ));
       items.add(_buildEventHospitalTabs());
     }
 
     if (youtubeVideos.isNotEmpty) {
-      items.add(_buildSectionTitle('추천 Youtube 영상'));
+      items.add(Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
+        child: _buildSectionTitle('추천 Youtube 영상'),
+      ));
       items.add(Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: YouTubeList(videos: youtubeVideos),
       ));
     }
 
-    // Only include non-empty product categories
-    final nonEmptyProductEntries =
-    categorizedProducts.entries.where((e) => e.value.isNotEmpty);
-    if (nonEmptyProductEntries.isNotEmpty) {
-      for (final entry in nonEmptyProductEntries) {
-        items.add(Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
-            children: [
-              _buildSectionTitle(entry.key),
-              const SizedBox(height: 8),
-              ...entry.value.map((p) => ProductCard(product: p)),
-              const SizedBox(height: 24),
-            ],
-          ),
-        ));
-      }
+    if (categorizedProducts.isNotEmpty) {
+      final nonEmptyProductEntries = categorizedProducts.entries.where((e) => e.value.isNotEmpty);
+      items.addAll(nonEmptyProductEntries.map((entry) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle(entry.key),
+            const SizedBox(height: 8),
+            ...entry.value.map((p) => ProductCard(product: p)).toList(),
+            const SizedBox(height: 24),
+          ],
+        ),
+      )));
     }
 
     if (items.isEmpty) {
@@ -126,6 +133,7 @@ class CallScreenBody extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildSectionTitle(String title) {
     return Padding(
