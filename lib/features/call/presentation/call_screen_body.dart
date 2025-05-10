@@ -13,6 +13,7 @@ import '../model/youtube_video.dart';
 
 
 class CallScreenBody extends StatelessWidget {
+  final int createdAt;
   final Map<String, List<Product>> categorizedProducts;
   final List<CommunityPost> communityPosts;
   final List<Event> events;
@@ -23,6 +24,7 @@ class CallScreenBody extends StatelessWidget {
 
   const CallScreenBody({
     super.key,
+    required this.createdAt,
     required this.categorizedProducts,
     required this.communityPosts,
     required this.events,
@@ -40,7 +42,7 @@ class CallScreenBody extends StatelessWidget {
       items.add(_buildSectionTitle('추천 커뮤니티'));
       items.addAll(communityPosts.map((post) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: CommunityCard(post: post),
+        child: CommunityCard(post: post, source: post.source, historyCreatedAt: createdAt, initialLiked: post.liked, ),
       )));
     }
 
