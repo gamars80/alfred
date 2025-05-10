@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../like/data/like_repository.dart';
 import '../../model/community_post.dart';
 import 'gallery_page.dart';
 import 'dart:ui';
 
 class CommunityCard extends StatefulWidget {
   final CommunityPost post;
-  const CommunityCard({Key? key, required this.post}) : super(key: key);
+  final String source;
+  final int historyCreatedAt;
+  final bool initialLiked;
+
+  const CommunityCard({
+    Key? key,
+    required this.post,
+    required this.source,
+    required this.historyCreatedAt,
+    required this.initialLiked,
+  }) : super(key: key);
 
   @override
   State<CommunityCard> createState() => _CommunityCardState();
@@ -15,6 +26,15 @@ class CommunityCard extends StatefulWidget {
 
 class _CommunityCardState extends State<CommunityCard> {
   static const _limit = 100;
+  late bool isLiked;
+  final LikeRepository _likeRepo = LikeRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    isLiked = widget.initialLiked;
+    debugPrint('🕒 CommunityCard.init: historyCreatedAt=${widget.historyCreatedAt}, initialLiked=${widget.initialLiked}');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,26 +63,43 @@ class _CommunityCardState extends State<CommunityCard> {
               ),
               if (isLong) ...[
                 const SizedBox(height: 4),
-                GestureDetector(
-                  onTap: () async {
-                    final uri = Uri.parse('https://www.gangnamunni.com/community/${widget.post.id}');
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('URL을 열 수 없습니다.')),
-                      );
-                    }
-                  },
-                  child: const Text(
-                    '[더보기]',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.deepPurple,
-                      decoration: TextDecoration.underline,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        final uri = Uri.parse('https://www.gangnamunni.com/community/\${widget.post.id}');
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('URL을 열 수 없습니다.')),
+                          );
+                        }
+                      },
+                      child: const Text(
+                        '[더보기]',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
                     ),
-                  ),
+                    GestureDetector(
+                      onTap: _toggleLike,
+                      child: Row(
+                        children: [
+                          Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_border,
+                            size: 20,
+                            color: isLiked ? Colors.red : Colors.grey,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
               if (widget.post.photoUrls.isNotEmpty) ...[
@@ -80,7 +117,7 @@ class _CommunityCardState extends State<CommunityCard> {
                       return GestureDetector(
                         onTap: () async {
                           if (showBlur) {
-                            final uri = Uri.parse('https://www.gangnamunni.com/community/${widget.post.id}');
+                            final uri = Uri.parse('https://www.gangnamunni.com/community/\${widget.post.id}');
                             if (await canLaunchUrl(uri)) {
                               await launchUrl(uri, mode: LaunchMode.externalApplication);
                             } else {
@@ -153,7 +190,7 @@ class _CommunityCardState extends State<CommunityCard> {
                 children: [
                   _IconText(
                     icon: Icons.thumb_up,
-                    count: widget.post.thumbUpCount,
+                    count: widget.post.commentCount,
                   ),
                   const SizedBox(width: 24),
                   _IconText(
@@ -165,9 +202,9 @@ class _CommunityCardState extends State<CommunityCard> {
                     icon: Icons.visibility,
                     count: widget.post.viewCount,
                   ),
-                  const Spacer(), // 좌측 아이콘 그룹과 출처 사이 간격 확보
+                  const Spacer(),
                   Text(
-                    '출처: 강남언니',
+                    '출처: ${widget.source}',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey.shade600,
@@ -180,6 +217,31 @@ class _CommunityCardState extends State<CommunityCard> {
         ),
       ),
     );
+  }
+
+  Future<void> _toggleLike() async {
+    setState(() => isLiked = !isLiked);
+    debugPrint('▶️ toggleLike: historyCreatedAt=${widget.historyCreatedAt}, postId=${widget.post.id}, isLiked=$isLiked');
+    try {
+      if (isLiked) {
+        await _likeRepo.postLikeBeautyCommunity(
+          historyCreatedAt: widget.historyCreatedAt,
+          beautyCommunityId: widget.post.id.toString(),
+          source: widget.source,
+        );
+      } else {
+        await _likeRepo.deleteLikeBeautyCommunity(
+          historyCreatedAt: widget.historyCreatedAt,
+          beautyCommunityId: widget.post.id.toString(),
+          source: widget.source,
+        );
+      }
+    } catch (e) {
+      setState(() => isLiked = !isLiked);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('좋아요 처리 중 오류가 발생했습니다.')),
+      );
+    }
   }
 }
 

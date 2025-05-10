@@ -7,6 +7,7 @@ class CommunityPost {
   final int thumbUpCount;
   final List<String> photoUrls;
   final bool liked;
+  final String source;
 
   CommunityPost({
     required this.id,
@@ -17,7 +18,7 @@ class CommunityPost {
     required this.thumbUpCount,
     required this.photoUrls,
     required this.liked,
-
+    required this.source,
   });
 
   factory CommunityPost.fromJson(Map<String, dynamic> json) {
@@ -28,6 +29,7 @@ class CommunityPost {
       viewCount: json['viewCount'],
       commentCount: json['commentCount'],
       thumbUpCount: json['thumbUpCount'],
+      source: json['source'],
       liked: json['liked'],
       photoUrls: List<String>.from(json['photoUrls'] ?? []),
     );
