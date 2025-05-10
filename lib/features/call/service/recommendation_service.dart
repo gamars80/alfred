@@ -9,6 +9,7 @@ import '../model/product.dart';
 import '../model/youtube_video.dart';
 
 class RecommendationResult {
+  final int createdAt;  // 생성 시점 타임스탬프
   final Map<String, List<Product>> products;
   final List<CommunityPost> communityPosts;
   final List<Event> events;
@@ -16,6 +17,7 @@ class RecommendationResult {
   final List<YouTubeVideo> youtubeVideos;
 
   RecommendationResult({
+    this.createdAt = 0,
     this.products = const {},
     this.communityPosts = const [],
     this.events = const [],
@@ -35,11 +37,15 @@ class RecommendationService {
       if (selectedCategory == '쇼핑') {
         final api = ProductApi();
         final result = await api.fetchRecommendedProducts(query);
-        onSuccess(RecommendationResult(products: result));
+        onSuccess(RecommendationResult(
+          createdAt: DateTime.now().millisecondsSinceEpoch,
+          products: result,
+        ));
       } else {
         final api = BeautyApi();
         final result = await api.fetchBeautyData(query);
         onSuccess(RecommendationResult(
+          createdAt: result.createdAt,
           communityPosts: result.communityPosts,
           events: result.events,
           hospitals: result.hospitals,

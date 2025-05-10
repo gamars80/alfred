@@ -27,7 +27,6 @@ class BeautyHistory {
         _recommendedEvents = recommendedEvents,
         _recommendedHospitals = recommendedHospitals,
         _recommendedVideos = recommendedVideos;
-
   List<CommunityPost> get recommendedPostsByGangnam => _recommendedPostsByGangnam ?? [];
   List<Event> get recommendedEvents => _recommendedEvents ?? [];
   List<Hospital> get recommendedHospitals => _recommendedHospitals ?? [];
@@ -64,12 +63,10 @@ class BeautyHistoryResponse {
   });
 
   factory BeautyHistoryResponse.fromJson(Map<String, dynamic> json) {
-    print('✅ [BeautyHistoryResponse] raw json: $json'); // 이게 가장 중요!
     final List<dynamic> items = json['histories'] ?? [];
     items.sort((a, b) => (b['createdAt'] as int).compareTo(a['createdAt'] as int));
     return BeautyHistoryResponse(
       histories: items.map((e) {
-        print('✅ [item] $e'); // 각 항목 찍히는지 확인
         return BeautyHistory.fromJson(e as Map<String, dynamic>);
       }).toList(),
       nextPageKey: json['nextPageKey'] as String?,
