@@ -1,4 +1,3 @@
-// ✅ call_screen_body.dart
 import 'package:alfred_clean/features/call/presentation/widget/community_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/event_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/hospital_card.dart';
@@ -10,7 +9,6 @@ import '../model/event.dart';
 import '../model/hostpital.dart';
 import '../model/product.dart';
 import '../model/youtube_video.dart';
-
 
 class CallScreenBody extends StatelessWidget {
   final int createdAt;
@@ -42,7 +40,12 @@ class CallScreenBody extends StatelessWidget {
       items.add(_buildSectionTitle('추천 커뮤니티'));
       items.addAll(communityPosts.map((post) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: CommunityCard(post: post, source: post.source, historyCreatedAt: createdAt, initialLiked: post.liked, ),
+        child: CommunityCard(
+          post: post,
+          source: post.source,
+          historyCreatedAt: createdAt,
+          initialLiked: post.liked,
+        ),
       )));
     }
 
@@ -59,19 +62,24 @@ class CallScreenBody extends StatelessWidget {
       ));
     }
 
-    if (categorizedProducts.isNotEmpty) {
-      items.addAll(categorizedProducts.entries.map((entry) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle(entry.key),
-            const SizedBox(height: 8),
-            ...entry.value.map((p) => ProductCard(product: p)).toList(),
-            const SizedBox(height: 24),
-          ],
-        ),
-      )));
+    // Only include non-empty product categories
+    final nonEmptyProductEntries =
+    categorizedProducts.entries.where((e) => e.value.isNotEmpty);
+    if (nonEmptyProductEntries.isNotEmpty) {
+      for (final entry in nonEmptyProductEntries) {
+        items.add(Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionTitle(entry.key),
+              const SizedBox(height: 8),
+              ...entry.value.map((p) => ProductCard(product: p)),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ));
+      }
     }
 
     if (items.isEmpty) {
@@ -120,7 +128,7 @@ class CallScreenBody extends StatelessWidget {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, top: 24, bottom: 8),
+      padding: const EdgeInsets.only(left: 0, top: 24, bottom: 8),
       child: Text(
         title,
         style: const TextStyle(
