@@ -61,6 +61,8 @@ class RecommendationService {
         onError('age');
       } else if (msg.contains('More Information')) {
         onError('both');
+      } else if (msg.contains('Not ItemType')) {         // ← 추가
+        onError('itemType');
       } else {
         onError('unknown');
       }
@@ -68,3 +70,4 @@ class RecommendationService {
     }
   }
 }
+
