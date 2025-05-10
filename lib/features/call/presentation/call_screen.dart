@@ -1,7 +1,6 @@
 // ✅ call_screen.dart (리팩토링된 메인 파일)
 import 'package:alfred_clean/features/call/presentation/voice_command_bottom_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../common/overay/alfred_loading_overlay.dart';
 import '../../../utils/query_utils.dart';
 import '../model/community_post.dart';
@@ -21,7 +20,6 @@ class CallScreen extends StatefulWidget {
 }
 
 class _CallScreenState extends State<CallScreen> {
-  static const platform = MethodChannel('com.alfred/voice');
   final TextEditingController _commandController = TextEditingController();
 
   bool _isLoading = false;
@@ -37,6 +35,7 @@ class _CallScreenState extends State<CallScreen> {
   List<Event> _events = [];
   List<YouTubeVideo> _youtubeVideos = [];
   List<Hospital> _hospitals = [];
+  int _createdAt = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +54,7 @@ class _CallScreenState extends State<CallScreen> {
             _isLoading
                 ? const AlfredLoadingOverlay()
                 : CallScreenBody(
+              createdAt: _createdAt,
               categorizedProducts: _categorizedProducts,
               communityPosts: _communityPosts,
               events: _events,
@@ -106,6 +106,7 @@ class _CallScreenState extends State<CallScreen> {
           _events = data.events;
           _hospitals = data.hospitals;
           _youtubeVideos = data.youtubeVideos;
+          _createdAt = data.createdAt;
           _errorMessage = null;
         }),
         onError: (msg) => setState(() => _errorMessage = msg),

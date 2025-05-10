@@ -45,7 +45,8 @@ class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen> {
           if (posts.isNotEmpty) ...[
             const Text('📌 관련 커뮤니티 게시글', style: _sectionTitleStyle),
             const SizedBox(height: 8),
-            ...posts.map((post) => CommunityCard(post: post)),
+            ...posts.map((post) => CommunityCard(post: post, source: post.source,
+              historyCreatedAt: widget.history.createdAt, initialLiked: post.liked, )),
             const SizedBox(height: 24),
           ],
           if (events.isNotEmpty || hospitals.isNotEmpty) ...[
