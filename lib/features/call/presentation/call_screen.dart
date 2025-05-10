@@ -44,10 +44,10 @@ class _CallScreenState extends State<CallScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text('추천 결과', style: TextStyle(fontSize: 20, color: Colors.black)),
+          title: const Text('추천 결과', style: TextStyle(fontSize: 16, color: Colors.black)),
           backgroundColor: Colors.white,
           elevation: 0.5,
-          iconTheme: const IconThemeData(color: Colors.black),
+          // iconTheme: const IconThemeData(color: Colors.black),
         ),
         body: Stack(
           children: [
@@ -90,7 +90,6 @@ class _CallScreenState extends State<CallScreen> {
       onGenderChanged: (v) => setState(() => _selectedGender = v),
       onAgeChanged: (v) => setState(() => _selectedAge = v),
     );
-
     if (rawQuery == null || rawQuery.isEmpty) return;
 
     while (true) {
@@ -112,9 +111,33 @@ class _CallScreenState extends State<CallScreen> {
         onError: (msg) => setState(() => _errorMessage = msg),
       );
 
+      // 항상 로딩 해제
       setState(() => _isLoading = false);
+
+      // Not ItemType 에러: 상태 초기화 + 긴 SnackBar 띄우고 종료
+      if (_errorMessage == 'itemType') {
+        setState(() {
+          _selectedCategory = '쇼핑';
+          _selectedGender = null;
+          _selectedAge = null;
+          _errorMessage = null;
+        });
+        _commandController.clear();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('어떤 물건인지 더 구체적으로 말씀해 주세요! 예: “여성용 여름 반팔 티셔츠” 같이요 😊'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 5),
+          ),
+        );
+        break;
+      }
+
+      // 성공 시 종료
       if (success) break;
 
+      // 그 외 에러는 다시 바텀시트 열기
       rawQuery = await VoiceCommandBottomSheet.show(
         context: context,
         selectedCategory: _selectedCategory,
@@ -124,11 +147,10 @@ class _CallScreenState extends State<CallScreen> {
         controller: _commandController,
         isListening: _isListening,
         isLoading: _isLoading,
+        onCategoryChanged: (v) => setState(() => _selectedCategory = v),
         onGenderChanged: (v) => setState(() => _selectedGender = v),
         onAgeChanged: (v) => setState(() => _selectedAge = v),
-        onCategoryChanged: (v) => setState(() => _selectedCategory = v),
       );
-
       if (rawQuery == null || rawQuery.isEmpty) break;
     }
   }

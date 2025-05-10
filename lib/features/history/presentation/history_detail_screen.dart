@@ -31,10 +31,12 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // 초기 liked 상태 로드
     for (final p in widget.history.recommendations) {
       if (p.liked) likedProductIds.add(p.productId);
     }
     _loadToken();
+    // Mall별로 추천 상품 그룹핑
     groupedRecommendations = {};
     for (final p in widget.history.recommendations) {
       groupedRecommendations.putIfAbsent(p.mallName, () => []).add(p);
@@ -52,6 +54,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
+        // 상세에서 돌아갈 때 수정된 history를 반환
         Navigator.pop(context, widget.history);
         return false;
       },
@@ -123,7 +126,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                           child: SizedBox(
-                            height: 320, // 💡 고정 높이 명시
+                            height: 320,
                             child: ProductCard(
                               product: product,
                               isLiked: isLiked,
@@ -145,18 +148,15 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
 
   Future<void> _toggleLike(Product product) async {
     if (token == null) return;
-    final isCurrentlyLiked = likedProductIds.contains(product.productId);
+    final wasLiked = likedProductIds.contains(product.productId);
     try {
-      if (isCurrentlyLiked) {
+      if (wasLiked) {
         await likeRepo.deleteLike(
           historyCreatedAt: widget.history.createdAt,
           recommendationId: product.recommendationId,
           productId: product.productId,
           mallName: product.mallName,
         );
-        setState(() {
-          likedProductIds.remove(product.productId);
-        });
       } else {
         await likeRepo.postLike(
           historyCreatedAt: widget.history.createdAt,
@@ -164,13 +164,24 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
           productId: product.productId,
           mallName: product.mallName,
         );
-        setState(() {
-          likedProductIds.add(product.productId);
-        });
       }
+      setState(() {
+        // 로컬 liked 상태 토글
+        if (wasLiked) {
+          likedProductIds.remove(product.productId);
+        } else {
+          likedProductIds.add(product.productId);
+        }
+        // history 모델에도 반영
+        final histList = widget.history.recommendations;
+        final idx = histList.indexWhere((p) => p.productId == product.productId);
+        if (idx != -1) {
+          histList[idx] = histList[idx].copyWith(liked: !wasLiked);
+        }
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('요청 실패: $e')),
+        SnackBar(content: Text('요청 실패: \$e')),
       );
     }
   }
