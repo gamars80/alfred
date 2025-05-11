@@ -12,8 +12,8 @@ class HistoryRepository {
     String? nextPageKey,
   }) async {
     final queryParams = {
-      'limit': limit,
-      if (nextPageKey != null) 'nextPageKey': nextPageKey,
+      if (nextPageKey != null)
+        'nextPageKey': nextPageKey,
     };
     final response = await _dio.get(
       '/api/recomendation-history',
@@ -24,22 +24,23 @@ class HistoryRepository {
 
 
 
-  // ✅ 시술커뮤니티 히스토리 API
   Future<BeautyHistoryResponse> fetchBeautyHistories({
     int limit = 10,
     String? nextPageKey,
   }) async {
-    final queryParams = {
+    // nextPageKey가 있으면 있는 그대로 넣고, 없으면 생략
+    final queryParams = <String, dynamic>{
       'limit': limit,
-      if (nextPageKey != null) 'nextPageKey': nextPageKey,
+      if (nextPageKey != null)
+        'nextPageKey': nextPageKey, // Uri.encodeComponent 제거
     };
-
+    debugPrint("nextPageKey::::::::::::::$nextPageKey");
     debugPrint("queryParams::::$queryParams");
+
     final response = await _dio.get(
       '/api/recomendation-history/beauty-history',
-      queryParameters: queryParams,
+      queryParameters: queryParams, // Dio가 자동으로 한 번만 인코딩해 줌
     );
-    // print('📡 응답 데이터 전체: ${response.data}');
     return BeautyHistoryResponse.fromJson(response.data);
   }
 }
