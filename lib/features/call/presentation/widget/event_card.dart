@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../auth/common/dio/dio_client.dart';
-import '../../../hospital/presentation/event_image_viewer_screen.dart';
-import '../../../hospital/presentation/event_multi_images_viewer_screen.dart';
+
+import '../../../auth/presentation/event_image_viewer_screen.dart';
+import '../../../auth/presentation/event_multi_images_viewer_screen.dart';
 import '../../model/event.dart';
 
 class EventCard extends StatelessWidget {

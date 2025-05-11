@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import '../../../auth/common/dio/dio_client.dart';
+import '../../../auth/presentation/product_detail_image_viewer_screen.dart';
+import '../../../review/presentation/review_overlay_screen.dart';
 import '../../model/product.dart';
-import '../product_webview_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:alfred_clean/features/call/presentation/product_webview_screen.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -42,6 +46,61 @@ class ProductCard extends StatelessWidget {
     );
   }
 
+  void _openReviews(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReviewOverlayScreen(product: product),
+      ),
+    );
+  }
+
+  Future<void> _openDetailImage(BuildContext context) async {
+    try {
+      debugPrint('ddddddddddddddddd');
+      debugPrint('[상품상세이미지] 요청 ID: ${product.source}');
+
+      final response = await DioClient.dio.get(
+        '/api/products/${product.productId}?source=${product.source}',
+      );
+
+      // 1) 전체 응답을 dynamic 리스트로 받음
+      final List<dynamic> data = response.data;
+
+      // 2) 첫 번째 요소(Map)에서 imageUrls 리스트를 추출
+      List<String> imageUrls = [];
+      if (data.isNotEmpty && data[0] is Map<String, dynamic>) {
+        final map = data[0] as Map<String, dynamic>;
+        if (map['imageUrls'] is List) {
+          imageUrls = (map['imageUrls'] as List)
+              .whereType<String>()
+              .toList();
+        }
+      }
+
+      if (imageUrls.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                ProductDetailImageViewerScreen(imageUrls: imageUrls),
+          ),
+        );
+      } else {
+        debugPrint('[ProductDetailImages] Empty image list');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미지를 불러오지 못했습니다.')),
+        );
+      }
+    } catch (e) {
+      debugPrint('[ProductDetailImages] Error fetching detail-image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('서버 오류가 발생했습니다.')),
+      );
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width.toInt();
@@ -64,8 +123,8 @@ class ProductCard extends StatelessWidget {
                 imageUrl: _getValidImageUrl(product.image),
                 fit: BoxFit.cover,
                 memCacheWidth: screenWidth,
-                placeholder: (_, __) =>
-                const Center(child: CircularProgressIndicator(strokeWidth: 1.5)),
+                placeholder: (_, __) => const Center(
+                    child: CircularProgressIndicator(strokeWidth: 1.5)),
                 errorWidget: (_, __, ___) =>
                 const Icon(Icons.broken_image, size: 60),
               ),
@@ -89,14 +148,17 @@ class ProductCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '₩${_currencyFormatter.format(product.price)}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepOrange,
+                    Expanded(
+                      child: Text(
+                        '₩${_currencyFormatter.format(product.price)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepOrange,
+                        ),
                       ),
                     ),
                     if (isLiked != null && onLikeToggle != null)
@@ -121,6 +183,53 @@ class ProductCard extends StatelessWidget {
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
+                // if (product.reviewCount > 0) ...[
+                  const SizedBox(height: 8),
+                // ⭐ 여기만 수정
+                if (product.mallName == '지그재그' || product.mallName == '아뜨랑스')
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // 기존 리뷰보기 버튼
+                      TextButton(
+                        onPressed: () => _openReviews(context),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(50, 24),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text(
+                          '리뷰보기',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      // 우측 돋보기 아이콘
+                      IconButton(
+                        icon: const Icon(Icons.search, size: 16),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () => _openDetailImage(context),
+                      ),
+                    ],
+                  )
+                else
+                // 그 외 mallName에는 기존대로 리뷰보기만
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      onPressed: () => _openReviews(context),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(50, 24),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text(
+                        '리뷰보기',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ),
+                // ],
               ],
             ),
           ),
