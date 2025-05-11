@@ -41,18 +41,22 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    // TabController 직접 초기화
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(_handleTabSelection);
+    _tabController = TabController(length: 2, vsync: this)
+      ..addListener(_handleTabSelection);
 
-    // 스크롤 리스너 설정
+    // 쇼핑 탭 스크롤 리스너
     _shoppingController.addListener(() {
+      // 초기 로딩 중 혹은 페이징 로딩 중일 땐 절대 _loadMore 호출 금지
+      if (_isInitialLoading || _isLoadingMore) return;
       if (_shoppingController.position.pixels >=
           _shoppingController.position.maxScrollExtent - 200) {
         _loadMore();
       }
     });
+
+    // 시술커뮤니티 탭 스크롤 리스너
     _communityController.addListener(() {
+      if (_isBeautyInitialLoading || _isBeautyLoadingMore) return;
       if (_communityController.position.pixels >=
           _communityController.position.maxScrollExtent - 200) {
         _loadMoreBeauty();
@@ -75,17 +79,24 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   }
 
   Future<void> _loadInitialHistories() async {
+    setState(() => _isInitialLoading = true);
     try {
       final response = await repository.fetchHistories(limit: _limit);
       setState(() {
-        _histories = response.histories;
-        _nextPageKey = response.nextPageKey;
-        _hasMore = (_nextPageKey?.isNotEmpty ?? false);
+        _histories    = response.histories;
+        _nextPageKey  = response.nextPageKey;
+        _hasMore      = (_nextPageKey?.isNotEmpty ?? false);
       });
     } catch (e) {
       debugPrint('Error loading histories: $e');
     } finally {
       setState(() => _isInitialLoading = false);
+      // 로딩 끝나면 스크롤을 맨 위로 이동
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_shoppingController.hasClients) {
+          _shoppingController.jumpTo(0);
+        }
+      });
     }
   }
 
@@ -110,17 +121,23 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   }
 
   Future<void> _loadInitialBeautyHistories() async {
+    setState(() => _isBeautyInitialLoading = true);
     try {
       final response = await repository.fetchBeautyHistories(limit: _limit);
       setState(() {
-        _beautyHistories = response.histories;
-        _beautyNextPageKey = response.nextPageKey;
-        _hasMoreBeauty = (_beautyNextPageKey?.isNotEmpty ?? false);
+        _beautyHistories  = response.histories;
+        _beautyNextPageKey= response.nextPageKey;
+        _hasMoreBeauty    = (_beautyNextPageKey?.isNotEmpty ?? false);
       });
     } catch (e) {
       debugPrint('Error loading beauty histories: $e');
     } finally {
       setState(() => _isBeautyInitialLoading = false);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_communityController.hasClients) {
+          _communityController.jumpTo(0);
+        }
+      });
     }
   }
 

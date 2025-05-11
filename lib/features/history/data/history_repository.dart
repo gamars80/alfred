@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import '../../auth/common/dio/dio_client.dart';
 import '../model/history_response.dart';
 import '../model/beauty_history.dart';
@@ -32,11 +33,13 @@ class HistoryRepository {
       'limit': limit,
       if (nextPageKey != null) 'nextPageKey': nextPageKey,
     };
+
+    debugPrint("queryParams::::$queryParams");
     final response = await _dio.get(
       '/api/recomendation-history/beauty-history',
       queryParameters: queryParams,
     );
-    print('📡 응답 데이터 전체: ${response.data}');
+    // print('📡 응답 데이터 전체: ${response.data}');
     return BeautyHistoryResponse.fromJson(response.data);
   }
 }

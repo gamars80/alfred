@@ -33,7 +33,7 @@ class BeautyHistory {
   List<YouTubeVideo> get recommendedVideos => _recommendedVideos ?? [];
 
   factory BeautyHistory.fromJson(Map<String, dynamic> json) {
-    print('📦 raw BeautyHistory json: $json'); // 👉 여기 찍혀야 함
+    // print('📦 raw BeautyHistory json: $json'); // 👉 여기 찍혀야 함
 
     return BeautyHistory(
       id: json['id'] as String,
