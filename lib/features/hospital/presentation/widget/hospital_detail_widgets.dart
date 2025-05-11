@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import '../../../auth/presentation/webview_screen.dart';
+
+import '../../../auth/presentation/event_image_viewer_screen.dart';
 import '../../model/hospital_detail_model.dart';
-import '../event_image_viewer_screen.dart';
-import '../youtube_play_screen.dart';
+
 
 class HospitalImageCarousel extends StatelessWidget {
   final List<String> images;
@@ -20,12 +19,15 @@ class HospitalImageCarousel extends StatelessWidget {
       height: 220,
       child: PageView.builder(
         itemCount: images.length,
-        itemBuilder: (_, i) => CachedNetworkImage( // ✅ 캐싱 적용
-          imageUrl: images[i],
-          fit: BoxFit.cover,
-          placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
-          errorWidget: (_, __, ___) => const Icon(Icons.error),
-        ),
+        itemBuilder:
+            (_, i) => CachedNetworkImage(
+              // ✅ 캐싱 적용
+              imageUrl: images[i],
+              fit: BoxFit.cover,
+              placeholder:
+                  (_, __) => const Center(child: CircularProgressIndicator()),
+              errorWidget: (_, __, ___) => const Icon(Icons.error),
+            ),
       ),
     );
   }
@@ -36,9 +38,9 @@ void _openExternalWebView(BuildContext context, String url) async {
   if (await canLaunchUrl(uri)) {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('외부 브라우저를 열 수 없습니다')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('외부 브라우저를 열 수 없습니다')));
   }
 }
 
@@ -68,12 +70,19 @@ class HospitalEventList extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Text(
             '이벤트',
-            style: TextStyle(fontSize: 20, color: Colors.black87, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 20,
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         ...events.map((event) {
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 6.0,
+            ),
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: () {
@@ -81,16 +90,19 @@ class HospitalEventList extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ImageWebViewScreen(
-                        imageUrl: event.image, // 또는 bannerImage 등 실제 URL
-                      ),
+                      builder:
+                          (_) => ImageWebViewScreen(
+                            imageUrl: event.image, // 또는 bannerImage 등 실제 URL
+                          ),
                     ),
                   );
                 }
               },
               child: Card(
                 color: Colors.grey.shade100,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 elevation: 1.5,
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
@@ -102,19 +114,27 @@ class HospitalEventList extends StatelessWidget {
                         flex: 3,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: event.bannerImage != null
-                              ? CachedNetworkImage( // ✅ 캐싱 적용
-                            imageUrl: event.bannerImage!,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
-                            errorWidget: (_, __, ___) => const Icon(Icons.error),
-                          )
-                              : Container(
-                            height: 80,
-                            color: Colors.grey.shade300,
-                            child: const Icon(Icons.image_not_supported),
-                          ),
+                          child:
+                              event.bannerImage != null
+                                  ? CachedNetworkImage(
+                                    // ✅ 캐싱 적용
+                                    imageUrl: event.bannerImage!,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                    placeholder:
+                                        (_, __) => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                    errorWidget:
+                                        (_, __, ___) => const Icon(Icons.error),
+                                  )
+                                  : Container(
+                                    height: 80,
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                    ),
+                                  ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -185,7 +205,8 @@ class HospitalEventList extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                final url = 'https://web.babitalk.com/hospitals/$hospitalId?tab=event&category_type=SURGERY';
+                final url =
+                    'https://web.babitalk.com/hospitals/$hospitalId?tab=event&category_type=SURGERY';
                 _openExternalWebView(context, url);
               },
               child: const Text(
@@ -204,12 +225,15 @@ class HospitalEventList extends StatelessWidget {
   }
 }
 
-
 class HospitalReviewList extends StatelessWidget {
   final List<Review> reviews;
   final int hospitalId;
 
-  const HospitalReviewList({super.key, required this.reviews, required this.hospitalId});
+  const HospitalReviewList({
+    super.key,
+    required this.reviews,
+    required this.hospitalId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -222,15 +246,24 @@ class HospitalReviewList extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Text(
             '리뷰',
-            style: TextStyle(fontSize: 20, color: Colors.black87, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 20,
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         ...reviews.map((review) {
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 6.0,
+            ),
             child: Card(
               color: Colors.grey.shade100,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 1.5,
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
@@ -274,13 +307,18 @@ class HospitalReviewList extends StatelessWidget {
                           itemBuilder: (context, i) {
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: CachedNetworkImage( // ✅ 캐싱 적용
+                              child: CachedNetworkImage(
+                                // ✅ 캐싱 적용
                                 imageUrl: review.images[i],
                                 width: 80,
                                 height: 80,
                                 fit: BoxFit.cover,
-                                placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
-                                errorWidget: (_, __, ___) => const Icon(Icons.error),
+                                placeholder:
+                                    (_, __) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                errorWidget:
+                                    (_, __, ___) => const Icon(Icons.error),
                               ),
                             );
                           },
@@ -306,7 +344,8 @@ class HospitalReviewList extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                final url = 'https://web.babitalk.com/hospitals/$hospitalId?tab=review&category_type=SURGERY';
+                final url =
+                    'https://web.babitalk.com/hospitals/$hospitalId?tab=review&category_type=SURGERY';
                 _openExternalWebView(context, url);
               },
               child: const Text(
@@ -325,12 +364,15 @@ class HospitalReviewList extends StatelessWidget {
   }
 }
 
-
 class HospitalDoctorList extends StatelessWidget {
   final List<Doctor> doctors;
   final int hospitalId;
 
-  const HospitalDoctorList({super.key, required this.doctors, required this.hospitalId});
+  const HospitalDoctorList({
+    super.key,
+    required this.doctors,
+    required this.hospitalId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -343,15 +385,24 @@ class HospitalDoctorList extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Text(
             '의사정보',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
         ),
         ...doctors.map((doctor) {
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 6.0,
+            ),
             child: Card(
               color: Colors.grey.shade100,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 1.0,
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -360,12 +411,16 @@ class HospitalDoctorList extends StatelessWidget {
                   children: [
                     // 프로필 사진
                     ClipOval(
-                      child: CachedNetworkImage( // ✅ 캐싱 적용
+                      child: CachedNetworkImage(
+                        // ✅ 캐싱 적용
                         imageUrl: doctor.profilePhoto,
                         width: 70,
                         height: 70,
                         fit: BoxFit.cover,
-                        placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
+                        placeholder:
+                            (_, __) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
                         errorWidget: (_, __, ___) => const Icon(Icons.error),
                       ),
                     ),
@@ -403,7 +458,10 @@ class HospitalDoctorList extends StatelessWidget {
                           if (doctor.specialist != null)
                             Text(
                               doctor.specialist!,
-                              style: const TextStyle(fontSize: 8, color: Colors.black54),
+                              style: const TextStyle(
+                                fontSize: 8,
+                                color: Colors.black54,
+                              ),
                             ),
                           const SizedBox(height: 6),
                           // 해시태그 subject (Wrap으로 자동 줄바꿈)
@@ -411,15 +469,16 @@ class HospitalDoctorList extends StatelessWidget {
                             Wrap(
                               spacing: 6,
                               runSpacing: 4,
-                              children: doctor.subject.map((s) {
-                                return Text(
-                                  '#$s',
-                                  style: const TextStyle(
-                                    fontSize: 8,
-                                    color: Colors.deepPurple,
-                                  ),
-                                );
-                              }).toList(),
+                              children:
+                                  doctor.subject.map((s) {
+                                    return Text(
+                                      '#$s',
+                                      style: const TextStyle(
+                                        fontSize: 8,
+                                        color: Colors.deepPurple,
+                                      ),
+                                    );
+                                  }).toList(),
                             ),
                           const SizedBox(height: 6),
                           // 후기/상담/답변 수
@@ -427,10 +486,16 @@ class HospitalDoctorList extends StatelessWidget {
                             spacing: 5,
                             runSpacing: 4,
                             children: [
-                              Text('시술후기 ${doctor.reviewCount}', style: _statStyle),
+                              Text(
+                                '시술후기 ${doctor.reviewCount}',
+                                style: _statStyle,
+                              ),
                               Text('상담 ${doctor.askCount}', style: _statStyle),
                               if (doctor.qnaAnswerCount > 0)
-                                Text('답변 ${doctor.qnaAnswerCount}', style: _statStyle),
+                                Text(
+                                  '답변 ${doctor.qnaAnswerCount}',
+                                  style: _statStyle,
+                                ),
                             ],
                           ),
                         ],
@@ -455,7 +520,8 @@ class HospitalDoctorList extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                final url = 'https://web.babitalk.com/hospitals/$hospitalId?tab=doctor&category_type=SURGERY';
+                final url =
+                    'https://web.babitalk.com/hospitals/$hospitalId?tab=doctor&category_type=SURGERY';
                 _openExternalWebView(context, url);
               },
               child: const Text(
@@ -473,7 +539,8 @@ class HospitalDoctorList extends StatelessWidget {
     );
   }
 
-  TextStyle get _statStyle => const TextStyle(fontSize: 9, color: Colors.black54);
+  TextStyle get _statStyle =>
+      const TextStyle(fontSize: 9, color: Colors.black54);
 }
 
 class HospitalYoutubeList extends StatefulWidget {
@@ -493,7 +560,8 @@ class HospitalYoutubeList extends StatefulWidget {
 class _HospitalYoutubeListState extends State<HospitalYoutubeList> {
   @override
   Widget build(BuildContext context) {
-    if (widget.youtubes.isEmpty) return const SizedBox.shrink(); // ✅ 꼭 widget. 붙이기
+    if (widget.youtubes.isEmpty)
+      return const SizedBox.shrink(); // ✅ 꼭 widget. 붙이기
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -502,15 +570,20 @@ class _HospitalYoutubeListState extends State<HospitalYoutubeList> {
           padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
           child: Text(
             '공식 유튜브',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
         ),
         ...widget.youtubes.map((video) {
           debugPrint('🎥 렌더링 videoId: ${video.videoId}'); // ✅ 다시 찍히는지 확인
 
-          final controller = WebViewController()
-            ..setJavaScriptMode(JavaScriptMode.unrestricted)
-            ..loadHtmlString('''
+          final controller =
+              WebViewController()
+                ..setJavaScriptMode(JavaScriptMode.unrestricted)
+                ..loadHtmlString('''
             <!DOCTYPE html>
             <html>
               <head>
@@ -528,7 +601,10 @@ class _HospitalYoutubeListState extends State<HospitalYoutubeList> {
           ''');
 
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 12.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -539,7 +615,11 @@ class _HospitalYoutubeListState extends State<HospitalYoutubeList> {
                 const SizedBox(height: 8),
                 Text(
                   video.title,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
                 ),
               ],
             ),
@@ -572,11 +652,13 @@ class _HospitalImageBannerState extends State<HospitalImageBanner> {
             itemCount: widget.images.length,
             onPageChanged: (index) => setState(() => _current = index),
             itemBuilder: (_, i) {
-              return CachedNetworkImage( // ✅ 캐싱 적용
+              return CachedNetworkImage(
+                // ✅ 캐싱 적용
                 imageUrl: widget.images[i],
                 fit: BoxFit.cover,
                 width: double.infinity,
-                placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
+                placeholder:
+                    (_, __) => const Center(child: CircularProgressIndicator()),
                 errorWidget: (_, __, ___) => const Icon(Icons.error),
               );
             },

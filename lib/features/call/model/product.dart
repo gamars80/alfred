@@ -10,6 +10,7 @@ class Product {
   final String category;
   final bool liked;
   final int reviewCount;
+  final String? source;
 
   Product({
     required this.recommendationId,
@@ -23,6 +24,7 @@ class Product {
     required this.category,
     required this.liked,
     required this.reviewCount,
+    required this.source,
   });
 
   Product copyWith({
@@ -39,6 +41,7 @@ class Product {
       mallName: mallName,
       category: category,
       reviewCount: reviewCount,
+      source: source,
       liked: liked ?? this.liked,
     );
   }
@@ -53,6 +56,7 @@ class Product {
       link: json['productLink'] ?? json['link'] ?? '',
       reason: json['reason'] ?? '',
       mallName: json['mallName'] ?? '',
+      source: (json['source'] as String?) ?? '',
       category: json['category'] ?? '',
       reviewCount: _parseReviewCount(json['reviewCount']),
       liked: json['liked'] as bool? ?? false,
@@ -69,6 +73,7 @@ class Product {
       link: json['productLink'] ?? '',
       reason: json['reason'] ?? '',
       mallName: json['mallName'] ?? '',
+      source: json['source'] ?? '',
       category: json['category'] ?? '',
       reviewCount: _parseReviewCount(json['reviewCount']),
       liked: json['liked'] ?? false,

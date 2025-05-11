@@ -1,14 +1,11 @@
 // ✨ 기능은 그대로, 에러 방지 및 UI 안정화 수정 반영
 
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:alfred_clean/features/call/model/product.dart';
-import 'package:alfred_clean/features/call/presentation/product_webview_screen.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+
 import '../../../service/token_manager.dart';
 import '../../call/presentation/widget/product_card.dart';
 import '../../like/data/like_repository.dart';
-import '../../review/presentation/review_overlay_screen.dart';
 import '../data/history_repository.dart';
 import '../model/recommendation_history.dart';
 

@@ -64,10 +64,11 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
                     return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Center(
-                        child: Text(
-                          '에러 발생: ${snapshot.error}',
-                          style: const TextStyle(color: Colors.red),
-                        ));
+                      child: Text(
+                        '에러 발생: \${snapshot.error}',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    );
                   }
 
                   final reviews = snapshot.data!;
@@ -75,12 +76,16 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
                     padding: const EdgeInsets.all(12),
                     physics: const BouncingScrollPhysics(),
                     itemCount: reviews.length,
-                    itemBuilder: (_, i) {
+                    itemBuilder: (context, i) {
                       final review = reviews[i];
 
                       // 옵션을 / 기준으로 두 줄 분리
-                      final firstLine = review.selectedOptions.isNotEmpty ? review.selectedOptions.first : '';
-                      final secondLine = review.selectedOptions.length > 1 ? review.selectedOptions[1] : '';
+                      final firstLine = review.selectedOptions.isNotEmpty
+                          ? review.selectedOptions.first
+                          : '';
+                      final secondLine = review.selectedOptions.length > 1
+                          ? review.selectedOptions[1]
+                          : '';
 
                       return Card(
                         elevation: 4,
@@ -99,50 +104,74 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
                                   5,
                                       (j) => Icon(
                                     Icons.favorite,
-                                    color: j < review.rating ? Colors.pinkAccent : Colors.grey[300],
+                                    color: j < review.rating
+                                        ? Colors.pinkAccent
+                                        : Colors.grey[300],
                                     size: 16,
                                   ),
                                 ),
                               ),
 
-                              // ✅ firstLine이 있을 때만
                               if (firstLine.isNotEmpty) ...[
                                 const SizedBox(height: 10),
                                 Text(
                                   firstLine,
-                                  style: const TextStyle(fontSize: 13, color: Colors.black87),
+                                  style: const TextStyle(
+                                      fontSize: 10, color: Colors.black87),
                                 ),
                                 const SizedBox(height: 4),
                               ],
 
-                              // ✅ secondLine이 있을 때만
                               if (secondLine.isNotEmpty) ...[
-                                const SizedBox(height: 10),
+                                const SizedBox(height: 4),
                                 Text(
                                   secondLine,
-                                  style: const TextStyle(fontSize: 13, color: Colors.black87),
+                                  style: const TextStyle(
+                                      fontSize: 10, color: Colors.black87),
                                 ),
                                 const SizedBox(height: 4),
                               ],
+
                               const SizedBox(height: 12),
                               const Divider(color: Colors.black12, height: 1),
                               const SizedBox(height: 12),
+
                               Text(
                                 review.content,
-                                style: const TextStyle(fontSize: 9, color: Colors.black87),
+                                style: const TextStyle(
+                                    fontSize: 9, color: Colors.black87),
                               ),
+
                               if (review.imageUrls.isNotEmpty) ...[
                                 const SizedBox(height: 12),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: CachedNetworkImage(
-                                    imageUrl: review.imageUrls.first,
-                                    width: double.infinity,
-                                    height: 200,
-                                    fit: BoxFit.cover,
-                                    placeholder: (_, __) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                                    errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
-                                  )
+                                SizedBox(
+                                  height: 200,
+                                  child: ListView.separated(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const BouncingScrollPhysics(),
+                                    itemCount: review.imageUrls.length,
+                                    separatorBuilder: (context, index) =>
+                                    const SizedBox(width: 8),
+                                    itemBuilder: (context, index) {
+                                      return ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: CachedNetworkImage(
+                                          imageUrl:
+                                          review.imageUrls[index],
+                                          width: 200,
+                                          height: 200,
+                                          fit: BoxFit.contain,
+                                          placeholder: (_, __) => const Center(
+                                              child:
+                                              CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              )),
+                                          errorWidget: (_, __, ___) =>
+                                          const Icon(Icons.broken_image),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ],
                             ],
