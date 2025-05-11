@@ -57,11 +57,10 @@ class ProductCard extends StatelessWidget {
 
   Future<void> _openDetailImage(BuildContext context) async {
     try {
-      debugPrint('ddddddddddddddddd');
       debugPrint('[상품상세이미지] 요청 ID: ${product.source}');
 
       final response = await DioClient.dio.get(
-        '/api/products/${product.productId}?source=${product.source}',
+        '/api/products/${product.productId}?source=${product.source}&detailLink=${product.link}',
       );
 
       // 1) 전체 응답을 dynamic 리스트로 받음
@@ -186,7 +185,7 @@ class ProductCard extends StatelessWidget {
                 // if (product.reviewCount > 0) ...[
                   const SizedBox(height: 8),
                 // ⭐ 여기만 수정
-                if (product.mallName == '지그재그' || product.mallName == '아뜨랑스')
+                if (product.source == 'ZIGZAG' || product.source == 'ATTRANGS' || product.source == 'HOTPING')
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
