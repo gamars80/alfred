@@ -22,23 +22,12 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
     super.initState();
     reviewsFuture = repo.fetchReviews(
       productId: widget.product.productId,
-      mallName: _normalizeMallName(widget.product.mallName),
+      source: widget.product.source,
       productLink: widget.product.link,
     );
   }
 
-  String _normalizeMallName(String mallName) {
-    switch (mallName) {
-      case '지그재그':
-        return 'ZIGZAG';
-      case '핫핑':
-        return 'HOTPING';
-      case '에이인':
-        return 'AIN';
-      default:
-        return mallName.toUpperCase();
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {

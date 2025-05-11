@@ -211,23 +211,23 @@ class ProductCard extends StatelessWidget {
                       ),
                     ],
                   )
-                else
-                // 그 외 mallName에는 기존대로 리뷰보기만
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton(
-                      onPressed: () => _openReviews(context),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(50, 24),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        '리뷰보기',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ),
+                // else
+                // // 그 외 mallName에는 기존대로 리뷰보기만
+                //   Align(
+                //     alignment: Alignment.centerLeft,
+                //     child: TextButton(
+                //       onPressed: () => _openReviews(context),
+                //       style: TextButton.styleFrom(
+                //         padding: EdgeInsets.zero,
+                //         minimumSize: const Size(50, 24),
+                //         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                //       ),
+                //       child: const Text(
+                //         '리뷰보기',
+                //         style: TextStyle(fontSize: 12),
+                //       ),
+                //     ),
+                //   ),
                 // ],
               ],
             ),

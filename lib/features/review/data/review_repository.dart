@@ -8,16 +8,16 @@ class ReviewRepository {
 
   Future<List<Review>> fetchReviews({
     required String productId,
-    required String mallName,
+    required String? source,
     required String productLink,
   }) async {
-    print('[리뷰 요청 시작] productId: $productId, mall: $mallName');
+    print('[리뷰 요청 시작] productId: $productId, source $source');
 
     final queryParams = {
-      'source': mallName,
+      'source': source,
     };
 
-    if (mallName == 'HOTPING') {
+    if (source == 'HOTPING') {
       final encodedLink = Uri.encodeComponent(productLink);
       queryParams['encodedLink'] = encodedLink;
     }
