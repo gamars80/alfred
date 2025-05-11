@@ -185,7 +185,7 @@ class ProductCard extends StatelessWidget {
                 // if (product.reviewCount > 0) ...[
                   const SizedBox(height: 8),
                 // ⭐ 여기만 수정
-                if (product.source == 'ZIGZAG' || product.source == 'ATTRANGS' || product.source == 'HOTPING')
+                if (product.source == 'ZIGZAG' || product.source == 'ATTRANGS' || product.source == 'HOTPING' || product.source == 'MUSINSA')
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
