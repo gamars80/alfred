@@ -6,15 +6,68 @@ import '../../../auth/common/dio/dio_client.dart';
 
 import '../../../auth/presentation/event_image_viewer_screen.dart';
 import '../../../auth/presentation/event_multi_images_viewer_screen.dart';
+import '../../../like/data/like_repository.dart';
 import '../../model/event.dart';
 
-class EventCard extends StatelessWidget {
-  final Event event;
 
-  const EventCard({Key? key, required this.event}) : super(key: key);
+class EventCard extends StatefulWidget {
+  final Event event;
+  final int historyCreatedAt;
+  final void Function(Event updated)? onLikedChanged;
+
+  const EventCard({
+    Key? key,
+    required this.event,
+    required this.historyCreatedAt,
+    this.onLikedChanged,
+  }) : super(key: key);
+
+  @override
+  State<EventCard> createState() => _EventCardState();
+}
+
+class _EventCardState extends State<EventCard> {
+  late Event _event;
+  final likeRepo = LikeRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    _event = widget.event;
+  }
+
+  Future<void> _toggleLike() async {
+    final isNowLiked = !_event.liked;
+
+    setState(() {
+      _event = _event.copyWith(liked: isNowLiked);
+    });
+
+    try {
+      if (isNowLiked) {
+        await likeRepo.postLikeBeautyEvent(
+          historyCreatedAt: widget.historyCreatedAt,
+          eventId: _event.id.toString(),
+          source: _event.source,
+        );
+      } else {
+        await likeRepo.deleteLikeBeautyEvent(
+          historyCreatedAt: widget.historyCreatedAt,
+          eventId: _event.id.toString(),
+          source: _event.source,
+        );
+      }
+
+      widget.onLikedChanged?.call(_event);
+    } catch (e) {
+      setState(() {
+        _event = _event.copyWith(liked: !isNowLiked);
+      });
+    }
+  }
 
   Future<void> _openWebView() async {
-    final url = 'https://www.gangnamunni.com/events/${event.id}';
+    final url = 'https://www.gangnamunni.com/events/${_event.id}';
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     }
@@ -22,19 +75,8 @@ class EventCard extends StatelessWidget {
 
   Future<void> _openDetailImage(BuildContext context) async {
     try {
-      debugPrint('[EventCard] 요청 ID: ${event.id}');
-
-      final response = await DioClient.dio.get(
-        '/api/events/${event.id}/detail-image',
-      );
-
-      // 응답 데이터가 List<dynamic> 형식이라고 가정
-      final List<dynamic> data = response.data;
-
-      // String만 추출
-      final List<String> imageUrls = data.whereType<String>().toList();
-
-      debugPrint('[EventCard] 응답: $imageUrls');
+      final response = await DioClient.dio.get('/api/events/${_event.id}/detail-image');
+      final List<String> imageUrls = List<String>.from(response.data ?? []);
 
       if (imageUrls.isNotEmpty) {
         Navigator.push(
@@ -44,19 +86,16 @@ class EventCard extends StatelessWidget {
           ),
         );
       } else {
-        debugPrint('[EventCard] Empty image list');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('이미지를 불러오지 못했습니다.')),
         );
       }
     } catch (e) {
-      debugPrint('[EventCard] Error fetching detail-image: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('서버 오류가 발생했습니다.')),
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +119,7 @@ class EventCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        event.title,
+                        _event.title,
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -90,18 +129,14 @@ class EventCard extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () async {
-                        if (event.source == '바비톡') {
-                          // 바비톡인 경우 event.detailImage 사용
+                        if (_event.source == '바비톡') {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => ImageWebViewScreen(
-                                imageUrl: event.detailImage,
-                              ),
+                              builder: (_) => ImageWebViewScreen(imageUrl: _event.detailImage),
                             ),
                           );
                         } else {
-                          // 그 외는 API 호출
                           await _openDetailImage(context);
                         }
                       },
@@ -109,17 +144,30 @@ class EventCard extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         minimumSize: const Size(50, 30),
                       ),
-                      child: const Text(
-                        '상세보기',
-                        style: TextStyle(fontSize: 12, color: Colors.blue),
-                      ),
+                      child: const Text('상세보기', style: TextStyle(fontSize: 12, color: Colors.blue)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  '${event.location} · ${event.hospitalName}',
-                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${_event.location} · ${_event.hospitalName}',
+                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        _event.liked ? Icons.favorite : Icons.favorite_border,
+                        size: 20,
+                        color: _event.liked ? Colors.red : Colors.grey,
+                      ),
+                      onPressed: _toggleLike,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -136,14 +184,11 @@ class EventCard extends StatelessWidget {
 
   Widget _buildThumbnail(BuildContext context) {
     return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(16),
-        topRight: Radius.circular(16),
-      ),
+      borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
       child: Stack(
         children: [
           CachedNetworkImage(
-            imageUrl: event.thumbnailUrl,
+            imageUrl: _event.thumbnailUrl,
             width: double.infinity,
             height: 160,
             fit: BoxFit.cover,
@@ -173,7 +218,7 @@ class EventCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                event.source,
+                _event.source,
                 style: const TextStyle(
                   fontSize: 10,
                   color: Colors.white,
@@ -191,14 +236,14 @@ class EventCard extends StatelessWidget {
     final formatter = NumberFormat('#,###', 'ko_KR');
     return Row(
       children: [
-        if (event.discountRate > 0)
+        if (_event.discountRate > 0)
           Text(
-            '${event.discountRate}%',
+            '${_event.discountRate}%',
             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.orange),
           ),
-        if (event.discountRate > 0) const SizedBox(width: 4),
+        if (_event.discountRate > 0) const SizedBox(width: 4),
         Text(
-          '${formatter.format(event.discountedPrice)}원',
+          '${formatter.format(_event.discountedPrice)}원',
           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black),
         ),
       ],
@@ -206,8 +251,7 @@ class EventCard extends StatelessWidget {
   }
 
   Widget _buildRatingSection() {
-    final ratingStr = (event.rating ?? 0.0).toStringAsFixed(1);
-
+    final ratingStr = (_event.rating ?? 0.0).toStringAsFixed(1);
     return Row(
       children: [
         const Icon(Icons.star, size: 14, color: Colors.amber),
@@ -218,7 +262,7 @@ class EventCard extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          '(${event.ratingCount})',
+          '(${_event.ratingCount})',
           style: const TextStyle(fontSize: 11, color: Colors.grey),
         ),
       ],

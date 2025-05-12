@@ -122,7 +122,7 @@ class CallScreenBody extends StatelessWidget {
           if (selectedProcedureTab == 0)
             ...events.map((e) => Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: EventCard(event: e),
+              child: EventCard(event: e, historyCreatedAt: createdAt,),
             )),
           if (selectedProcedureTab == 1)
             ...hospitals.map((h) => Padding(
