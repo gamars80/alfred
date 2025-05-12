@@ -64,19 +64,4 @@ class Event {
   }
 
 
-  Hospital toHospital() {
-    return Hospital(
-      id: id,
-      title: title,
-      thumbnailUrl: thumbnailUrl,
-      location: location,
-      hospitalName: hospitalName,
-      rating: (rating ?? 0).toString(),
-      ratingCount: ratingCount,
-      counselCount: 0,
-      doctorCount: 0,
-      description: '',
-
-    );
-  }
 }
