@@ -96,7 +96,18 @@ class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen> {
         if (selectedTab == 0)
           ...events.map((e) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: EventCard(event: e),
+            child: EventCard(
+              event: e,
+              historyCreatedAt: widget.history.createdAt,
+              onLikedChanged: (updated) {
+                final index = widget.history.recommendedEvents.indexWhere((ev) => ev.id == updated.id);
+                if (index != -1) {
+                  setState(() {
+                    widget.history.recommendedEvents[index] = updated;
+                  });
+                }
+              },
+            ),
           )),
         if (selectedTab == 1)
           ...hospitals.map((h) => Padding(
