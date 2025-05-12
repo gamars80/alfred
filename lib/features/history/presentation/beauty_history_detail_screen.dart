@@ -38,6 +38,10 @@ class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         title: Text(widget.history.keyword),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context, widget.history), // 여기서 반환!
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -45,8 +49,20 @@ class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen> {
           if (posts.isNotEmpty) ...[
             const Text('📌 관련 커뮤니티 게시글', style: _sectionTitleStyle),
             const SizedBox(height: 8),
-            ...posts.map((post) => CommunityCard(post: post, source: post.source,
-              historyCreatedAt: widget.history.createdAt, initialLiked: post.liked, )),
+            ...posts.map((post) => CommunityCard(
+              post: post,
+              source: post.source,
+              historyCreatedAt: widget.history.createdAt,
+              initialLiked: post.liked,
+              onLikedChanged: (updatedPost) {
+                final index = widget.history.recommendedPostsByGangnam.indexWhere((p) => p.id == updatedPost.id);
+                if (index != -1) {
+                  setState(() {
+                    widget.history.recommendedPostsByGangnam[index] = updatedPost;
+                  });
+                }
+              },
+            )),
             const SizedBox(height: 24),
           ],
           if (events.isNotEmpty || hospitals.isNotEmpty) ...[

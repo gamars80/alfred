@@ -34,4 +34,28 @@ class CommunityPost {
       photoUrls: List<String>.from(json['photoUrls'] ?? []),
     );
   }
+
+  CommunityPost copyWith({
+    int? id,
+    String? nickname,
+    String? content,
+    int? viewCount,
+    int? commentCount,
+    int? thumbUpCount,
+    List<String>? photoUrls,
+    bool? liked,
+    String? source,
+  }) {
+    return CommunityPost(
+      id: id ?? this.id,
+      nickname: nickname ?? this.nickname,
+      content: content ?? this.content,
+      viewCount: viewCount ?? this.viewCount,
+      commentCount: commentCount ?? this.commentCount,
+      thumbUpCount: thumbUpCount ?? this.thumbUpCount,
+      photoUrls: photoUrls ?? this.photoUrls,
+      liked: liked ?? this.liked,
+      source: source ?? this.source,
+    );
+  }
 }
