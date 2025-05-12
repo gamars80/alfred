@@ -68,7 +68,12 @@ class _CommunityCardState extends State<CommunityCard> {
                   children: [
                     GestureDetector(
                       onTap: () async {
-                        final uri = Uri.parse('https://www.gangnamunni.com/community/\${widget.post.id}');
+                        // source에 따라 베이스 URL을 분기
+                        final baseUrl = widget.source == '강남언니'
+                            ? 'https://www.gangnamunni.com/community/'
+                            : 'https://web.babitalk.com/community/';
+                        final uri = Uri.parse('$baseUrl${widget.post.id}');
+
                         if (await canLaunchUrl(uri)) {
                           await launchUrl(uri, mode: LaunchMode.externalApplication);
                         } else {
