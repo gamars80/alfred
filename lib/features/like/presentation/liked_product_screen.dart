@@ -1,5 +1,6 @@
 // ✅ 1. 좋아요 전체 화면 구조 (탭 기반)
 import 'package:alfred_clean/features/like/presentation/widget/beauty_community_liked_tab.dart';
+import 'package:alfred_clean/features/like/presentation/widget/beauty_event_liked_tab.dart';
 import 'package:alfred_clean/features/like/presentation/widget/product_liked_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,7 +26,7 @@ class _LikedProductScreenState extends State<LikedProductScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -36,57 +37,49 @@ class _LikedProductScreenState extends State<LikedProductScreen>
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: _tabs.length,
-      child: Scaffold(
-        backgroundColor: const Color(0xFF121212),
-        appBar: AppBar(
-          title: Text(
-            '찜한 항목',
-            style: GoogleFonts.notoSans(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: Colors.white,
+    return Scaffold(
+      backgroundColor: const Color(0xFF121212),
+      appBar: AppBar(
+        title: Text(
+          '찜한 항목',
+          style: GoogleFonts.notoSans(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: Colors.white,
+          ),
+        ),
+
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              tabs: _tabs,
+              labelStyle: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
+              indicatorColor: Colors.amber,
+              labelColor: Colors.amber,
+              unselectedLabelColor: Colors.white70,
+              labelPadding: const EdgeInsets.only(left: 0, right: 12),
             ),
           ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(48),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                labelStyle: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
-                indicatorColor: Colors.amber,
-                labelColor: Colors.amber,
-                unselectedLabelColor: Colors.white70,
-                labelPadding: const EdgeInsets.only(left: 0, right: 12),
-                padding: EdgeInsets.zero,
-                tabs: _tabs,
-              ),
+        ),
+        backgroundColor: Colors.black,
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: const [
+          FashionLikedTab(),
+          BeautyCommunityLikedTab(),
+          BeautyEventLikedTab(),
+          Center(
+            child: Text(
+              '시술 병원 좋아요 준비 중',
+              style: TextStyle(color: Colors.white),
             ),
           ),
-          backgroundColor: Colors.black,
-        ),
-        body: TabBarView(
-          controller: _tabController,
-          children: const [
-            FashionLikedTab(),
-            BeautyCommunityLikedTab(),
-            Center(
-              child: Text(
-                '시술 이벤트 좋아요 준비 중',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            Center(
-              child: Text(
-                '시술 병원 좋아요 준비 중',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

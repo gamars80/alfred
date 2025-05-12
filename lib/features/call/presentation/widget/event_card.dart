@@ -67,7 +67,10 @@ class _EventCardState extends State<EventCard> {
   }
 
   Future<void> _openWebView() async {
-    final url = 'https://www.gangnamunni.com/events/${_event.id}';
+    final String url = _event.source == '바비톡'
+        ? 'https://web.babitalk.com/events/${_event.id}'
+        : 'https://www.gangnamunni.com/events/${_event.id}';
+
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     }

@@ -188,13 +188,37 @@ class LikeRepository {
   }
 
   Future<PaginatedLikedBeautyEvent> fetchLikedBeautyEvent({int page = 0}) async {
-    final response = await _dio.get('/api/likes/me/beauty-eveny', queryParameters: {
+    final uri = '/api/likes/me/beauty-event';
+    final params = {
       'page': page,
       'size': pageSize,
-    });
+    };
 
-    return PaginatedLikedBeautyEvent.fromJson(response.data);
+    debugPrint('📡 [GET] $uri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(uri, queryParameters: params);
+
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      debugPrint('    ▶ response.data: ${response.data}');
+
+      return PaginatedLikedBeautyEvent.fromJson(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $uri');
+      debugPrint('    ▶ message: ${e.message}');
+      debugPrint('    ▶ response.statusCode: ${e.response?.statusCode}');
+      debugPrint('    ▶ response.data: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      debugPrint('❌ [Unexpected Error] $uri');
+      debugPrint('    ▶ error: $e');
+      debugPrint('    ▶ stackTrace: $st');
+      rethrow;
+    }
   }
+
+
 
 }
 
