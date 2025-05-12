@@ -1,3 +1,4 @@
+import 'package:alfred_clean/features/like/model/paginated_liked_beauty_event.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import '../../auth/common/dio/dio_client.dart';
@@ -131,6 +132,68 @@ class LikeRepository {
       'beautyCommunityId': beautyCommunityId,
       'source': source,
     });
+  }
+
+  Future<void> postLikeBeautyEvent({
+    required int historyCreatedAt,
+    required String eventId,
+    required String source,
+  }) async {
+    // 1) 호출 파라미터 전체 로그
+    debugPrint('▶️ historyCreatedAt: ${historyCreatedAt.toString()}');
+    debugPrint('▶️ eventId: $eventId');
+    debugPrint('▶️ source: $source');
+
+    try {
+      // 2) 요청 payload 로그
+      final payload = {
+        'historyCreatedAt': historyCreatedAt.toString(),
+        'eventId': eventId,
+        'source': source,
+      };
+      debugPrint('   요청 페이로드: $payload');
+
+      // 3) 실제 API 호출
+      final response = await _dio.post(
+        '/api/likes/beauty-event',
+        data: payload,
+      );
+
+      // 4) 응답 로그
+      debugPrint('✅ API 응답 상태: ${response.statusCode}');
+      debugPrint('   응답 데이터: ${response.data}');
+    } on DioException catch (e) {
+      // 5) 네트워크/서버 에러 로그
+      debugPrint('⚠️ DioException 발생: ${e.message}');
+      debugPrint('   response.data: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      // 6) 기타 예외
+      debugPrint('❌ 알 수 없는 예외: $e');
+      debugPrint('$st');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteLikeBeautyEvent({
+    required int historyCreatedAt,
+    required String eventId,
+    required String source,
+  }) async {
+    await _dio.delete('/api/likes/beauty-event', data: {
+      'historyCreatedAt': '$historyCreatedAt',
+      'eventId': eventId,
+      'source': source,
+    });
+  }
+
+  Future<PaginatedLikedBeautyEvent> fetchLikedBeautyEvent({int page = 0}) async {
+    final response = await _dio.get('/api/likes/me/beauty-eveny', queryParameters: {
+      'page': page,
+      'size': pageSize,
+    });
+
+    return PaginatedLikedBeautyEvent.fromJson(response.data);
   }
 
 }
