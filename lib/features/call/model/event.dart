@@ -12,6 +12,7 @@ class Event {
   final double? rating;
   final int ratingCount;
   final String detailImage;
+  final bool liked;
 
   Event({
     required this.id,
@@ -25,6 +26,7 @@ class Event {
     this.rating,
     required this.ratingCount,
     required this.detailImage,
+    required this.liked,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -40,8 +42,27 @@ class Event {
       rating: double.tryParse(json['rating']?.toString() ?? ''),
       ratingCount: json['ratingCount'],
       detailImage: json['detailImage'] ?? '',
+      liked: json['liked'] ?? false, // 기본 false
     );
   }
+
+  Event copyWith({bool? liked}) {
+    return Event(
+      id: id,
+      title: title,
+      source: source,
+      thumbnailUrl: thumbnailUrl,
+      location: location,
+      hospitalName: hospitalName,
+      discountedPrice: discountedPrice,
+      discountRate: discountRate,
+      rating: rating,
+      ratingCount: ratingCount,
+      detailImage: detailImage,
+      liked: liked ?? this.liked,
+    );
+  }
+
 
   Hospital toHospital() {
     return Hospital(
