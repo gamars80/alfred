@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import '../../auth/common/dio/dio_client.dart';
+import '../model/paginated_liked_beauty_community.dart';
 import '../model/paginated_liked_products.dart';
 
 class LikeRepository {
@@ -38,13 +39,45 @@ class LikeRepository {
     required String productId,
     required String mallName,
   }) async {
-    await _dio.delete('/api/likes', data: {
+    final payload = {
       'historyCreatedAt': '$historyCreatedAt',
       'recommendationId': recommendationId,
       'productId': productId,
       'mallName': mallName,
-    });
+    };
+
+    debugPrint('📡 DELETE /api/likes 호출');
+    debugPrint('   요청 데이터: $payload');
+
+    try {
+      final response = await _dio.delete(
+        '/api/likes',
+        data: payload,
+      );
+      debugPrint('✅ 삭제 요청 성공 - 상태 코드: ${response.statusCode}');
+      debugPrint('   응답 데이터: ${response.data}');
+    } on DioException catch (e) {
+      debugPrint('❌ DioException 발생: ${e.message}');
+      debugPrint('   상태 코드: ${e.response?.statusCode}');
+      debugPrint('   응답 데이터: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      debugPrint('❌ 일반 예외 발생: $e');
+      debugPrint('$st');
+      rethrow;
+    }
   }
+
+
+  Future<PaginatedLikedBeautyCommunity> fetchLikedBeautyCommunity({int page = 0}) async {
+    final response = await _dio.get('/api/likes/me/beauty-community', queryParameters: {
+      'page': page,
+      'size': pageSize,
+    });
+
+    return PaginatedLikedBeautyCommunity.fromJson(response.data);
+  }
+
 
   Future<void> postLikeBeautyCommunity({
     required int historyCreatedAt,

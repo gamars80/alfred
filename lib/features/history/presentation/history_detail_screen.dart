@@ -178,7 +178,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('요청 실패: \$e')),
+        SnackBar(content: Text('요청 실패: $e')),
       );
     }
   }

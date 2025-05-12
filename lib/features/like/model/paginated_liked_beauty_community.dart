@@ -1,13 +1,13 @@
-import 'liked_product.dart';
+import 'like_beauty_community.dart';
 
-class PaginatedLikedProducts {
-  final List<LikedProduct> content;
+class PaginatedLikedBeautyCommunity {
+  final List<LikedBeautyCommunity> content;
   final int page;
   final int size;
   final int totalPages;
   final int totalElements;
 
-  PaginatedLikedProducts({
+  PaginatedLikedBeautyCommunity({
     required this.content,
     required this.page,
     required this.size,
@@ -15,12 +15,14 @@ class PaginatedLikedProducts {
     required this.totalElements,
   });
 
-  factory PaginatedLikedProducts.fromJson(Map<String, dynamic> json) {
+  factory PaginatedLikedBeautyCommunity.fromJson(Map<String, dynamic> json) {
     final rawList = json['content'] as List<dynamic>;
-    return PaginatedLikedProducts(
+    return PaginatedLikedBeautyCommunity(
       content:
           rawList
-              .map((e) => LikedProduct.fromJson(e as Map<String, dynamic>))
+              .map(
+                (e) => LikedBeautyCommunity.fromJson(e as Map<String, dynamic>),
+              )
               .toList(),
       page: json['page'] as int,
       size: json['size'] as int,
