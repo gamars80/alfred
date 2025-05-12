@@ -6,11 +6,38 @@ import '../../model/community_post.dart';
 import 'gallery_page.dart';
 import 'dart:ui';
 
+class _IconText extends StatelessWidget {
+  final IconData icon;
+  final int count;
+
+  const _IconText({required this.icon, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: Colors.deepPurple),
+        const SizedBox(width: 4),
+        Text(
+          count.toString(),
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class CommunityCard extends StatefulWidget {
   final CommunityPost post;
   final String source;
   final int historyCreatedAt;
   final bool initialLiked;
+
+  final void Function(CommunityPost updatedPost)? onLikedChanged;
 
   const CommunityCard({
     Key? key,
@@ -18,6 +45,7 @@ class CommunityCard extends StatefulWidget {
     required this.source,
     required this.historyCreatedAt,
     required this.initialLiked,
+    this.onLikedChanged,
   }) : super(key: key);
 
   @override
@@ -27,18 +55,20 @@ class CommunityCard extends StatefulWidget {
 class _CommunityCardState extends State<CommunityCard> {
   static const _limit = 100;
   late bool isLiked;
+  late CommunityPost _post;
   final LikeRepository _likeRepo = LikeRepository();
 
   @override
   void initState() {
     super.initState();
     isLiked = widget.initialLiked;
+    _post = widget.post;
     debugPrint('🕒 CommunityCard.init: historyCreatedAt=${widget.historyCreatedAt}, initialLiked=${widget.initialLiked}');
   }
 
   @override
   Widget build(BuildContext context) {
-    final content = widget.post.content;
+    final content = _post.content;
     final isLong = content.length > _limit;
     final displayText = isLong ? content.substring(0, _limit) + '...' : content;
 
@@ -68,11 +98,10 @@ class _CommunityCardState extends State<CommunityCard> {
                   children: [
                     GestureDetector(
                       onTap: () async {
-                        // source에 따라 베이스 URL을 분기
                         final baseUrl = widget.source == '강남언니'
                             ? 'https://www.gangnamunni.com/community/'
                             : 'https://web.babitalk.com/community/';
-                        final uri = Uri.parse('$baseUrl${widget.post.id}');
+                        final uri = Uri.parse('$baseUrl${_post.id}');
 
                         if (await canLaunchUrl(uri)) {
                           await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -107,22 +136,22 @@ class _CommunityCardState extends State<CommunityCard> {
                   ],
                 ),
               ],
-              if (widget.post.photoUrls.isNotEmpty) ...[
+              if (_post.photoUrls.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 SizedBox(
                   height: 80,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    itemCount: widget.post.photoUrls.length,
+                    itemCount: _post.photoUrls.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (_, i) {
-                      final url = widget.post.photoUrls[i];
-                      final showBlur = i > 0 && widget.post.photoUrls.length > 1;
+                      final url = _post.photoUrls[i];
+                      final showBlur = i > 0 && _post.photoUrls.length > 1;
 
                       return GestureDetector(
                         onTap: () async {
                           if (showBlur) {
-                            final uri = Uri.parse('https://www.gangnamunni.com/community/\${widget.post.id}');
+                            final uri = Uri.parse('https://www.gangnamunni.com/community/${_post.id}');
                             if (await canLaunchUrl(uri)) {
                               await launchUrl(uri, mode: LaunchMode.externalApplication);
                             } else {
@@ -135,7 +164,7 @@ class _CommunityCardState extends State<CommunityCard> {
                               context,
                               MaterialPageRoute(
                                 builder: (_) => GalleryPage(
-                                  images: widget.post.photoUrls,
+                                  images: _post.photoUrls,
                                   initialIndex: i,
                                 ),
                               ),
@@ -164,7 +193,7 @@ class _CommunityCardState extends State<CommunityCard> {
                               ),
                             ),
                             if (showBlur)
-                              Positioned.fill(
+                              const Positioned.fill(
                                 child: Center(
                                   child: Text(
                                     'Click',
@@ -195,17 +224,17 @@ class _CommunityCardState extends State<CommunityCard> {
                 children: [
                   _IconText(
                     icon: Icons.thumb_up,
-                    count: widget.post.commentCount,
+                    count: _post.thumbUpCount,
                   ),
                   const SizedBox(width: 24),
                   _IconText(
                     icon: Icons.comment,
-                    count: widget.post.commentCount,
+                    count: _post.commentCount,
                   ),
                   const SizedBox(width: 24),
                   _IconText(
                     icon: Icons.visibility,
-                    count: widget.post.viewCount,
+                    count: _post.viewCount,
                   ),
                   const Spacer(),
                   Text(
@@ -225,51 +254,36 @@ class _CommunityCardState extends State<CommunityCard> {
   }
 
   Future<void> _toggleLike() async {
-    setState(() => isLiked = !isLiked);
-    debugPrint('▶️ toggleLike: historyCreatedAt=${widget.historyCreatedAt}, postId=${widget.post.id}, isLiked=$isLiked');
+    setState(() {
+      isLiked = !isLiked;
+      _post = _post.copyWith(liked: isLiked);
+    });
+
+    widget.onLikedChanged?.call(_post);
+    debugPrint('▶️ toggleLike: historyCreatedAt=${widget.historyCreatedAt}, postId=${_post.id}, isLiked=$isLiked');
+
     try {
       if (isLiked) {
         await _likeRepo.postLikeBeautyCommunity(
           historyCreatedAt: widget.historyCreatedAt,
-          beautyCommunityId: widget.post.id.toString(),
+          beautyCommunityId: _post.id.toString(),
           source: widget.source,
         );
       } else {
         await _likeRepo.deleteLikeBeautyCommunity(
           historyCreatedAt: widget.historyCreatedAt,
-          beautyCommunityId: widget.post.id.toString(),
+          beautyCommunityId: _post.id.toString(),
           source: widget.source,
         );
       }
     } catch (e) {
-      setState(() => isLiked = !isLiked);
+      setState(() {
+        isLiked = !isLiked;
+        _post = _post.copyWith(liked: isLiked); // 롤백도 같이
+      });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('좋아요 처리 중 오류가 발생했습니다.')),
+        const SnackBar(content: Text('좋아요 처리 중 오류가 발생했습니다.')),
       );
     }
-  }
-}
-
-class _IconText extends StatelessWidget {
-  final IconData icon;
-  final int count;
-  const _IconText({required this.icon, required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: Colors.deepPurple),
-        const SizedBox(width: 4),
-        Text(
-          count.toString(),
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-      ],
-    );
   }
 }

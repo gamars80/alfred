@@ -308,13 +308,19 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
           final history = _beautyHistories[idx];
           return BeautyHistoryCard(
             history: history,
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final updated = await Navigator.push<BeautyHistory>(
                 context,
                 MaterialPageRoute(
                   builder: (_) => BeautyHistoryDetailScreen(history: history),
                 ),
               );
+              if (updated != null) {
+                setState(() {
+                  final idx = _beautyHistories.indexWhere((h) => h.createdAt == updated.createdAt);
+                  if (idx != -1) _beautyHistories[idx] = updated;
+                });
+              }
             },
           );
         },
