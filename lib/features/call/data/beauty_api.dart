@@ -24,6 +24,9 @@ class BeautyApi {
       debugPrint('▶️ 요청 시작: /api/ai-search/beauty, query="$query"');
       final response = await _dio.post(
         '/api/ai-search/beauty',
+        options: Options(
+          receiveTimeout: const Duration(seconds: 30),
+        ),
         data: {'query': query},
       );
 

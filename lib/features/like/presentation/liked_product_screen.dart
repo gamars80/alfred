@@ -1,4 +1,5 @@
 // ✅ 1. 좋아요 전체 화면 구조 (탭 기반)
+import 'package:alfred_clean/features/like/presentation/widget/beauty_community_liked_tab.dart';
 import 'package:alfred_clean/features/like/presentation/widget/product_liked_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -59,8 +60,8 @@ class _LikedProductScreenState extends State<LikedProductScreen>
                 indicatorColor: Colors.amber,
                 labelColor: Colors.amber,
                 unselectedLabelColor: Colors.white70,
-                labelPadding: const EdgeInsets.only(left: 0, right: 12), // ← 좌측 딱 붙이기
-                padding: EdgeInsets.zero, // ← 전체 마진 제거
+                labelPadding: const EdgeInsets.only(left: 0, right: 12),
+                padding: EdgeInsets.zero,
                 tabs: _tabs,
               ),
             ),
@@ -71,12 +72,7 @@ class _LikedProductScreenState extends State<LikedProductScreen>
           controller: _tabController,
           children: const [
             FashionLikedTab(),
-            Center(
-              child: Text(
-                '시술 커뮤니티 좋아요 준비 중',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
+            BeautyCommunityLikedTab(),
             Center(
               child: Text(
                 '시술 이벤트 좋아요 준비 중',
