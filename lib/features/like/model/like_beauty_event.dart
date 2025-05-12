@@ -36,15 +36,15 @@ class LikedBeautyEvent {
       eventId: json['eventId'] as int,
       source: json['source'] as String,
       title: json['title'] as String,
-      thumbnailUrls: (json['thumbnailUrls'] as List?)?.map((e) => e.toString()).toList(), // ⬅ null-safe 변환
+      thumbnailUrls: (json['thumbnailUrls'] as List?)?.map((e) => e.toString()).toList(),
       location: json['location'] as String,
       hospitalName: json['hospitalName'] as String,
       discountedPrice: json['discountedPrice'] as int,
       discountRate: json['discountRate'] as int,
-      rating: json['rating'] as String,
+      rating: json['rating'].toString(),  // 안전하게 toString()
       ratingCount: json['ratingCount'] as int,
-      description: json['description'] as String,
-      detailImage: json['detailImage'] as String,
+      description: json['description']?.toString() ?? '', // 💥 여기를 수정!
+      detailImage: json['detailImage']?.toString() ?? '',
       historyAddedAt: json['historyAddedAt'] as String,
       likedAt: DateTime.parse(json['likedAt'] as String),
     );
