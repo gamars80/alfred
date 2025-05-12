@@ -2,12 +2,64 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import '../../../like/data/like_repository.dart';
 import '../../model/hostpital.dart';
 
-class HospitalCard extends StatelessWidget {
+class HospitalCard extends StatefulWidget {
   final Hospital hospital;
+  final int historyCreatedAt;
+  final void Function(Hospital updated)? onLikedChanged;
 
-  const HospitalCard({Key? key, required this.hospital}) : super(key: key);
+  const HospitalCard({
+    Key? key,
+    required this.hospital,
+    required this.historyCreatedAt,
+    this.onLikedChanged,
+  }) : super(key: key);
+
+  @override
+  State<HospitalCard> createState() => _HospitalCardState();
+}
+
+class _HospitalCardState extends State<HospitalCard> {
+  late Hospital _hospital;
+  final LikeRepository _likeRepo = LikeRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    _hospital = widget.hospital;
+  }
+
+  Future<void> _toggleLike() async {
+    final isNowLiked = !_hospital.liked;
+
+    setState(() {
+      _hospital = _hospital.copyWith(liked: isNowLiked);
+    });
+
+    try {
+      if (isNowLiked) {
+        await _likeRepo.postLikeBeautyHospital(
+          historyCreatedAt: widget.historyCreatedAt,
+          hospitalId: _hospital.id.toString(),
+          source: _hospital.source,
+        );
+      } else {
+        await _likeRepo.deleteLikeBeautyHospital(
+          historyCreatedAt: widget.historyCreatedAt,
+          hospitalId: _hospital.id.toString(),
+          source: _hospital.source,
+        );
+      }
+
+      widget.onLikedChanged?.call(_hospital);
+    } catch (e) {
+      setState(() {
+        _hospital = _hospital.copyWith(liked: !isNowLiked);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,15 +82,14 @@ class HospitalCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// ✅ 이미지 클릭 시 상세 페이지 이동
           GestureDetector(
             onTap: () {
-              context.push('/hospital-detail/${hospital.id}', extra: hospital);
+              context.push('/hospital-detail/${_hospital.id}', extra: _hospital);
             },
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: CachedNetworkImage(
-                imageUrl: hospital.thumbnailUrl,
+                imageUrl: _hospital.thumbnailUrl,
                 height: 160,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -60,17 +111,32 @@ class HospitalCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  hospital.title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _hospital.title,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        _hospital.liked ? Icons.favorite : Icons.favorite_border,
+                        color: _hospital.liked ? Colors.red : Colors.grey,
+                        size: 20,
+                      ),
+                      onPressed: _toggleLike,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  '${hospital.location} · ${hospital.hospitalName}',
+                  '${_hospital.location} · ${_hospital.hospitalName}',
                   style: const TextStyle(
                     fontSize: 9,
                     color: Colors.black54,
@@ -81,17 +147,17 @@ class HospitalCard extends StatelessWidget {
                   spacing: 10,
                   runSpacing: 4,
                   children: [
-                    _iconText(Icons.star, '${hospital.rating}점'),
-                    _iconText(Icons.reviews, '${hospital.ratingCount}건'),
-                    _iconText(Icons.event_available, '${hospital.doctorCount}명의 의사'),
-                    _iconText(Icons.question_answer, '${hospital.counselCount}건 상담'),
+                    _iconText(Icons.star, '${_hospital.rating}점'),
+                    _iconText(Icons.reviews, '${_hospital.ratingCount}건'),
+                    _iconText(Icons.event_available, '${_hospital.doctorCount}명의 의사'),
+                    _iconText(Icons.question_answer, '${_hospital.counselCount}건 상담'),
                   ],
                 ),
                 const SizedBox(height: 2),
                 Wrap(
                   spacing: 6,
                   runSpacing: 4,
-                  children: hospital.description
+                  children: _hospital.description
                       .split(RegExp(r'\s+'))
                       .map((word) => Text(
                     word.startsWith('#') ? word : '$word',

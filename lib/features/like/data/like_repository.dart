@@ -219,6 +219,61 @@ class LikeRepository {
   }
 
 
+  Future<void> postLikeBeautyHospital({
+    required int historyCreatedAt,
+    required String hospitalId,
+    required String source,
+  }) async {
+    // 1) 호출 파라미터 전체 로그
+    debugPrint('▶️ historyCreatedAt: ${historyCreatedAt.toString()}');
+    debugPrint('▶️ hospitalId: $hospitalId');
+    debugPrint('▶️ source: $source');
+
+    try {
+      // 2) 요청 payload 로그
+      final payload = {
+        'historyCreatedAt': historyCreatedAt.toString(),
+        'hospitalId': hospitalId,
+        'source': source,
+      };
+      debugPrint('   요청 페이로드: $payload');
+
+      // 3) 실제 API 호출
+      final response = await _dio.post(
+        '/api/likes/beauty-hospital',
+        data: payload,
+      );
+
+      // 4) 응답 로그
+      debugPrint('✅ API 응답 상태: ${response.statusCode}');
+      debugPrint('   응답 데이터: ${response.data}');
+    } on DioException catch (e) {
+      // 5) 네트워크/서버 에러 로그
+      debugPrint('⚠️ DioException 발생: ${e.message}');
+      debugPrint('   response.data: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      // 6) 기타 예외
+      debugPrint('❌ 알 수 없는 예외: $e');
+      debugPrint('$st');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteLikeBeautyHospital({
+    required int historyCreatedAt,
+    required String hospitalId,
+    required String source,
+  }) async {
+    await _dio.delete('/api/likes/beauty-hospital', data: {
+      'historyCreatedAt': '$historyCreatedAt',
+      'hospitalId': hospitalId,
+      'source': source,
+    });
+  }
+
+
+
 
 }
 

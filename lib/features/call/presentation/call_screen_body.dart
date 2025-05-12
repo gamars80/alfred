@@ -127,7 +127,7 @@ class CallScreenBody extends StatelessWidget {
           if (selectedProcedureTab == 1)
             ...hospitals.map((h) => Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: HospitalCard(hospital: h),
+              child: HospitalCard(hospital: h, historyCreatedAt: createdAt,),
             )),
         ],
       ),
