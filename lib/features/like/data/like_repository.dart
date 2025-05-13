@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import '../../auth/common/dio/dio_client.dart';
 import '../model/paginated_liked_beauty_community.dart';
+import '../model/paginated_liked_beauty_hospital.dart';
 import '../model/paginated_liked_products.dart';
 
 class LikeRepository {
@@ -272,7 +273,36 @@ class LikeRepository {
     });
   }
 
+  Future<PaginatedLikedBeautyHospital> fetchLikedBeautyHospital({int page = 0}) async {
+    final uri = '/api/likes/me/beauty-hospital';
+    final params = {
+      'page': page,
+      'size': pageSize,
+    };
 
+    debugPrint('📡 [GET] $uri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(uri, queryParameters: params);
+
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      debugPrint('    ▶ response.data: ${response.data}');
+
+      return PaginatedLikedBeautyHospital.fromJson(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $uri');
+      debugPrint('    ▶ message: ${e.message}');
+      debugPrint('    ▶ response.statusCode: ${e.response?.statusCode}');
+      debugPrint('    ▶ response.data: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      debugPrint('❌ [Unexpected Error] $uri');
+      debugPrint('    ▶ error: $e');
+      debugPrint('    ▶ stackTrace: $st');
+      rethrow;
+    }
+  }
 
 
 }
