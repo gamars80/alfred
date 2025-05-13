@@ -33,15 +33,19 @@ class LikedBeautyHospital {
 
   factory LikedBeautyHospital.fromJson(Map<String, dynamic> json) {
     return LikedBeautyHospital(
-      hospitalId: json['eventId'] as int,
+      // eventId → hospitalId 로 변경
+      hospitalId: json['hospitalId'] as int,
+
       source: json['source'] as String,
       title: json['title'] as String,
-      thumbnailUrls: (json['thumbnailUrls'] as List?)?.map((e) => e.toString()).toList(),
+      thumbnailUrls: (json['thumbnailUrls'] as List?)
+          ?.map((e) => e.toString())
+          .toList(),
       location: json['location'] as String,
       hospitalName: json['hospitalName'] as String,
-      rating: json['rating'].toString(),  // 안전하게 toString()
+      rating: json['rating'].toString(),
       ratingCount: json['ratingCount'] as int,
-      description: json['description']?.toString() ?? '', // 💥 여기를 수정!
+      description: json['description']?.toString() ?? '',
       counselCount: json['counselCount'] as int,
       eventCount: json['eventCount'] as int,
       doctorCount: json['doctorCount'] as int,

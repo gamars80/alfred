@@ -1,6 +1,7 @@
 // ✅ 1. 좋아요 전체 화면 구조 (탭 기반)
 import 'package:alfred_clean/features/like/presentation/widget/beauty_community_liked_tab.dart';
 import 'package:alfred_clean/features/like/presentation/widget/beauty_event_liked_tab.dart';
+import 'package:alfred_clean/features/like/presentation/widget/beauty_hospital_liked_tab.dart';
 import 'package:alfred_clean/features/like/presentation/widget/product_liked_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -73,12 +74,8 @@ class _LikedProductScreenState extends State<LikedProductScreen>
           FashionLikedTab(),
           BeautyCommunityLikedTab(),
           BeautyEventLikedTab(),
-          Center(
-            child: Text(
-              '시술 병원 좋아요 준비 중',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
+          BeautyHospitalLikedTab(),
+
         ],
       ),
     );

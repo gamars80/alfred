@@ -220,32 +220,23 @@ class _CommunityCardState extends State<CommunityCard> {
                 ),
               ],
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  _IconText(
-                    icon: Icons.thumb_up,
-                    count: _post.thumbUpCount,
-                  ),
-                  const SizedBox(width: 24),
-                  _IconText(
-                    icon: Icons.comment,
-                    count: _post.commentCount,
-                  ),
-                  const SizedBox(width: 24),
-                  _IconText(
-                    icon: Icons.visibility,
-                    count: _post.viewCount,
-                  ),
-                  const Spacer(),
-                  Text(
-                    '출처: ${widget.source}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade600,
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _IconText(icon: Icons.thumb_up, count: _post.thumbUpCount),
+                    const SizedBox(width: 24),
+                    _IconText(icon: Icons.comment, count: _post.commentCount),
+                    const SizedBox(width: 24),
+                    _IconText(icon: Icons.visibility, count: _post.viewCount),
+                    const SizedBox(width: 16),
+                    Text(
+                      '출처: ${widget.source}',
+                      style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              )
             ],
           ),
         ),
