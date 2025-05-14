@@ -32,6 +32,7 @@ class RecommendationService {
     required String selectedCategory,
     required void Function(RecommendationResult data) onSuccess,
     required void Function(String error) onError,
+    required void Function(List<String> itemTypes) onChoiceType,  // Choice Type callback
   }) async {
     try {
       if (selectedCategory == '쇼핑') {
@@ -53,6 +54,10 @@ class RecommendationService {
         ));
       }
       return true;
+    } on ChoiceTypeException catch (e) {
+      // Choice Type 에러 처리: 아이템 리스트만 전달
+      onChoiceType(e.itemTypes);
+      return false;
     } catch (e) {
       final msg = e.toString();
       if (msg.contains('Not Gender')) {
@@ -61,7 +66,7 @@ class RecommendationService {
         onError('age');
       } else if (msg.contains('More Information')) {
         onError('both');
-      } else if (msg.contains('Not ItemType')) {         // ← 추가
+      } else if (msg.contains('Not ItemType')) {
         onError('itemType');
       } else {
         onError('unknown');
@@ -70,4 +75,3 @@ class RecommendationService {
     }
   }
 }
-
