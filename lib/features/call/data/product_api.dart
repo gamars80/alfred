@@ -3,8 +3,16 @@ import 'package:flutter/cupertino.dart';
 import '../../auth/common/dio/dio_client.dart';
 import '../model/product.dart';
 
+
+
+class ChoiceTypeException implements Exception {
+  final List<String> itemTypes;
+  ChoiceTypeException(this.itemTypes);
+}
+
 class ProductApi {
   final Dio _dio = DioClient.dio;
+
 
   Future<Map<String, List<Product>>> fetchRecommendedProducts(String query) async {
     debugPrint('🔍 [fetchRecommendedProducts] query: $query');
@@ -40,6 +48,12 @@ class ProductApi {
       debugPrint('   response: ${e.response}'); // null 일 겁니다.
       // 기존 처리 유지
       final data = e.response?.data;
+
+      if (data is Map<String, dynamic> && data['error'] == 'Choice Type' && data['itemTypes'] != null) {
+        // Choice Type 에러인 경우, itemTypes 리스트와 함께 던진다
+        throw ChoiceTypeException(List<String>.from(data['itemTypes']));
+      }
+
       if (data is Map<String, dynamic> && data['message'] != null) {
         throw Exception(data['message']);
       }
