@@ -100,12 +100,15 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
 
       if (selectedProcedureTab == 0) {
         final filteredEvents = widget.events
-            .where((e) => (e.source ?? '').trim() == selectedSource.trim())
+            .where((e) => e.source?.trim() == selectedSource.trim())
             .toList();
 
         items.add(_buildSourceFilter());
         items.add(const SizedBox(height: 8));
+
+        // 기존 Map → List 변환부를 이렇게 바꿔주세요.
         items.addAll(filteredEvents.map((e) => Padding(
+          key: ValueKey('event-${e.id}'),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: EventCard(event: e, historyCreatedAt: widget.createdAt),
         )));
@@ -151,7 +154,6 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
     }
 
     return ListView(
-      key: ValueKey('$selectedSource-$selectedProcedureTab'),
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: items,
