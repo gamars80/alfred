@@ -25,11 +25,11 @@ class VoiceCommandInputWidget extends StatefulWidget {
 class _VoiceCommandInputWidgetState extends State<VoiceCommandInputWidget> {
   @override
   Widget build(BuildContext context) {
-    final promptText = widget.category == '시술커뮤니티'
+    final promptText = widget.category == '시술/성형'
         ? '어떤 고민이 있으신가요?'
         : '어떤 상품을 찾아드릴까요?';
 
-    final hintText = widget.category == '시술커뮤니티'
+    final hintText = widget.category == '시술/성형'
         ? '코가 낮아서 이참에 수술을 해볼까 생각중이야'
         : '예: 20대 여자친구에게 선물할 원피스 추천해줘';
 

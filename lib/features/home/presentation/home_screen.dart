@@ -12,7 +12,6 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('홈'),
         centerTitle: true,
-        // backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -20,7 +19,7 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             PopularSection(),
-            // 앞으로 추가할 섹션: 오늘의 추천, 히스토리, 챌린지 등
+            // 앞으로 추가할 섹션들: 오늘의 추천, 챌린지 등
           ],
         ),
       ),

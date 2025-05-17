@@ -131,7 +131,7 @@ class VoiceCommandBottomSheet {
           style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
           items: const [
             DropdownMenuItem(value: '쇼핑', child: Text('쇼핑')),
-            DropdownMenuItem(value: '시술커뮤니티', child: Text('시술커뮤니티')),
+            DropdownMenuItem(value: '시술/성형', child: Text('시술/성형')),
           ],
           onChanged: (v) {
             if (v != null) onChanged(v);

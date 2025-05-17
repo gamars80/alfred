@@ -226,7 +226,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
               unselectedLabelColor: Colors.grey,
               labelStyle: const TextStyle(
                   fontSize: 14, fontWeight: FontWeight.w600),
-              tabs: const [Tab(text: '쇼핑'), Tab(text: '쁘띠')],
+              tabs: const [Tab(text: '패션쇼핑'), Tab(text: '시술/성형')],
             ),
           ),
         ),

@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:alfred_clean/features/call/presentation/product_webview_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../../../auth/common/dio/dio_client.dart';
 import '../../../auth/presentation/product_detail_image_viewer_screen.dart';
 import '../../../review/presentation/review_overlay_screen.dart';
 import '../../model/product.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:alfred_clean/features/call/presentation/product_webview_screen.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -49,9 +49,7 @@ class ProductCard extends StatelessWidget {
   void _openReviews(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => ReviewOverlayScreen(product: product),
-      ),
+      MaterialPageRoute(builder: (_) => ReviewOverlayScreen(product: product)),
     );
   }
 
@@ -71,9 +69,7 @@ class ProductCard extends StatelessWidget {
       if (data.isNotEmpty && data[0] is Map<String, dynamic>) {
         final map = data[0] as Map<String, dynamic>;
         if (map['imageUrls'] is List) {
-          imageUrls = (map['imageUrls'] as List)
-              .whereType<String>()
-              .toList();
+          imageUrls = (map['imageUrls'] as List).whereType<String>().toList();
         }
       }
 
@@ -81,24 +77,23 @@ class ProductCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) =>
-                ProductDetailImageViewerScreen(imageUrls: imageUrls),
+            builder:
+                (_) => ProductDetailImageViewerScreen(imageUrls: imageUrls),
           ),
         );
       } else {
         debugPrint('[ProductDetailImages] Empty image list');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이미지를 불러오지 못했습니다.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('이미지를 불러오지 못했습니다.')));
       }
     } catch (e) {
       debugPrint('[ProductDetailImages] Error fetching detail-image: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('서버 오류가 발생했습니다.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('서버 오류가 발생했습니다.')));
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -122,10 +117,12 @@ class ProductCard extends StatelessWidget {
                 imageUrl: _getValidImageUrl(product.image),
                 fit: BoxFit.cover,
                 memCacheWidth: screenWidth,
-                placeholder: (_, __) => const Center(
-                    child: CircularProgressIndicator(strokeWidth: 1.5)),
-                errorWidget: (_, __, ___) =>
-                const Icon(Icons.broken_image, size: 60),
+                placeholder:
+                    (_, __) => const Center(
+                      child: CircularProgressIndicator(strokeWidth: 1.5),
+                    ),
+                errorWidget:
+                    (_, __, ___) => const Icon(Icons.broken_image, size: 60),
               ),
             ),
           ),
@@ -183,9 +180,13 @@ class ProductCard extends StatelessWidget {
                   ),
                 ],
                 // if (product.reviewCount > 0) ...[
-                  const SizedBox(height: 8),
+                const SizedBox(height: 8),
                 // ⭐ 여기만 수정
-                if (product.source == 'ABLY' || product.source == 'ZIGZAG' || product.source == 'ATTRANGS' || product.source == 'HOTPING' || product.source == 'MUSINSA')
+                if (product.source == 'ABLY' ||
+                    product.source == 'ZIGZAG' ||
+                    product.source == 'ATTRANGS' ||
+                    product.source == 'HOTPING' ||
+                    product.source == 'MUSINSA')
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -210,7 +211,7 @@ class ProductCard extends StatelessWidget {
                         onPressed: () => _openDetailImage(context),
                       ),
                     ],
-                  )
+                  ),
                 // else
                 // // 그 외 mallName에는 기존대로 리뷰보기만
                 //   Align(
