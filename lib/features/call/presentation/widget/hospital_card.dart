@@ -89,7 +89,7 @@ class _HospitalCardState extends State<HospitalCard> {
             GestureDetector(
               onTap: () {
                 context.push(
-                  '/hospital-detail/${_hospital.id}',
+                  '/hospital-detail/${_hospital.id}/${widget.historyCreatedAt}',
                   extra: _hospital,
                 );
               },

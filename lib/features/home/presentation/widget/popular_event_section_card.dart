@@ -28,7 +28,7 @@ class _PopularEventSectionCardState extends State<PopularEventSectionCard> {
         const Padding(
           padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
           child: Text(
-            '인기 시술 이벤트 Top 10',
+            '찜 시술 이벤트 Top 10',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
           ),
         ),

@@ -1,25 +1,23 @@
-// lib/features/community/presentation/popular_community_section.dart
 import 'package:flutter/material.dart';
 import '../../data/popular_repository.dart';
+import '../../model/popular_beauty_hospital.dart';
+import 'popular_beauty_hospital_card.dart';
 
-import '../../model/popular_community.dart';
-import '../widget/popular_community_card.dart';
-
-class PopularCommunitySectionCard extends StatefulWidget {
-  const PopularCommunitySectionCard({super.key});
+class PopularBeautyHospitalSectionCard extends StatefulWidget {
+  const PopularBeautyHospitalSectionCard({super.key});
 
   @override
-  State<PopularCommunitySectionCard> createState() => _PopularCommunitySectionState();
+  State<PopularBeautyHospitalSectionCard> createState() => _PopularBeautyHospitalSectionCardState();
 }
 
-class _PopularCommunitySectionState extends State<PopularCommunitySectionCard> {
+class _PopularBeautyHospitalSectionCardState extends State<PopularBeautyHospitalSectionCard> {
   final repo = PopularRepository();
-  late Future<List<PopularCommunity>> futureCommunities;
+  late Future<List<PopularBeautyHospital>> futureHospitals;
 
   @override
   void initState() {
     super.initState();
-    futureCommunities = repo.fetchPopularCommunities();
+    futureHospitals = repo.fetchPopularBeautyHospitals();
   }
 
   @override
@@ -30,18 +28,14 @@ class _PopularCommunitySectionState extends State<PopularCommunitySectionCard> {
         const Padding(
           padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
           child: Text(
-            '찜 커뮤니티 Top 10',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.white, // 또는 Colors.black (배경에 따라)
-            ),
+            '시술 병원 찜 Top 10',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
           ),
         ),
         SizedBox(
-          height: 180,
-          child: FutureBuilder<List<PopularCommunity>>(
-            future: futureCommunities,
+          height: 320,
+          child: FutureBuilder<List<PopularBeautyHospital>>(
+            future: futureHospitals,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -51,20 +45,16 @@ class _PopularCommunitySectionState extends State<PopularCommunitySectionCard> {
                 return const Center(child: Text('데이터 없음'));
               }
 
-              final communities = snapshot.data!;
+              final hospitals = snapshot.data!;
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: communities.length,
+                itemCount: hospitals.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
-                  final community = communities[index];
-                  return PopularCommunityCard(
-                    community: community,
+                  return PopularBeautyHospitalCard(
+                    hospital: hospitals[index],
                     rank: index + 1,
-                    onTap: () {
-                      // TODO: 상세 이동
-                    },
                   );
                 },
               );
