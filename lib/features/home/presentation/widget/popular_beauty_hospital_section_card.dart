@@ -4,7 +4,7 @@ import '../../model/popular_beauty_hospital.dart';
 import 'popular_beauty_hospital_card.dart';
 
 class PopularBeautyHospitalSectionCard extends StatefulWidget {
-  const PopularBeautyHospitalSectionCard({super.key});
+  const PopularBeautyHospitalSectionCard({super.key, required List<PopularBeautyHospital> hospitals});
 
   @override
   State<PopularBeautyHospitalSectionCard> createState() => _PopularBeautyHospitalSectionCardState();
