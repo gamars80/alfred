@@ -9,11 +9,13 @@ import '../model/hospital_detail_model.dart';
 class HospitalDetailScreen extends StatefulWidget {
   final int hospitalId;
   final Hospital hospital;
+  final int createdAt;
 
   const HospitalDetailScreen({
     super.key,
     required this.hospitalId,
     required this.hospital,
+    required this.createdAt,
   });
 
   @override
@@ -26,7 +28,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _hospitalDetail = HospitalRepository().getHospitalDetail(widget.hospitalId);
+    _hospitalDetail = HospitalRepository().getHospitalDetail(widget.hospitalId, widget.createdAt);
   }
 
   @override

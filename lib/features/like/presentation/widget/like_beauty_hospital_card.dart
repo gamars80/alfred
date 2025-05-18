@@ -87,7 +87,7 @@ class _LikeBeautyHospitalCardState extends State<LikeBeautyHospitalCard> {
                   counselCount: _h.counselCount,
                   doctorCount: _h.doctorCount, title: _h.title, liked: false,
                 );
-                context.push('/hospital-detail/${_h.hospitalId}', extra: hospitalModel);
+                context.push('/hospital-detail/${_h.hospitalId}/${_h.historyAddedAt}', extra: hospitalModel);
               },
               child: ClipRRect(
                 borderRadius:

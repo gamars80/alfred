@@ -5,11 +5,12 @@ import '../model/hospital_detail_model.dart';
 
 
 class HospitalRepository {
-  Future<HospitalDetailResponse> getHospitalDetail(int id) async {
+  Future<HospitalDetailResponse> getHospitalDetail(int id, int createdAt) async {
     try {
-      final response = await DioClient.dio.get('/api/hospitals/$id/detail');
+      debugPrint('aaaaaaaaaaa');
+      final response = await DioClient.dio.get('/api/hospitals/$id/$createdAt/detail');
       // debugPrint(response.data);
-      debugPrint('📦 API 응답 데이터:\n${response.data}');
+      // debugPrint('📦 API 응답 데이터:${response.data}');
       return HospitalDetailResponse.fromJson(response.data);
     } catch (e, stack) {
       debugPrint('❌ 병원 상세 요청 실패: $e');

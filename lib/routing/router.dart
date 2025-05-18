@@ -31,11 +31,12 @@ final router = GoRouter(
     ),
     /// ✅ 병원 상세 화면 추가
     GoRoute(
-      path: '/hospital-detail/:id',
+      path: '/hospital-detail/:id/:createdAt',
       builder: (context, state) {
         final id = int.parse(state.pathParameters['id']!);
+        final createdAt = int.parse(state.pathParameters['createdAt']!);
         final hospital = state.extra as Hospital;
-        return HospitalDetailScreen(hospitalId: id, hospital: hospital);
+        return HospitalDetailScreen(hospitalId: id, createdAt: createdAt, hospital: hospital);
       },
     ),
   ],

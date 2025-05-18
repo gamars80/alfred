@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../auth/common/dio/dio_client.dart';
+import '../model/popular_beauty_hospital.dart';
 import '../model/popular_community.dart';
 import '../model/popular_event.dart';
 import '../model/popular_product.dart';
@@ -24,5 +25,11 @@ class PopularRepository {
     return (response.data as List)
         .map((e) => PopularEvent.fromJson(e))
         .toList();
+  }
+
+  Future<List<PopularBeautyHospital>> fetchPopularBeautyHospitals() async {
+    final response = await _dio.get('/api/likes/me/beauty-hospital');
+    final content = response.data['content'] as List;
+    return content.map((e) => PopularBeautyHospital.fromJson(e)).toList();
   }
 }
