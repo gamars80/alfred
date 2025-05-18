@@ -19,13 +19,37 @@ class PopularEventCard extends StatelessWidget {
   });
 
 
-  Future<void> _openEvent() async {
-    final String url = event.source == '바비톡'
-        ? 'https://web.babitalk.com/events/${event.eventId}'
-        : 'https://www.gangnamunni.com/events/${event.eventId}';
+  Future<void> _openEvent(BuildContext context) async {
+    // 3) 히스토리 생성 시점 정보가 PopularEvent 모델에 있다고 가정
+    final sourceEncoded = Uri.encodeComponent(event.source);
+    final apiPath = '/api/events/${event.eventId}/${event.historyAddedAt}/$sourceEncoded/open/${event.userId}';
+    debugPrint("apiPath:::::::::::::::::::::$apiPath");
+    try {
+      final response = await DioClient.dio.post(apiPath);
+      debugPrint("response.statusCode:::::::::::::${response.statusCode}");
 
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      if (response.statusCode == 200) {
+        final url = event.source == '바비톡'
+            ? 'https://web.babitalk.com/events/${event.eventId}'
+            : 'https://www.gangnamunni.com/events/${event.eventId}';
+
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('URL을 열 수 없습니다.')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('API 호출 실패: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('서버 연결 중 오류가 발생했습니다.')),
+      );
     }
   }
 
@@ -78,7 +102,7 @@ class PopularEventCard extends StatelessWidget {
     final formatter = NumberFormat('#,###', 'ko_KR');
 
     return GestureDetector(
-      onTap: () => _openEvent(),
+      onTap: () => _openEvent(context),
       child: Container(
         width: 240,
         height: 260,

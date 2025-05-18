@@ -67,12 +67,40 @@ class _EventCardState extends State<EventCard> {
   }
 
   Future<void> _openWebView() async {
-    final String url = _event.source == '바비톡'
-        ? 'https://web.babitalk.com/events/${_event.id}'
-        : 'https://www.gangnamunni.com/events/${_event.id}';
+    // 1) API 호출 URL
+    final apiPath = '/api/events/${_event.id}/${widget.historyCreatedAt}/${Uri.encodeComponent(_event.source)}/open';
 
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    try {
+      // 2) API 호출
+      final response = await DioClient.dio.post(apiPath);
+
+      // 3) 성공(200)일 때만 외부 브라우저로 열기
+      if (response.statusCode == 200) {
+        final String url = _event.source == '바비톡'
+            ? 'https://web.babitalk.com/events/${_event.id}'
+            : 'https://www.gangnamunni.com/events/${_event.id}';
+
+        if (await canLaunchUrl(Uri.parse(url))) {
+          await launchUrl(
+            Uri.parse(url),
+            mode: LaunchMode.externalApplication,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('URL을 열 수 없습니다.')),
+          );
+        }
+      } else {
+        // 200이 아닌 경우
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('API 호출 실패: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      // 네트워크 에러 등 예외 처리
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('서버 연결 중 오류가 발생했습니다.')),
+      );
     }
   }
 

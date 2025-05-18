@@ -33,7 +33,7 @@ class _PopularBeautyHospitalSectionCardState extends State<PopularBeautyHospital
           ),
         ),
         SizedBox(
-          height: 320,
+          height: 380,
           child: FutureBuilder<List<PopularBeautyHospital>>(
             future: futureHospitals,
             builder: (context, snapshot) {
