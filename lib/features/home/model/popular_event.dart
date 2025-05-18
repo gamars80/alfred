@@ -1,5 +1,6 @@
 // lib/features/event/model/popular_event.dart
 class PopularEvent {
+  final String userId;
   final int eventId;
   final String source;
   final int cnt;
@@ -13,8 +14,10 @@ class PopularEvent {
   final int ratingCount;
   final String description;
   final String detailImage;
+  final String historyAddedAt;
 
   PopularEvent({
+    required this.userId,
     required this.eventId,
     required this.source,
     required this.cnt,
@@ -28,21 +31,24 @@ class PopularEvent {
     required this.ratingCount,
     required this.description,
     required this.detailImage,
+    required this.historyAddedAt,
   });
 
   factory PopularEvent.fromJson(Map<String, dynamic> json) => PopularEvent(
-    eventId: json['eventId'],
-    source: json['source'],
-    cnt: json['cnt'],
-    title: json['title'],
-    location: json['location'],
-    hospitalName: json['hospitalName'],
-    thumbnailUrl: json['thumbnailUrl'],
-    discountedPrice: json['discountedPrice'],
-    discountRate: (json['discountRate'] as num).toDouble(),
-    rating: (json['rating'] as num).toDouble(),
-    ratingCount: json['ratingCount'],
-    description: json['description'],
-    detailImage: json['detailImage'],
+    userId: json['userId'] as String,
+    eventId: json['eventId'] as int,
+    source: json['source'] as String?       ?? '',
+    cnt: json['cnt'] as int,
+    title: json['title'] as String?        ?? '',
+    location: json['location'] as String?   ?? '',
+    hospitalName: json['hospitalName'] as String? ?? '',
+    thumbnailUrl: json['thumbnailUrl'] as String? ?? '',
+    discountedPrice: json['discountedPrice'] as String? ?? '',
+    discountRate: (json['discountRate'] as num?)?.toDouble() ?? 0.0,
+    rating:      (json['rating']      as num?)?.toDouble() ?? 0.0,
+    ratingCount: json['ratingCount'] as int? ?? 0,
+    description: json['description'] as String? ?? '',
+    detailImage: json['detailImage'] as String? ?? '',
+    historyAddedAt: json['historyAddedAt'] as String? ?? '',
   );
 }

@@ -17,13 +17,35 @@ class LikedBeautyEventCard extends StatelessWidget {
     required this.onUnlike,
   });
 
-  void _openWebView(BuildContext context) async {
-    final url = event.source == '바비톡'
-        ? 'https://web.babitalk.com/events/${event.eventId}'
-        : 'https://www.gangnamunni.com/events/${event.eventId}';
+  Future<void> _openWebView(BuildContext context) async {
+    final sourceEncoded = Uri.encodeComponent(event.source);
+    final apiPath = '/api/events/${event.eventId}/${event.historyAddedAt}/$sourceEncoded/open';
 
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    try {
+      final response = await DioClient.dio.post(apiPath);
+
+      if (response.statusCode == 200) {
+        final url = event.source == '바비톡'
+            ? 'https://web.babitalk.com/events/${event.eventId}'
+            : 'https://www.gangnamunni.com/events/${event.eventId}';
+
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('URL을 열 수 없습니다.')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('API 호출 실패: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('서버 연결 중 오류가 발생했습니다.')),
+      );
     }
   }
 

@@ -28,8 +28,10 @@ class PopularRepository {
   }
 
   Future<List<PopularBeautyHospital>> fetchPopularBeautyHospitals() async {
-    final response = await _dio.get('/api/likes/me/beauty-hospital');
-    final content = response.data['content'] as List;
-    return content.map((e) => PopularBeautyHospital.fromJson(e)).toList();
+    final response = await _dio.get('/api/popular/hospital');
+    return (response.data as List)
+        .map((e) => PopularBeautyHospital.fromJson(e))
+        .toList();
   }
+
 }
