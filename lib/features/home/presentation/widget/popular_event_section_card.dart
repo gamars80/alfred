@@ -4,7 +4,7 @@ import '../../model/popular_event.dart';
 import '../widget/popular_event_card.dart';
 
 class PopularEventSectionCard extends StatefulWidget {
-  const PopularEventSectionCard({super.key});
+  const PopularEventSectionCard({super.key, required List<PopularEvent> events});
 
   @override
   State<PopularEventSectionCard> createState() => _PopularEventSectionCardState();
