@@ -31,19 +31,20 @@ class PopularBeautyHospital {
 
   factory PopularBeautyHospital.fromJson(Map<String, dynamic> json) {
     return PopularBeautyHospital(
-      hospitalId: json['hospitalId'],
-      source: json['source'],
-      title: json['title'],
-      thumbnailUrl: (json['thumbnailUrls'] as List).isNotEmpty ? json['thumbnailUrls'][0] : '',
-      location: json['location'],
-      hospitalName: json['hospitalName'],
+      hospitalId: json['hospitalId'] as int,
+      source: json['source'] as String,
+      title: json['title'] as String,
+      // ↓ 여기만 변경
+      thumbnailUrl: json['thumbnailUrl'] as String? ?? '',
+      location: json['location'] as String,
+      hospitalName: json['hospitalName'] as String,
       rating: json['rating'].toString(),
-      ratingCount: json['ratingCount'],
-      description: json['description'],
-      counselCount: json['counselCount'],
-      eventCount: json['eventCount'],
-      doctorCount: json['doctorCount'],
-      historyAddedAt: json['historyAddedAt'],
+      ratingCount: json['ratingCount'] as int,
+      description: json['description'] as String,
+      counselCount: json['counselCount'] as int,
+      eventCount: json['eventCount'] as int,
+      doctorCount: json['doctorCount'] as int,
+      historyAddedAt: json['historyAddedAt'] as String? ?? '',
     );
   }
 }
