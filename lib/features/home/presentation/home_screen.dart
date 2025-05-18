@@ -1,27 +1,98 @@
 // lib/features/home/presentation/home_screen.dart
+import 'package:alfred_clean/features/home/presentation/surgery_tab.dart';
 import 'package:flutter/material.dart';
 import 'popular_section.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  final List<Tab> tabs = const [
+    Tab(icon: Icon(Icons.shopping_bag_outlined), text: '패션쇼핑'),
+    Tab(icon: Icon(Icons.face_retouching_natural), text: '시술성형'),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: tabs.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('홈'),
-        centerTitle: true,
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: NestedScrollView(
+        headerSliverBuilder: (_, __) {
+          return [
+            SliverAppBar(
+              title: const Text('홈'),
+              centerTitle: true,
+              pinned: true,
+              floating: true,
+              snap: true,
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              bottom: TabBar(
+                controller: _tabController,
+                tabs: tabs,
+                indicatorColor: Colors.black,
+                labelColor: Colors.black,
+                unselectedLabelColor: Colors.grey,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ];
+        },
+        body: TabBarView(
+          controller: _tabController,
           children: const [
-            PopularSection(),
-            // 앞으로 추가할 섹션들: 오늘의 추천, 챌린지 등
+            FashionShoppingTab(),
+            SurgeryTab(), // ✅ 연결됨
           ],
         ),
+      ),
+    );
+  }
+}
+
+// 🛍️ 패션쇼핑 탭 콘텐츠
+class FashionShoppingTab extends StatelessWidget {
+  const FashionShoppingTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: const [
+        PopularSection(),
+        // 👉 오늘의 추천, 히스토리 등 추가 가능
+      ],
+    );
+  }
+}
+
+// 💉 시술성형 탭 (Placeholder)
+class PlaceholderTab extends StatelessWidget {
+  const PlaceholderTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text(
+        '시술/성형 콘텐츠 준비 중...',
+        style: TextStyle(fontSize: 16, color: Colors.grey),
       ),
     );
   }

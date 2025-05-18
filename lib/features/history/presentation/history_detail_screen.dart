@@ -112,7 +112,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                     ),
                   ),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.55,
+                    height: MediaQuery.of(context).size.height * 0.65,
                     child: PageView.builder(
                       controller: PageController(viewportFraction: 0.92),
                       itemCount: products.length,
@@ -123,7 +123,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                           child: SizedBox(
-                            height: 320,
+                            height: 350,
                             child: ProductCard(
                               product: product,
                               isLiked: isLiked,

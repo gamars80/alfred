@@ -16,7 +16,6 @@ class PopularSection extends StatefulWidget {
 class _PopularSectionState extends State<PopularSection> with SingleTickerProviderStateMixin {
   final repo = PopularRepository();
   late Future<List<PopularProduct>> futurePopular;
-  final List<String> tabs = ['전체', '패션', '뷰티', '가전'];
   int selectedIndex = 0;
 
   @override
@@ -24,13 +23,6 @@ class _PopularSectionState extends State<PopularSection> with SingleTickerProvid
     super.initState();
     futurePopular = repo.fetchPopularProducts();
   }
-
-  // void _onTabChanged(int index) {
-  //   setState(() {
-  //     selectedIndex = index;
-  //     futurePopular = repo.fetchPopularProducts(category: tabs[index]); // category 필터가 있다고 가정
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +35,16 @@ class _PopularSectionState extends State<PopularSection> with SingleTickerProvid
             children: const [
               Text(
                 '인기 찜 Top 10',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,        // ✅ 더 선명하게
+                  letterSpacing: -0.2,           // ✅ 미세 조정
+                ),
               ),
             ],
           ),
         ),
-
         const SizedBox(height: 12),
 
         // 상품 리스트
