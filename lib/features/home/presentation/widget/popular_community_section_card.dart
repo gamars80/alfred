@@ -19,7 +19,7 @@ class PopularCommunitySectionCard extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
           child: Text(
-            '찜 커뮤니티 Top 10',
+            '시술 커뮤니티 찜 Top 10',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
