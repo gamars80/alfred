@@ -21,7 +21,7 @@ class PopularCommunitySectionCard extends StatelessWidget {
           child: Text(
             '시술 커뮤니티 찜 Top 10',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
