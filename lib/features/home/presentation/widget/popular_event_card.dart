@@ -166,6 +166,7 @@ class PopularEventCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
+
                   Row(
                     children: [
                       Expanded(
@@ -176,20 +177,29 @@ class PopularEventCard extends StatelessWidget {
                           style: const TextStyle(fontSize: 11, color: Colors.grey),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () => _onDetailPressed(context),
+                    ],
+                  ),
+
+                  // 🔽 상세 버튼을 가격 위 라인에 강조 배치
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: () => _onDetailPressed(context),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 4, bottom: 6),
                         child: Text(
-                          '상세',
+                          '상세 보기',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                             color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 10),
+
+                  // 🔽 기존 가격 라인 그대로 유지
                   Row(
                     children: [
                       Text(
