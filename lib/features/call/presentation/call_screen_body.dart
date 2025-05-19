@@ -140,7 +140,10 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
           children: [
             _buildSectionTitle(entry.key),
             const SizedBox(height: 8),
-            ...entry.value.map((p) => ProductCard(product: p)).toList(),
+             ...entry.value.map((p) => ProductCard(
+               product: p,
+               historyCreatedAt: widget.createdAt,   // ← 여기에 넘겨줌
+             )).toList(),
             const SizedBox(height: 24),
           ],
         ),

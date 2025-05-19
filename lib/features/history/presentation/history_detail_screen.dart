@@ -127,7 +127,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                             child: ProductCard(
                               product: product,
                               isLiked: isLiked,
-                              onLikeToggle: () => _toggleLike(product),
+                              onLikeToggle: () => _toggleLike(product), historyCreatedAt: widget.history.createdAt,
                             ),
                           ),
                         );
