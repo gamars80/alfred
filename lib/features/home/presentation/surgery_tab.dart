@@ -5,9 +5,11 @@ import '../data/popular_repository.dart';
 import '../model/popular_community.dart';
 import '../model/popular_event.dart';
 import '../model/popular_beauty_hospital.dart';
+import '../model/popular_weekly_event.dart'; // ✅ 추가
 import 'widget/popular_community_section_card.dart';
 import 'widget/popular_event_section_card.dart';
 import 'widget/popular_beauty_hospital_section_card.dart';
+import 'widget/popular_weekly_event_section_card.dart'; // ✅ 추가
 
 class SurgeryTab extends StatefulWidget {
   const SurgeryTab({super.key});
@@ -18,6 +20,7 @@ class SurgeryTab extends StatefulWidget {
 
 class _SurgeryTabState extends State<SurgeryTab> {
   final _repo = PopularRepository();
+  late Future<List<PopularWeeklyEvent>> _futureWeeklyEvents; // ✅ 추가
   late Future<List<PopularCommunity>> _futureCommunities;
   late Future<List<PopularEvent>> _futureEvents;
   late Future<List<PopularBeautyHospital>> _futureHospitals;
@@ -25,6 +28,7 @@ class _SurgeryTabState extends State<SurgeryTab> {
   @override
   void initState() {
     super.initState();
+    _futureWeeklyEvents = _repo.fetchPopularWeeklyEvents(); // ✅ 추가
     _futureCommunities = _repo.fetchPopularCommunities();
     _futureEvents      = _repo.fetchPopularEvents();
     _futureHospitals   = _repo.fetchPopularBeautyHospitals();
@@ -35,6 +39,27 @@ class _SurgeryTabState extends State<SurgeryTab> {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
+        // ✅ 0) 이번주 조회 Top 10 병원 섹션
+        FutureBuilder<List<PopularWeeklyEvent>>(
+          future: _futureWeeklyEvents,
+          builder: (ctx, snap) {
+            if (snap.hasData && snap.data!.isNotEmpty) {
+              return Column(
+                children: [
+                  PopularWeeklyEventSectionCard(events: snap.data!), // ✅ 커스텀 위젯 활용
+                  const SizedBox(height: 16),
+                  const Divider(
+                    height: 1, thickness: 0.5,
+                    indent: 16, endIndent: 16, color: Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+
         // 1) 찜 커뮤니티 섹션
         FutureBuilder<List<PopularCommunity>>(
           future: _futureCommunities,
