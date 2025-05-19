@@ -26,6 +26,16 @@ class RecommendationResult {
   });
 }
 
+class RecommendedProductsResult {
+  final int createdAt;
+  final Map<String, List<Product>> items;
+
+  RecommendedProductsResult({
+    required this.createdAt,
+    required this.items,
+  });
+}
+
 class RecommendationService {
   static Future<bool> fetch({
     required String query,
@@ -37,10 +47,10 @@ class RecommendationService {
     try {
       if (selectedCategory == '쇼핑') {
         final api = ProductApi();
-        final result = await api.fetchRecommendedProducts(query);
+        final result = await api.fetchRecommendedProducts(query); // RecommendedProductsResult
         onSuccess(RecommendationResult(
-          createdAt: DateTime.now().millisecondsSinceEpoch,
-          products: result,
+          createdAt: result.createdAt,
+          products: result.items,
         ));
       } else {
         final api = BeautyApi();

@@ -10,6 +10,7 @@ import '../../model/product.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
+  final int historyCreatedAt;      // ← 추가
   final bool? isLiked;
   final VoidCallback? onLikeToggle;
   final String? token;
@@ -17,6 +18,7 @@ class ProductCard extends StatelessWidget {
   const ProductCard({
     super.key,
     required this.product,
+    required this.historyCreatedAt,
     this.isLiked,
     this.onLikeToggle,
     this.token,
