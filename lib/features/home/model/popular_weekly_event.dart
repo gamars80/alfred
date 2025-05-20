@@ -1,4 +1,3 @@
-// lib/features/home/model/popular_weekly_event.dart
 class PopularWeeklyEvent {
   final String userId;
   final int eventId;
@@ -14,7 +13,7 @@ class PopularWeeklyEvent {
   final int ratingCount;
   final String description;
   final String detailImage;
-  final String historyAddedAt;
+  final String historyAddedAt;  // non-nullable
 
   PopularWeeklyEvent({
     required this.userId,
@@ -36,21 +35,24 @@ class PopularWeeklyEvent {
 
   factory PopularWeeklyEvent.fromJson(Map<String, dynamic> json) {
     return PopularWeeklyEvent(
-      userId: json['userId'],
-      eventId: json['eventId'],
-      source: json['source'],
-      cnt: json['cnt'],
-      title: json['title'],
-      location: json['location'],
-      hospitalName: json['hospitalName'],
-      thumbnailUrl: json['thumbnailUrl'],
-      discountedPrice: json['discountedPrice'],
-      discountRate: json['discountRate'],
-      rating: json['rating'],
-      ratingCount: json['ratingCount'],
-      description: json['description'],
-      detailImage: json['detailImage'],
-      historyAddedAt: json['historyAddedAt'],
+      userId:           json['userId']           as String?             ?? '',
+      eventId:          json['eventId']          as int?                ?? 0,
+      source:           json['source']           as String?             ?? '',
+      cnt:              json['cnt']              as int?                ?? 0,
+      title:            json['title']            as String?             ?? '',
+      location:         json['location']         as String?             ?? '',
+      hospitalName:     json['hospitalName']     as String?             ?? '',
+      thumbnailUrl:     json['thumbnailUrl']     as String?             ?? '',
+      discountedPrice:  json['discountedPrice']  as String?             ?? '',
+      discountRate:     (json['discountRate']    as num?)?.toDouble()   ?? 0.0,
+      rating:           (json['rating']          as num?)?.toDouble()   ?? 0.0,
+      ratingCount:      json['ratingCount']      as int?                ?? 0,
+      description:      json['description']      as String?             ?? '',
+      detailImage:      json['detailImage']      as String?             ?? '',
+      // 👇 여기서 null이 들어오면 빈 문자열로
+      historyAddedAt:   json['historyAddedAt']   != null
+          ? json['historyAddedAt'].toString()
+          : '',
     );
   }
 }

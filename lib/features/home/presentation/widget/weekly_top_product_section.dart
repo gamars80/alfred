@@ -1,57 +1,53 @@
-// lib/features/home/presentation/popular_section.dart
+// lib/features/home/presentation/weekly_top_product_section.dart
+import 'package:flutter/material.dart';
+import 'package:alfred_clean/features/home/model/popular_product.dart';
 import 'package:alfred_clean/features/home/presentation/widget/popular_product_card.dart';
 import 'package:alfred_clean/features/home/presentation/widget/popular_product_skeleton_card.dart';
-import 'package:flutter/material.dart';
-import '../data/popular_repository.dart';
-import '../model/popular_product.dart';
+import '../../data/popular_repository.dart';
 
 
-class PopularSection extends StatefulWidget {
-  const PopularSection({super.key});
+class WeeklyTopProductSection extends StatefulWidget {
+  const WeeklyTopProductSection({super.key});
 
   @override
-  State<PopularSection> createState() => _PopularSectionState();
+  State<WeeklyTopProductSection> createState() => _WeeklyTopProductSectionState();
 }
 
-class _PopularSectionState extends State<PopularSection> with SingleTickerProviderStateMixin {
+class _WeeklyTopProductSectionState extends State<WeeklyTopProductSection> {
   final repo = PopularRepository();
-  late Future<List<PopularProduct>> futurePopular;
-  int selectedIndex = 0;
+  late Future<List<PopularProduct>> futureWeeklyTopProducts;
 
   @override
   void initState() {
     super.initState();
-    futurePopular = repo.fetchPopularProducts();
+    futureWeeklyTopProducts = repo.fetchWeeklyTopProducts();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // 섹션 헤더
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
           child: Row(
             children: const [
               Text(
-                '인기 찜 Top 10',
+                '이번주 조회 Top 10 상품',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,        // ✅ 더 선명하게
-                  letterSpacing: -0.2,           // ✅ 미세 조정
+                  color: Colors.white,
+                  letterSpacing: -0.2,
                 ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 12),
-
-        // 상품 리스트
         SizedBox(
           height: 240,
           child: FutureBuilder<List<PopularProduct>>(
-            future: futurePopular,
+            future: futureWeeklyTopProducts,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return ListView.separated(
@@ -62,7 +58,7 @@ class _PopularSectionState extends State<PopularSection> with SingleTickerProvid
                   itemBuilder: (_, __) => const PopularProductSkeletonCard(),
                 );
               } else if (snapshot.hasError) {
-                return Center(child: Text('불러오기 실패: ${snapshot.error}'));
+                return Center(child: Text('불러오기 실패: \${snapshot.error}'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const Center(child: Text('데이터 없음'));
               }
@@ -79,7 +75,7 @@ class _PopularSectionState extends State<PopularSection> with SingleTickerProvid
                     product: product,
                     rank: index + 1,
                     onTap: () {
-                      // TODO: 상세 진입
+                      // TODO: 상세 진입 시 로직 필요 시 구현
                     },
                   );
                 },

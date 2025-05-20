@@ -40,23 +40,49 @@ class _SurgeryTabState extends State<SurgeryTab> {
       padding: EdgeInsets.zero,
       children: [
         // ✅ 0) 이번주 조회 Top 10 병원 섹션
+        // ––––– 이번주 조회 Top10 이벤트 –––––
         FutureBuilder<List<PopularWeeklyEvent>>(
           future: _futureWeeklyEvents,
           builder: (ctx, snap) {
-            if (snap.hasData && snap.data!.isNotEmpty) {
-              return Column(
-                children: [
-                  PopularWeeklyEventSectionCard(events: snap.data!), // ✅ 커스텀 위젯 활용
-                  const SizedBox(height: 16),
-                  const Divider(
-                    height: 1, thickness: 0.5,
-                    indent: 16, endIndent: 16, color: Colors.grey,
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              );
+            switch (snap.connectionState) {
+              case ConnectionState.waiting:
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              default:
+                if (snap.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      '😢 주간 이벤트 로드 중 오류: ${snap.error}',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
+                final events = snap.data ?? [];
+                if (events.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      '이번 주 조회 이벤트가 없습니다.',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                }
+                // 데이터가 제대로 왔으면 실제 섹션 렌더링
+                return Column(
+                  children: [
+                    PopularWeeklyEventSectionCard(events: events),
+                    const SizedBox(height: 16),
+                    const Divider(
+                      height: 1, thickness: 0.5,
+                      indent: 16, endIndent: 16, color: Colors.grey,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                );
             }
-            return const SizedBox.shrink();
           },
         ),
 
