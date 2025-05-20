@@ -1,5 +1,6 @@
 // lib/features/home/presentation/home_screen.dart
 import 'package:alfred_clean/features/home/presentation/surgery_tab.dart';
+import 'package:alfred_clean/features/home/presentation/widget/weekly_top_keyword_section.dart';
 import 'package:alfred_clean/features/home/presentation/widget/weekly_top_product_section.dart';
 import 'package:flutter/material.dart';
 import 'popular_section.dart';
@@ -77,6 +78,7 @@ class FashionShoppingTab extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.zero,
       children: const [
+        WeeklyTopKeywordSection(),
         WeeklyTopProductSection(),
         PopularSection(),
         // 👉 오늘의 추천, 히스토리 등 추가 가능

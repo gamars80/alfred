@@ -46,4 +46,21 @@ class PopularRepository {
     final response = await _dio.get('/api/products/weekly/top');
     return (response.data as List).map((e) => PopularProduct.fromJson(e)).toList();
   }
+
+  Future<List<String>> fetchWeeklyTopCategories() async {
+    final response = await _dio.get('/api/products/weekly/top/category');
+    return (response.data as List)
+        .map((e) => e['category'] as String)
+        .toList();
+  }
+
+  Future<List<String>> fetchWeeklyTopSources() async {
+    final response = await _dio.get('/api/products/weekly/top/source');
+    return (response.data as List)
+        .map((e) => e['source'] as String)
+        .toList();
+  }
+
+
+
 }
