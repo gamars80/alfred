@@ -1,4 +1,5 @@
 class PopularProduct {
+  final String userId;
   final int productId;
   final String mallName;
   final int cnt;
@@ -9,8 +10,10 @@ class PopularProduct {
   final String reason;
   final String source;
   final String category;
+  final String historyAddedAt;
 
   PopularProduct({
+    required this.userId,
     required this.productId,
     required this.mallName,
     required this.cnt,
@@ -21,10 +24,12 @@ class PopularProduct {
     required this.reason,
     required this.source,
     required this.category,
+    required this.historyAddedAt,
   });
 
   factory PopularProduct.fromJson(Map<String, dynamic> json) {
     return PopularProduct(
+      userId: json['userId'] as String,
       productId: json['productId'],
       mallName: json['mallName'],
       cnt: json['cnt'],
@@ -35,6 +40,7 @@ class PopularProduct {
       reason: json['reason'],
       source: json['source'],
       category: json['category'],
+      historyAddedAt: json['historyAddedAt'] as String? ?? '',
     );
   }
 }

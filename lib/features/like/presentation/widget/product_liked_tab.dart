@@ -196,7 +196,7 @@ class _FashionLikedTabState extends State<FashionLikedTab> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => ProductWebViewScreen(
-                          url: product.productLink,
+                          url: product.productLink, productId: product.productId, historyCreatedAt: int.parse(product.historyAddedAt), source: product.source,
                         ),
                       ),
                     ),
