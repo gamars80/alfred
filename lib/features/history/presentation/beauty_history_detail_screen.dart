@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../call/model/event.dart';
-import '../../call/model/hostpital.dart';
+
 import '../../call/presentation/widget/community_card.dart';
 import '../../call/presentation/widget/event_card.dart';
 import '../../call/presentation/widget/hospital_card.dart';
@@ -9,10 +8,13 @@ import '../model/beauty_history.dart';
 
 class BeautyHistoryDetailScreen extends StatefulWidget {
   final BeautyHistory history;
-  const BeautyHistoryDetailScreen({Key? key, required this.history}) : super(key: key);
+
+  const BeautyHistoryDetailScreen({Key? key, required this.history})
+    : super(key: key);
 
   @override
-  State<BeautyHistoryDetailScreen> createState() => _BeautyHistoryDetailScreenState();
+  State<BeautyHistoryDetailScreen> createState() =>
+      _BeautyHistoryDetailScreenState();
 }
 
 class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen>
@@ -25,22 +27,19 @@ class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen>
   void initState() {
     super.initState();
     // 탭 컨트롤러 생성
-    _tabController = TabController(length: 2, vsync: this)
-      ..addListener(() {
-        if (_tabController.indexIsChanging) {
-          setState(() {
-            // 탭 변경 시 rebuild
-            selectedSource = null; // 탭 변경할 때 필터 초기화 원한다면
-          });
-        }
-      });
+    _tabController = TabController(length: 2, vsync: this)..addListener(() {
+      if (_tabController.indexIsChanging) {
+        setState(() {
+          // 탭 변경 시 rebuild
+          selectedSource = null; // 탭 변경할 때 필터 초기화 원한다면
+        });
+      }
+    });
 
     // 이벤트의 unique source 목록
-    sources = widget.history.recommendedEvents
-        .map((e) => e.source)
-        .toSet()
-        .toList()
-      ..sort();
+    sources =
+        widget.history.recommendedEvents.map((e) => e.source).toSet().toList()
+          ..sort();
   }
 
   @override
@@ -51,15 +50,16 @@ class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final posts     = widget.history.recommendedPostsByGangnam;
-    final events    = widget.history.recommendedEvents;
+    final posts = widget.history.recommendedPostsByGangnam;
+    final events = widget.history.recommendedEvents;
     final hospitals = widget.history.recommendedHospitals;
-    final videos    = widget.history.recommendedVideos;
+    final videos = widget.history.recommendedVideos;
 
     // 필터링된 이벤트
-    final filteredEvents = selectedSource == null
-        ? events
-        : events.where((e) => e.source == selectedSource).toList();
+    final filteredEvents =
+        selectedSource == null
+            ? events
+            : events.where((e) => e.source == selectedSource).toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -76,10 +76,7 @@ class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen>
           indicatorColor: Colors.deepPurple,
           labelColor: Colors.deepPurple,
           unselectedLabelColor: Colors.black54,
-          tabs: const [
-            Tab(text: '이벤트'),
-            Tab(text: '병원'),
-          ],
+          tabs: const [Tab(text: '이벤트'), Tab(text: '병원')],
         ),
       ),
       body: ListView(
@@ -89,15 +86,17 @@ class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen>
           if (posts.isNotEmpty) ...[
             const Text('📌 관련 커뮤니티 게시글', style: _sectionTitleStyle),
             const SizedBox(height: 8),
-            ...posts.map((post) => CommunityCard(
-              post: post,
-              source: post.source,
-              historyCreatedAt: widget.history.createdAt,
-              initialLiked: post.liked,
-              onLikedChanged: (updated) {
-                // 상태 변경 로직
-              },
-            )),
+            ...posts.map(
+              (post) => CommunityCard(
+                post: post,
+                source: post.source,
+                historyCreatedAt: widget.history.createdAt,
+                initialLiked: post.liked,
+                onLikedChanged: (updated) {
+                  // 상태 변경 로직
+                },
+              ),
+            ),
             const SizedBox(height: 24),
           ],
 
@@ -114,16 +113,20 @@ class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen>
                     onSelected: (_) => setState(() => selectedSource = null),
                   ),
                   const SizedBox(width: 8),
-                  ...sources.map((src) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(src),
-                      selected: selectedSource == src,
-                      onSelected: (_) => setState(() {
-                        selectedSource = (selectedSource == src) ? null : src;
-                      }),
+                  ...sources.map(
+                    (src) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(src),
+                        selected: selectedSource == src,
+                        onSelected:
+                            (_) => setState(() {
+                              selectedSource =
+                                  (selectedSource == src) ? null : src;
+                            }),
+                      ),
                     ),
-                  )),
+                  ),
                 ],
               ),
             ),

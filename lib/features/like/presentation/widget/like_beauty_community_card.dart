@@ -1,8 +1,11 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../model/like_beauty_community.dart';
+import '../../../call/presentation/widget/gallery_page.dart'; // GalleryPage 경로는 실제 경로에 맞게 조정
 
 class BeautyCommunityLikedCard extends StatelessWidget {
   final LikedBeautyCommunity item;
@@ -54,8 +57,6 @@ class BeautyCommunityLikedCard extends StatelessWidget {
                 height: 1.4,
               ),
             ),
-
-            // ── 여기에 [더보기] 버튼 추가 ──
             const SizedBox(height: 4),
             GestureDetector(
               onTap: _openDetail,
@@ -71,6 +72,7 @@ class BeautyCommunityLikedCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
+            // ✅ 이미지 섹션
             if ((item.photoUrls ?? []).isNotEmpty)
               SizedBox(
                 height: 80,
@@ -78,17 +80,74 @@ class BeautyCommunityLikedCard extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   itemCount: item.photoUrls!.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (_, i) => ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: CachedNetworkImage(
-                      imageUrl: item.photoUrls![i],
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                  itemBuilder: (context, i) {
+                    final url = item.photoUrls![i];
+                    final showBlur = i > 0 && item.photoUrls!.length > 1;
+
+                    return GestureDetector(
+                      onTap: () async {
+                        if (showBlur) {
+                          await _openDetail();
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => GalleryPage(
+                                images: item.photoUrls!,
+                                initialIndex: i,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: ColorFiltered(
+                              colorFilter: showBlur
+                                  ? ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken)
+                                  : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+                              child: ImageFiltered(
+                                imageFilter: showBlur
+                                    ? ImageFilter.blur(sigmaX: 6, sigmaY: 6)
+                                    : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                                child: CachedNetworkImage(
+                                  imageUrl: url,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (showBlur)
+                            const Positioned.fill(
+                              child: Center(
+                                child: Text(
+                                  'Click',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black54,
+                                        offset: Offset(1, 1),
+                                        blurRadius: 2,
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
+
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
