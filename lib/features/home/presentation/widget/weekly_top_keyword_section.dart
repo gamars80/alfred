@@ -52,9 +52,9 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
                 Tab(text: '쇼핑몰 랭킹'),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             SizedBox(
-              height: 120, // 원하는 높이 설정
+              height: 140, // 원하는 높이 설정
               child: TabBarView(
                 controller: _tabController,
                 children: [
@@ -100,30 +100,53 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(items.length, (i) {
+        final rank = startRank + i;
+        final keyword = items[i];
+
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 3),
-          child: Row(
-            children: [
-              Text(
-                '${startRank + i}.',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: Colors.black87,
+          padding: const EdgeInsets.symmetric(vertical: 5), // 상하 간격 ↓ 줄임
+          child: InkWell(
+            onTap: () {
+              print('클릭: $keyword');
+            },
+            borderRadius: BorderRadius.circular(6),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    'TOP $rank',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9, // 폰트 크기 ↓ 축소
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  items[i],
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, color: Colors.black87),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    keyword,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11, // 폰트 크기 ↓ 축소
+                      fontWeight: FontWeight.w500,
+                      decoration: TextDecoration.underline,
+                      color: Colors.black87,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                const Icon(Icons.chevron_right, size: 14, color: Colors.grey), // 아이콘도 더 작게
+              ],
+            ),
           ),
         );
       }),
     );
   }
+
 }
