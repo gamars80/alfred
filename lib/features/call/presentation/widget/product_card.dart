@@ -43,7 +43,12 @@ class ProductCard extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ProductWebViewScreen(url: product.link),
+        builder: (_) => ProductWebViewScreen(
+          url: product.link,
+          productId: product.productId,
+          historyCreatedAt: historyCreatedAt,
+          source: product.source!, // null 아님이 보장된다면 ! 사용
+        ),
       ),
     );
   }
