@@ -30,33 +30,60 @@ class LikedProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 이미지
+            // 이미지 + 찜취소 버튼
             AspectRatio(
               aspectRatio: 1,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                child: Image.network(
-                  _getValidImageUrl(product.productImage),
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: Colors.grey,
-                    child: const Icon(Icons.broken_image, color: Colors.white70),
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                    child: Image.network(
+                      _getValidImageUrl(product.productImage),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: Colors.grey,
+                        child: const Icon(Icons.broken_image, color: Colors.white70),
+                      ),
+                    ),
                   ),
-                ),
+                  // 찜취소 버튼
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: GestureDetector(
+                      onTap: () {
+                        onUnLike();
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black45,
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(6),
+                        child: const Icon(
+                          Icons.close,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 
-            // 내용 부분을 Expanded로 감싸기
+            // 내용
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// ✅ 1. 상품명 - Flexible로 감싸고 maxLines, overflow 꼭 설정
                     Flexible(
                       child: Text(
                         product.productName,
@@ -69,10 +96,7 @@ class LikedProductCard extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 6),
-
-                    /// ✅ 2. 가격
                     Text(
                       '₩${formatter.format(product.productPrice)}',
                       style: GoogleFonts.roboto(
@@ -81,10 +105,7 @@ class LikedProductCard extends StatelessWidget {
                         color: Colors.amberAccent,
                       ),
                     ),
-
                     const SizedBox(height: 4),
-
-                    /// ✅ 3. 쇼핑몰명
                     Text(
                       product.mallName,
                       overflow: TextOverflow.ellipsis,
