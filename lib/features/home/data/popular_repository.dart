@@ -41,4 +41,9 @@ class PopularRepository {
         .map((e) => PopularWeeklyEvent.fromJson(e))
         .toList();
   }
+
+  Future<List<PopularProduct>> fetchWeeklyTopProducts() async {
+    final response = await _dio.get('/api/products/weekly/top');
+    return (response.data as List).map((e) => PopularProduct.fromJson(e)).toList();
+  }
 }
