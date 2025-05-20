@@ -117,7 +117,7 @@ class PopularProductCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(product.mallName, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text(product.mallName, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
@@ -142,7 +142,7 @@ class PopularProductCard extends StatelessWidget {
                       product.productName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, color: Colors.black87),
+                      style: const TextStyle(fontSize: 9, color: Colors.black87),
                     ),
                   ),
                 ],
