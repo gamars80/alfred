@@ -11,13 +11,16 @@ import '../features/hospital/presentation/hospital_detail_screen.dart';
 import '../main.dart';
 
 final router = GoRouter(
-  navigatorKey: navigatorKey, // ✅ 이 부분 추가
+  navigatorKey: navigatorKey,
   initialLocation: '/',
   routes: [
     GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
     GoRoute(path: '/home', builder: (context, state) => const MainTab()),
-    GoRoute(path: '/main', builder: (context, state) => const MainTab()),
+    GoRoute(
+      path: '/main',
+      builder: (context, state) => MainTab(selectedIndex: 2),
+    ),
     GoRoute(path: '/call', builder: (context, state) => const CallScreen()),
     GoRoute(
       path: '/webview',
@@ -29,14 +32,17 @@ final router = GoRouter(
         );
       },
     ),
-    /// ✅ 병원 상세 화면 추가
     GoRoute(
       path: '/hospital-detail/:id/:createdAt',
       builder: (context, state) {
         final id = int.parse(state.pathParameters['id']!);
         final createdAt = int.parse(state.pathParameters['createdAt']!);
         final hospital = state.extra as Hospital;
-        return HospitalDetailScreen(hospitalId: id, createdAt: createdAt, hospital: hospital);
+        return HospitalDetailScreen(
+          hospitalId: id,
+          createdAt: createdAt,
+          hospital: hospital,
+        );
       },
     ),
   ],

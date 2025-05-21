@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../search/presentation/category_product_screen.dart';
 import '../../data/popular_repository.dart';
 
 
@@ -107,7 +108,12 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
           padding: const EdgeInsets.symmetric(vertical: 5), // 상하 간격 ↓ 줄임
           child: InkWell(
             onTap: () {
-              print('클릭: $keyword');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CategoryProductScreen(category: keyword),
+                ),
+              );
             },
             borderRadius: BorderRadius.circular(6),
             child: Row(
