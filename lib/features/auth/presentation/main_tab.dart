@@ -9,7 +9,9 @@ import '../../home/presentation/home_screen.dart';
 import '../../like/presentation/liked_product_screen.dart';
 
 class MainTab extends StatefulWidget {
-  const MainTab({super.key});
+
+  final int selectedIndex;
+  const MainTab({super.key, this.selectedIndex = 0});
 
   @override
   State<MainTab> createState() => _MainTabState();
@@ -23,11 +25,13 @@ class _MainTabState extends State<MainTab> {
   @override
   void initState() {
     super.initState();
+    _selectedIndex = widget.selectedIndex;
+    debugPrint('✅ MainTab selectedIndex: $_selectedIndex'); // 🔍 로그
     _screens.addAll([
       const CallScreen(),
       const HistoryScreen(),
-      const LikedProductScreen(),
       const HomeScreen(),
+      const LikedProductScreen(),
       _buildMyPage(),
     ]);
   }
@@ -83,8 +87,8 @@ class _MainTabState extends State<MainTab> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.chat), label: '집사호출'),
           BottomNavigationBarItem(icon: Icon(Icons.history), label: '히스토리'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: '찜목록'),
           BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
+          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: '찜목록'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: '마이페이지'),
         ],
       ),
