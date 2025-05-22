@@ -1,5 +1,4 @@
-// ✨ 기능은 그대로, 에러 방지 및 UI 안정화 수정 반영
-
+// lib/features/history/presentation/history_detail_screen.dart
 import 'package:alfred_clean/features/call/model/product.dart';
 import 'package:flutter/material.dart';
 
@@ -28,12 +27,11 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // 초기 liked 상태 로드
     for (final p in widget.history.recommendations) {
       if (p.liked) likedProductIds.add(p.productId);
     }
     _loadToken();
-    // Mall별로 추천 상품 그룹핑
+
     groupedRecommendations = {};
     for (final p in widget.history.recommendations) {
       groupedRecommendations.putIfAbsent(p.mallName, () => []).add(p);
@@ -51,7 +49,6 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // 상세에서 돌아갈 때 수정된 history를 반환
         Navigator.pop(context, widget.history);
         return false;
       },
@@ -62,11 +59,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
           elevation: 0.5,
           title: const Text(
             '추천 히스토리',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           centerTitle: true,
           iconTheme: const IconThemeData(color: Colors.white),
@@ -76,13 +69,20 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
           ),
         ),
         body: groupedRecommendations.isEmpty
-            ? const Center(child: Text('추천 결과가 없습니다.', style: TextStyle(color: Colors.white)))
+            ? const Center(
+          child: Text('추천 결과가 없습니다.', style: TextStyle(color: Colors.white)),
+        )
             : ListView(
           children: groupedRecommendations.entries.map((entry) {
             final mall = entry.key;
             final products = entry.value;
-
             if (products.isEmpty) return const SizedBox.shrink();
+
+            // 화면 너비 기반 명시적 높이 계산 (padding 포함)
+            final availableWidth = MediaQuery.of(context).size.width;
+            final cardWidth = availableWidth * 0.92 - 16; // viewportFraction(0.92)과 padding(8*2) 고려
+            const textAreaHeight = 160.0; // 텍스트 및 버튼 영역 예상 높이 (조정)
+            final pageHeight = cardWidth + textAreaHeight;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -93,26 +93,20 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Row(
                       children: [
-                        Text(
-                          '💡 $mall',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+                        Text('💡 $mall',
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                         const SizedBox(width: 8),
                         const Expanded(
-                          child: Divider(
-                            color: Colors.white24,
-                            thickness: 0.7,
-                          ),
+                          child: Divider(color: Colors.white24, thickness: 0.7),
                         ),
                       ],
                     ),
                   ),
+
+                  // 명시적 높이 SizedBox
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.65,
+                    height: pageHeight,
                     child: PageView.builder(
                       controller: PageController(viewportFraction: 0.92),
                       itemCount: products.length,
@@ -120,15 +114,14 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                       itemBuilder: (context, index) {
                         final product = products[index];
                         final isLiked = likedProductIds.contains(product.productId);
+
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                          child: SizedBox(
-                            height: 350,
-                            child: ProductCard(
-                              product: product,
-                              isLiked: isLiked,
-                              onLikeToggle: () => _toggleLike(product), historyCreatedAt: widget.history.createdAt,
-                            ),
+                          child: ProductCard(
+                            product: product,
+                            isLiked: isLiked,
+                            onLikeToggle: () => _toggleLike(product),
+                            historyCreatedAt: widget.history.createdAt,
                           ),
                         );
                       },
@@ -146,6 +139,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
   Future<void> _toggleLike(Product product) async {
     if (token == null) return;
     final wasLiked = likedProductIds.contains(product.productId);
+
     try {
       if (wasLiked) {
         await likeRepo.deleteLike(
@@ -162,24 +156,22 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
           mallName: product.mallName,
         );
       }
+
       setState(() {
-        // 로컬 liked 상태 토글
         if (wasLiked) {
           likedProductIds.remove(product.productId);
         } else {
           likedProductIds.add(product.productId);
         }
-        // history 모델에도 반영
-        final histList = widget.history.recommendations;
-        final idx = histList.indexWhere((p) => p.productId == product.productId);
+        final idx = widget.history.recommendations
+            .indexWhere((p) => p.productId == product.productId);
         if (idx != -1) {
-          histList[idx] = histList[idx].copyWith(liked: !wasLiked);
+          widget.history.recommendations[idx] =
+              widget.history.recommendations[idx].copyWith(liked: !wasLiked);
         }
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('요청 실패: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('요청 실패: \$e')));
     }
   }
 }

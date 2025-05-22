@@ -20,6 +20,10 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint(widget.product.source);
+    debugPrint(widget.product.source);
+    debugPrint(widget.product.source);
+    debugPrint(widget.product.source);
     reviewsFuture = repo.fetchReviews(
       productId: widget.product.productId,
       source: widget.product.source,
@@ -54,7 +58,7 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
                   } else if (snapshot.hasError) {
                     return Center(
                       child: Text(
-                        '에러 발생: \${snapshot.error}',
+                        '에러 발생: ${snapshot.error}',
                         style: const TextStyle(color: Colors.red),
                       ),
                     );

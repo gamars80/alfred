@@ -48,18 +48,18 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      recommendationId: json['id'] as String? ?? '',
       name: json['productName'] ?? json['name'] ?? '',
-      productId: json['productId'] ?? '',
       price: json['productPrice'] ?? json['price'] ?? 0,
-      image: json['productImage'] ?? json['image'] ?? '',
-      link: json['productLink'] ?? json['link'] ?? '',
       reason: json['reason'] ?? '',
       mallName: json['mallName'] ?? '',
-      source: (json['source'] as String?) ?? '',
       category: json['category'] ?? '',
       reviewCount: _parseReviewCount(json['reviewCount']),
       liked: json['liked'] as bool? ?? false,
+      recommendationId: (json['id'] ?? '').toString(),
+      productId: (json['productId'] ?? '').toString(),
+      image: (json['productImage'] ?? json['image'] ?? '').toString(),
+      link: (json['productLink'] ?? json['link'] ?? '').toString(),
+      source: (json['source'] ?? '').toString(),
     );
   }
 
