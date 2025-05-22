@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import '../../auth/common/dio/dio_client.dart';
+import '../../call/model/product.dart';
 import '../model/product.dart';
 
 class ProductPageResult {

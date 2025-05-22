@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../model/product.dart';
+import '../../../auth/common/dio/dio_client.dart';
+import '../../../auth/presentation/product_detail_image_viewer_screen.dart';
+import '../../../call/model/product.dart';
+import '../../../review/presentation/review_overlay_screen.dart';
+
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -9,7 +13,7 @@ class ProductCard extends StatelessWidget {
   const ProductCard({super.key, required this.product});
 
   void _openLink(BuildContext context) async {
-    final url = Uri.parse(product.productLink);
+    final url = Uri.parse(product.link);
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
@@ -19,10 +23,59 @@ class ProductCard extends StatelessWidget {
     }
   }
 
+  void _openReviews(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ReviewOverlayScreen(product: product)),
+    );
+  }
+
+  Future<void> _openDetailImage(BuildContext context) async {
+    try {
+      debugPrint('[상품상세이미지] 요청 ID: ${product.source}');
+
+      final response = await DioClient.dio.get(
+        '/api/products/${product.productId}?source=${product.source}&detailLink=${product.link}',
+      );
+
+      // 1) 전체 응답을 dynamic 리스트로 받음
+      final List<dynamic> data = response.data;
+
+      // 2) 첫 번째 요소(Map)에서 imageUrls 리스트를 추출
+      List<String> imageUrls = [];
+      if (data.isNotEmpty && data[0] is Map<String, dynamic>) {
+        final map = data[0] as Map<String, dynamic>;
+        if (map['imageUrls'] is List) {
+          imageUrls = (map['imageUrls'] as List).whereType<String>().toList();
+        }
+      }
+
+      if (imageUrls.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => ProductDetailImageViewerScreen(imageUrls: imageUrls),
+          ),
+        );
+      } else {
+        debugPrint('[ProductDetailImages] Empty image list');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('이미지를 불러오지 못했습니다.')));
+      }
+    } catch (e) {
+      debugPrint('[ProductDetailImages] Error fetching detail-image: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('서버 오류가 발생했습니다.')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 250, // 고정 높이로 overflow 방지
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 220),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -48,9 +101,9 @@ class ProductCard extends StatelessWidget {
                     AspectRatio(
                       aspectRatio: 1, // 정사각형 이미지
                       child: CachedNetworkImage(
-                        imageUrl: product.productImage.startsWith('http')
-                            ? product.productImage
-                            : 'https:${product.productImage}',
+                        imageUrl: product.image.startsWith('http')
+                            ? product.image
+                            : 'https:${product.image}',
                         fit: BoxFit.cover,
                         placeholder: (context, url) =>
                         const Center(child: CircularProgressIndicator()),
@@ -89,7 +142,7 @@ class ProductCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      product.productName,
+                      product.name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -98,14 +151,47 @@ class ProductCard extends StatelessWidget {
                         color: Colors.black87,
                       ),
                     ),
-                    const Spacer(),
+                    // const Spacer(),
+                    const SizedBox(height: 6),
                     Text(
-                      '${product.productPrice.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}원',
+                      '${product.price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}원',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.deepPurple,
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () => _openReviews(context),
+                          child: Row(
+                            children: const [
+                              Icon(Icons.reviews, size: 14, color: Colors.black54),
+                              SizedBox(width: 4),
+                              Text(
+                                '리뷰보기',
+                                style: TextStyle(fontSize: 10, color: Colors.black54),
+                              ),
+                            ],
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => _openDetailImage(context),
+                          child: Row(
+                            children: const [
+                              Icon(Icons.image_search, size: 14, color: Colors.black54),
+                              SizedBox(width: 4),
+                              Text(
+                                '상세보기',
+                                style: TextStyle(fontSize: 10, color: Colors.black54),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
