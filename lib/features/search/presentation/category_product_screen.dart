@@ -1,9 +1,11 @@
 // lib/features/search/presentation/widget/category_product_screen.dart
 
+import 'package:alfred_clean/features/search/presentation/search_screen.dart';
 import 'package:alfred_clean/features/search/presentation/widget/sort_dropdown.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import '../../call/model/product.dart';
 import '../data/search_repository.dart';
-import '../../search/model/product.dart';
 import '../presentation/widget/product_card.dart';
 
 class CategoryProductScreen extends StatefulWidget {
@@ -29,23 +31,17 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
   bool _hasMore = true;
   String _sortBy = 'createdAt';
   String _sortDir = 'desc';
-
-  bool _isSearching = false;
-  late final TextEditingController _searchController;
   String? _searchKeyword;
 
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController();
     _fetchProducts();
-
     _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -69,21 +65,33 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
       _totalCount = null;
     }
 
-    final response = await _repo.fetchProductsByCategory(
-      category: widget.category,
-      cursor: _cursor,
-      sortBy: _sortBy,
-      sortDir: _sortDir,
-      searchKeyword: _searchKeyword,
-    );
+    try {
+      final response = await _repo.fetchProductsByCategory(
+        category: widget.category,
+        cursor: _cursor,
+        sortBy: _sortBy,
+        sortDir: _sortDir,
+        searchKeyword: _searchKeyword,
+      );
 
-    setState(() {
-      _totalCount = response.totalCount;
-      _products.addAll(response.items);
-      _cursor = response.nextCursor;
-      _hasMore   = response.nextCursor != null;
-      _isLoading = false;
-    });
+      setState(() {
+        _totalCount = response.totalCount;
+        _products.addAll(response.items);
+        _cursor = response.nextCursor;
+        _hasMore = response.nextCursor != null;
+      });
+    } on DioError catch (e) {
+      debugPrint('상품 조회 중 에러: ${e.message}');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('검색 중 서버 오류가 발생했습니다.')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   void _onSortChanged(String sortBy, String sortDir) {
@@ -92,44 +100,26 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
       _sortDir = sortDir;
     });
 
-    // ① 스크롤을 맨 위로 올려서 사용자 경험 개선
     _scrollController.animateTo(
       0.0,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
 
-    // ② API 를 새로 호출 (페이징 커서도 깨끗이 초기화)
     _fetchProducts(refresh: true);
   }
 
-  void _startSearch() {
-    setState(() => _isSearching = true);
-  }
-
-  void _cancelSearch() {
-    setState(() {
-      _isSearching = false;
-      _searchController.clear();
-      if (_searchKeyword != null) {
-        _searchKeyword = null;
-        _fetchProducts(refresh: true);
-      }
-    });
-  }
-
-  void _onSearchSubmitted(String keyword) {
-    final kw = keyword.trim();
-    if (kw.isEmpty) return;
-
-    setState(() {
-      _isSearching = false;
-      _searchKeyword = kw;
-      _products.clear();
-      _cursor = null;
-      _hasMore = true;
-    });
-    _fetchProducts();
+  Future<void> _onSearchTap() async {
+    final kw = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const SearchScreen()),
+    );
+    if (kw != null && kw.isNotEmpty) {
+      setState(() {
+        _searchKeyword = kw;
+      });
+      _fetchProducts(refresh: true);
+    }
   }
 
   @override
@@ -141,18 +131,7 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
         surfaceTintColor: Colors.white,
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.black),
-        title: _isSearching
-            ? TextField(
-          controller: _searchController,
-          autofocus: true,
-          textInputAction: TextInputAction.search,
-          onSubmitted: _onSearchSubmitted,
-          decoration: const InputDecoration(
-            hintText: '검색어를 입력하세요',
-            border: InputBorder.none,
-          ),
-        )
-            : Text(
+        title: Text(
           widget.category,
           style: const TextStyle(
             color: Colors.black,
@@ -161,21 +140,16 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
           ),
         ),
         actions: [
-          _isSearching
-              ? IconButton(
-            icon: const Icon(Icons.close, color: Colors.black),
-            onPressed: _cancelSearch,
-          )
-              : IconButton(
+          IconButton(
             icon: const Icon(Icons.search, color: Colors.black),
-            onPressed: _startSearch,
+            onPressed: _onSearchTap,
           ),
         ],
       ),
       body: Column(
         children: [
           SortDropdown(onChanged: _onSortChanged),
-          if (_totalCount != null)               // ← count 가 있으면
+          if (_totalCount != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Align(
@@ -193,13 +167,13 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
           Expanded(
             child: GridView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              gridDelegate:
-              const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 220,
                 mainAxisSpacing: 16,
-                childAspectRatio: 0.6,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.60, // 여전히 비율은 중요
               ),
               itemCount: _products.length,
               itemBuilder: (context, index) =>
