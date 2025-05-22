@@ -6,8 +6,13 @@ import '../model/product.dart';
 class ProductPageResult {
   final List<Product> items;
   final String? nextCursor;
+  final int totalCount; // ← 추가
 
-  ProductPageResult({required this.items, this.nextCursor});
+  ProductPageResult({
+    required this.items,
+    this.nextCursor,
+    required this.totalCount,  // ← 생성자에 포함
+  });
 
   factory ProductPageResult.fromJson(Map<String, dynamic> json) {
     final items = (json['items'] as List<dynamic>)
@@ -16,6 +21,7 @@ class ProductPageResult {
     return ProductPageResult(
       items: items,
       nextCursor: json['nextCursor'],
+      totalCount: (json['totalCount'] as num).toInt(),  // ← JSON 의 count 파싱
     );
   }
 }

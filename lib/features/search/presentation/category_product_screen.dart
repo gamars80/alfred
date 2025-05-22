@@ -21,6 +21,7 @@ class CategoryProductScreen extends StatefulWidget {
 class _CategoryProductScreenState extends State<CategoryProductScreen> {
   final _repo = SearchRepository();
   final _scrollController = ScrollController();
+  int? _totalCount;
 
   final List<Product> _products = [];
   String? _cursor;
@@ -65,6 +66,7 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
       _products.clear();
       _cursor = null;
       _hasMore = true;
+      _totalCount = null;
     }
 
     final response = await _repo.fetchProductsByCategory(
@@ -76,9 +78,10 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
     );
 
     setState(() {
+      _totalCount = response.totalCount;
       _products.addAll(response.items);
       _cursor = response.nextCursor;
-      _hasMore = response.items.isNotEmpty;
+      _hasMore   = response.nextCursor != null;
       _isLoading = false;
     });
   }
@@ -172,6 +175,21 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
       body: Column(
         children: [
           SortDropdown(onChanged: _onSortChanged),
+          if (_totalCount != null)               // ← count 가 있으면
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '$_totalCount개의 검색결과',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
+            ),
           Expanded(
             child: GridView.builder(
               controller: _scrollController,
