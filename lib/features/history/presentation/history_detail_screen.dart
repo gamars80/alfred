@@ -21,8 +21,10 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
   final likeRepo = LikeRepository();
   final Set<String> likedProductIds = {};
   String? token;
+  String? selectedMall;  // 선택된 쇼핑몰
 
   late final Map<String, List<Product>> groupedRecommendations;
+  late final List<String> mallList;  // 쇼핑몰 리스트
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
     for (final p in widget.history.recommendations) {
       groupedRecommendations.putIfAbsent(p.mallName, () => []).add(p);
     }
+    mallList = groupedRecommendations.keys.toList();
   }
 
   Future<void> _loadToken() async {
@@ -53,37 +56,38 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
         return false;
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: const Color(0xFFFAFAFA),
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.white,
           elevation: 0,
           title: const Text(
             '추천 히스토리',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: Colors.black87,
               letterSpacing: -0.5,
             ),
           ),
           centerTitle: true,
-          iconTheme: const IconThemeData(color: Colors.white),
+          iconTheme: const IconThemeData(color: Colors.black87),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 22),
             onPressed: () => Navigator.pop(context, widget.history),
           ),
         ),
         body: groupedRecommendations.isEmpty
-            ? const Center(
+            ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.history_rounded, size: 48, color: Colors.white38),
-                    SizedBox(height: 16),
+                    Icon(Icons.history_rounded,
+                        size: 48, color: Colors.grey[300]),
+                    const SizedBox(height: 16),
                     Text(
                       '추천 결과가 없습니다.',
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: Colors.grey[600],
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -91,105 +95,179 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                   ],
                 ),
               )
-            : ListView(
-                physics: const BouncingScrollPhysics(),
-                children: groupedRecommendations.entries.map((entry) {
-                  final mall = entry.key;
-                  final products = entry.value;
-                  if (products.isEmpty) return const SizedBox.shrink();
+            : Column(
+                children: [
+                  Container(
+                    height: 44,
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: mallList.length + 1,
+                      itemBuilder: (context, index) {
+                        final isAll = index == 0;
+                        final mallName = isAll ? "전체" : mallList[index - 1];
+                        final isSelected = isAll ? selectedMall == null : selectedMall == mallName;
 
-                  final availableWidth = MediaQuery.of(context).size.width;
-                  final cardWidth = availableWidth * 0.92 - 16;
-                  const textAreaHeight = 160.0;
-                  final pageHeight = cardWidth + textAreaHeight;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: FilterChip(
+                            label: Text(mallName),
+                            selected: isSelected,
+                            onSelected: (_) {
+                              setState(() {
+                                selectedMall = isAll ? null : mallName;
+                              });
+                            },
+                            backgroundColor: Colors.white,
+                            selectedColor: const Color(0xFF7B61FF),
+                            checkmarkColor: Colors.white,
+                            labelStyle: TextStyle(
+                              fontSize: 14,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              color: isSelected ? Colors.white : Colors.grey[700],
+                            ),
+                            labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(
+                                color: isSelected ? Colors.transparent : Colors.grey[300]!,
+                                width: 1,
+                              ),
+                            ),
+                            elevation: isSelected ? 2 : 0,
+                            pressElevation: 0,
+                            shadowColor: const Color(0xFF7B61FF).withOpacity(0.3),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      physics: const BouncingScrollPhysics(),
+                      children: (selectedMall == null
+                              ? groupedRecommendations.entries.toList()
+                              : groupedRecommendations.entries
+                                  .where((e) => e.key == selectedMall)
+                                  .toList())
+                          .map((entry) {
+                        final mall = entry.key;
+                        final products = entry.value;
+                        if (products.isEmpty) return const SizedBox.shrink();
 
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          child: Row(
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.purple.withOpacity(0.6),
-                                      Colors.blue.withOpacity(0.6),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
+                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          width: 32,
+                                          height: 32,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                const Color(0xFF7B61FF).withOpacity(0.1),
+                                                const Color(0xFF5B4CFF).withOpacity(0.1),
+                                              ],
+                                            ),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: const Icon(
+                                            Icons.storefront_rounded,
+                                            size: 18,
+                                            color: Color(0xFF7B61FF),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          mall,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF212121),
+                                            letterSpacing: -0.5,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF5F5F5),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            '${products.length}개',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xFF757575),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
                                     Text(
-                                      mall,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
+                                      'AI가 추천한 ${mall}의 인기 상품',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w400,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Container(
-                                  height: 1,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.white24,
-                                        Colors.white.withOpacity(0.05),
-                                      ],
-                                    ),
-                                  ),
+                              const SizedBox(height: 8),
+                              GridView.builder(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 0.50,
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
                                 ),
+                                itemCount: products.length,
+                                itemBuilder: (context, index) {
+                                  final product = products[index];
+                                  final isLiked =
+                                      likedProductIds.contains(product.productId);
+
+                                  return ProductCard(
+                                    product: product,
+                                    isLiked: isLiked,
+                                    onLikeToggle: () => _toggleLike(product),
+                                    historyCreatedAt: widget.history.createdAt,
+                                  );
+                                },
                               ),
+                              if (selectedMall == null && 
+                                  entry != groupedRecommendations.entries.last)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 24),
+                                  height: 8,
+                                  color: const Color(0xFFF5F5F5),
+                                ),
                             ],
                           ),
-                        ),
-                        SizedBox(
-                          height: pageHeight,
-                          child: PageView.builder(
-                            controller: PageController(viewportFraction: 0.92),
-                            itemCount: products.length,
-                            physics: const BouncingScrollPhysics(),
-                            itemBuilder: (context, index) {
-                              final product = products[index];
-                              final isLiked = likedProductIds.contains(product.productId);
-
-                              return Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 15,
-                                      offset: const Offset(0, 5),
-                                    ),
-                                  ],
-                                ),
-                                child: ProductCard(
-                                  product: product,
-                                  isLiked: isLiked,
-                                  onLikeToggle: () => _toggleLike(product),
-                                  historyCreatedAt: widget.history.createdAt,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+                        );
+                      }).toList(),
                     ),
-                  );
-                }).toList(),
+                  ),
+                ],
               ),
       ),
     );

@@ -108,13 +108,13 @@ class ProductCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF242424),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -126,7 +126,7 @@ class ProductCard extends StatelessWidget {
           Stack(
             children: [
               AspectRatio(
-                aspectRatio: 4/3,  // 4:3 비율로 변경하여 이미지 높이 줄임
+                aspectRatio: 1,
                 child: GestureDetector(
                   onTap: () => _openWebview(context),
                   child: CachedNetworkImage(
@@ -134,18 +134,18 @@ class ProductCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     memCacheWidth: screenWidth,
                     placeholder: (_, __) => Container(
-                      color: Colors.grey[900],
+                      color: Colors.grey[100],
                       child: const Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
                         ),
                       ),
                     ),
                     errorWidget: (_, __, ___) => Container(
-                      color: Colors.grey[900],
+                      color: Colors.grey[100],
                       child: const Icon(Icons.broken_image,
-                          size: 40, color: Colors.white54),
+                          size: 32, color: Colors.grey),
                     ),
                   ),
                 ),
@@ -156,172 +156,223 @@ class ProductCard extends StatelessWidget {
                   right: 8,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
                     ),
                     child: IconButton(
                       icon: Icon(
                         isLiked! ? Icons.favorite : Icons.favorite_border,
-                        size: 20,
-                        color: isLiked! ? Colors.pinkAccent : Colors.white,
+                        size: 18,
+                        color: isLiked! ? Colors.pinkAccent : Colors.grey[400],
                       ),
                       onPressed: onLikeToggle,
                       constraints: const BoxConstraints(),
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(6),
                     ),
                   ),
                 ),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEEEEEE),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      product.mallName,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF666666),
                       ),
-                      child: Text(
-                        product.mallName,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white70,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    product.name,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      height: 1.25,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF212121),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '₩${_currencyFormatter.format(product.price)}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
+                      ),
+                      if (product.reviewCount > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF3E0),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.star_rounded, size: 11, color: Colors.orange[600]),
+                              const SizedBox(width: 2),
+                              Text(
+                                '${product.reviewCount}',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.orange[800],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (product.reason.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFFF8F6FF),
+                            const Color(0xFFF5F0FF),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: const Color(0xFFE8E0FF),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome,
+                            size: 12,
+                            color: Color(0xFF7B61FF),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              product.reason,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                height: 1.25,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF5A4A7A),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  product.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    height: 1.3,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '₩${_currencyFormatter.format(product.price)}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                if (product.reason.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.purple.withOpacity(0.2),
-                          Colors.blue.withOpacity(0.2),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
+                  const Spacer(),
+                  if (product.source == 'ABLY' ||
+                      product.source == 'ZIGZAG' ||
+                      product.source == 'ATTRANGS' ||
+                      product.source == 'HOTPING' ||
+                      product.source == 'MUSINSA')
+                    Row(
                       children: [
-                        const Icon(Icons.lightbulb_outline,
-                            size: 14, color: Colors.amber),
-                        const SizedBox(width: 6),
                         Expanded(
-                          child: Text(
-                            product.reason,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              height: 1.3,
-                              color: Colors.white70,
+                          child: TextButton(
+                            onPressed: () => _openDetailImage(context),
+                            style: TextButton.styleFrom(
+                              backgroundColor: const Color(0xFFF8F8F8),
+                              foregroundColor: const Color(0xFF424242),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 3),
+                              minimumSize: const Size(0, 22),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.image_outlined, size: 12, color: Colors.grey[700]),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '상세',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => _openReviews(context),
+                            style: TextButton.styleFrom(
+                              backgroundColor: const Color(0xFFF8F8F8),
+                              foregroundColor: const Color(0xFF424242),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 3),
+                              minimumSize: const Size(0, 22),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.rate_review_outlined, size: 12, color: Colors.grey[700]),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '리뷰',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ],
                     ),
-                  ),
                 ],
-                if (product.source == 'ABLY' ||
-                    product.source == 'ZIGZAG' ||
-                    product.source == 'ATTRANGS' ||
-                    product.source == 'HOTPING' ||
-                    product.source == 'MUSINSA') ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => _openDetailImage(context),
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.white.withOpacity(0.1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.photo_library_outlined,
-                                  size: 14, color: Colors.white70),
-                              SizedBox(width: 4),
-                              Text(
-                                '상세 이미지',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => _openReviews(context),
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.white.withOpacity(0.1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.rate_review_outlined,
-                                  size: 14, color: Colors.white70),
-                              SizedBox(width: 4),
-                              Text(
-                                '리뷰 보기',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
+              ),
             ),
           ),
         ],
