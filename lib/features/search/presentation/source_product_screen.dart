@@ -1,5 +1,3 @@
-// lib/features/search/presentation/widget/category_product_screen.dart
-
 import 'package:alfred_clean/features/search/presentation/search_screen.dart';
 import 'package:alfred_clean/features/search/presentation/widget/sort_dropdown.dart';
 import 'package:dio/dio.dart';
@@ -8,19 +6,19 @@ import '../../call/model/product.dart';
 import '../data/search_repository.dart';
 import '../presentation/widget/product_card.dart';
 
-class CategoryProductScreen extends StatefulWidget {
-  final String category;
+class SourceProductScreen extends StatefulWidget {
+  final String source;
 
-  const CategoryProductScreen({
+  const SourceProductScreen({
     super.key,
-    required this.category,
+    required this.source,
   });
 
   @override
-  State<CategoryProductScreen> createState() => _CategoryProductScreenState();
+  State<SourceProductScreen> createState() => _SourceProductScreenState();
 }
 
-class _CategoryProductScreenState extends State<CategoryProductScreen> {
+class _SourceProductScreenState extends State<SourceProductScreen> {
   final _repo = SearchRepository();
   final _scrollController = ScrollController();
   int? _totalCount;
@@ -66,8 +64,8 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
     }
 
     try {
-      final response = await _repo.fetchProductsByCategory(
-        category: widget.category,
+      final response = await _repo.fetchProductsBySource(
+        source: widget.source,
         cursor: _cursor,
         sortBy: _sortBy,
         sortDir: _sortDir,
@@ -132,7 +130,7 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.black),
         title: Text(
-          widget.category,
+          widget.source,
           style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -167,13 +165,12 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
           Expanded(
             child: GridView.builder(
               controller: _scrollController,
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 220,
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 12,
-                childAspectRatio: 0.60, // 여전히 비율은 중요
+                childAspectRatio: 0.60,
               ),
               itemCount: _products.length,
               itemBuilder: (context, index) =>
@@ -189,4 +186,4 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
       ),
     );
   }
-}
+} 
