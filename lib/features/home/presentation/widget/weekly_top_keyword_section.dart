@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../search/presentation/category_product_screen.dart';
+import '../../../search/presentation/source_product_screen.dart';
 import '../../data/popular_repository.dart';
 
 
@@ -105,13 +106,15 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
         final keyword = items[i];
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 5), // 상하 간격 ↓ 줄임
+          padding: const EdgeInsets.symmetric(vertical: 5),
           child: InkWell(
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CategoryProductScreen(category: keyword),
+                  builder: (context) => _tabController.index == 0
+                      ? CategoryProductScreen(category: keyword)
+                      : SourceProductScreen(source: keyword),
                 ),
               );
             },

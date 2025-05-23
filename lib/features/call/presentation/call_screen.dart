@@ -1,5 +1,6 @@
 // ✅ call_screen.dart (리팩토링된 메인 파일)
 import 'package:alfred_clean/features/call/presentation/voice_command_bottom_sheet.dart';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../../../common/overay/alfred_loading_overlay.dart';
@@ -118,6 +119,22 @@ class _CallScreenState extends State<CallScreen> {
       );
 
       setState(() => _isLoading = false);
+
+      if (success) {
+        if (_selectedCategory == '쇼핑') {
+          Flushbar(
+            message: '현재 결과는 일부입니다. 히스토리에서 모두 확인하세요 🛍️',
+            duration: const Duration(seconds: 3),
+            margin: const EdgeInsets.fromLTRB(12, kToolbarHeight + 12, 12, 0),
+            borderRadius: BorderRadius.circular(8),
+            backgroundColor: Colors.black87,
+            flushbarPosition: FlushbarPosition.TOP,
+            animationDuration: const Duration(milliseconds: 500),
+          ).show(context);
+        }
+        break;
+      }
+
 
       if (_errorMessage == 'Choice Type' && _choiceItemTypes != null) {
         Fluttertoast.showToast(

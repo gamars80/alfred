@@ -33,9 +33,6 @@ class ProductApi {
       if (createdAt == null) {
         throw Exception('API 응답에 "createdAt" 필드가 없습니다');
       }
-      debugPrint("createdAt:::::::::::::::::$createdAt");
-      debugPrint("createdAt:::::::::::::::::$createdAt");
-      debugPrint("createdAt:::::::::::::::::$createdAt");
 
       // 상품 목록 파싱
       final rawItems = data['items'];
