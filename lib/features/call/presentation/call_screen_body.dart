@@ -10,6 +10,13 @@ import '../model/hostpital.dart';
 import '../model/product.dart';
 import '../model/youtube_video.dart';
 
+// 디자인 시스템 상수
+const kPrimaryColor = Color(0xFF6200EE);
+const kSecondaryColor = Color(0xFF03DAC6);
+const kBackgroundColor = Color(0xFFF5F5F5);
+const kCardBorderRadius = 12.0;
+const kSpacing = 16.0;
+
 class CallScreenBody extends StatefulWidget {
   final int createdAt;
   final Map<String, List<Product>> categorizedProducts;
@@ -62,114 +69,202 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   Widget build(BuildContext context) {
     final List<Widget> items = [];
 
-    if (widget.communityPosts.isNotEmpty) {
-      items.add(Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
-        child: _buildSectionTitle('추천 커뮤니티'),
-      ));
+    // 배경색 적용을 위해 Container로 감싸기
+    return Container(
+      color: kBackgroundColor,
+      child: ListView(
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(vertical: kSpacing),
+        children: _buildSections(),
+      ),
+    );
+  }
 
-      items.addAll(widget.communityPosts.map((post) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        child: CommunityCard(
-          post: post,
-          source: post.source,
-          historyCreatedAt: widget.createdAt,
-          initialLiked: post.liked,
-        ),
-      )));
+  List<Widget> _buildSections() {
+    final List<Widget> sections = [];
+
+    // 커뮤니티 섹션
+    if (widget.communityPosts.isNotEmpty) {
+      sections.add(_buildSection(
+        title: '추천 커뮤니티',
+        children: widget.communityPosts.map((post) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: kSpacing, vertical: kSpacing / 2),
+          child: _buildElevatedCard(
+            child: CommunityCard(
+              post: post,
+              source: post.source,
+              historyCreatedAt: widget.createdAt,
+              initialLiked: post.liked,
+            ),
+          ),
+        )).toList(),
+      ));
     }
 
+    // 시술 섹션
     if (widget.events.isNotEmpty || widget.hospitals.isNotEmpty) {
-      items.add(Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
-        child: _buildSectionTitle('추천 시술'),
-      ));
-
-      items.add(TabBar(
-        controller: _tabController,
-        labelColor: Colors.deepPurple,
-        unselectedLabelColor: Colors.grey,
-        indicatorColor: Colors.deepPurple,
-        tabs: const [
-          Tab(text: '이벤트'),
-          Tab(text: '병원'),
+      sections.add(_buildSection(
+        title: '추천 시술',
+        children: [
+          _buildCustomTabBar(),
+          const SizedBox(height: kSpacing),
+          if (selectedProcedureTab == 0) ...[
+            _buildSourceFilter(),
+            const SizedBox(height: kSpacing / 2),
+            ...widget.events
+                .where((e) => e.source?.trim() == selectedSource.trim())
+                .map((e) => Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: kSpacing, vertical: kSpacing / 2),
+                      child: _buildElevatedCard(
+                        child: EventCard(
+                          event: e,
+                          historyCreatedAt: widget.createdAt,
+                        ),
+                      ),
+                    ))
+                .toList(),
+          ] else ...[
+            ...widget.hospitals.map((h) => Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: kSpacing, vertical: kSpacing / 2),
+                  child: _buildElevatedCard(
+                    child: HospitalCard(
+                      hospital: h,
+                      historyCreatedAt: widget.createdAt,
+                    ),
+                  ),
+                ))
+          ],
         ],
       ));
-
-      items.add(const SizedBox(height: 12));
-
-      if (selectedProcedureTab == 0) {
-        final filteredEvents = widget.events
-            .where((e) => e.source?.trim() == selectedSource.trim())
-            .toList();
-
-        items.add(_buildSourceFilter());
-        items.add(const SizedBox(height: 8));
-
-        // 기존 Map → List 변환부를 이렇게 바꿔주세요.
-        items.addAll(filteredEvents.map((e) => Padding(
-          key: ValueKey('event-${e.id}'),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: EventCard(event: e, historyCreatedAt: widget.createdAt),
-        )));
-      } else {
-        items.addAll(widget.hospitals.map((h) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: HospitalCard(hospital: h, historyCreatedAt: widget.createdAt),
-        )));
-      }
     }
 
+    // YouTube 섹션
     if (widget.youtubeVideos.isNotEmpty) {
-      items.add(Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
-        child: _buildSectionTitle('추천 Youtube 영상'),
-      ));
-      items.add(Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: YouTubeList(videos: widget.youtubeVideos),
+      sections.add(_buildSection(
+        title: '추천 YouTube 영상',
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: kSpacing),
+            child: _buildElevatedCard(
+              child: YouTubeList(videos: widget.youtubeVideos),
+            ),
+          ),
+        ],
       ));
     }
 
+    // 제품 섹션
     if (widget.categorizedProducts.isNotEmpty) {
-      final nonEmptyProductEntries = widget.categorizedProducts.entries.where((e) => e.value.isNotEmpty);
-      items.addAll(nonEmptyProductEntries.map((entry) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle(entry.key),
-            const SizedBox(height: 8),
-             ...entry.value.map((p) => ProductCard(
-               product: p,
-               historyCreatedAt: widget.createdAt,   // ← 여기에 넘겨줌
-             )).toList(),
-            const SizedBox(height: 24),
-          ],
-        ),
-      )));
+      final nonEmptyProductEntries =
+          widget.categorizedProducts.entries.where((e) => e.value.isNotEmpty);
+      sections.addAll(nonEmptyProductEntries.map((entry) => _buildSection(
+            title: entry.key,
+            children: entry.value.map((p) => Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: kSpacing, vertical: kSpacing / 2),
+              child: _buildElevatedCard(
+                child: ProductCard(
+                  product: p,
+                  historyCreatedAt: widget.createdAt,
+                ),
+              ),
+            )).toList(),
+          )));
     }
 
-    if (items.isEmpty) {
-      return const Center(
-        child: Text('추천된 데이터가 없습니다.', style: TextStyle(color: Colors.grey)),
-      );
+    if (sections.isEmpty) {
+      return [
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(kSpacing * 2),
+            child: Text(
+              '추천된 데이터가 없습니다.',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        )
+      ];
     }
 
-    return ListView(
-      controller: _scrollController,
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      children: items,
+    return sections;
+  }
+
+  Widget _buildSection({required String title, required List<Widget> children}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: kSpacing * 1.5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: kSpacing),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: kPrimaryColor,
+                letterSpacing: -0.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: kSpacing),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomTabBar() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: kSpacing),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(kCardBorderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TabBar(
+        controller: _tabController,
+        labelColor: kPrimaryColor,
+        unselectedLabelColor: Colors.grey,
+        indicatorColor: kPrimaryColor,
+        indicatorSize: TabBarIndicatorSize.label,
+        tabs: const [
+          Tab(
+            child: Text(
+              '이벤트',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Tab(
+            child: Text(
+              '병원',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildSourceFilter() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: kSpacing),
       child: Row(
         children: [
           _buildFilterButton('강남언니'),
-          const SizedBox(width: 8),
+          const SizedBox(width: kSpacing / 2),
           _buildFilterButton('바비톡'),
         ],
       ),
@@ -178,43 +273,57 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
 
   Widget _buildFilterButton(String source) {
     final isSelected = selectedSource == source;
-    return GestureDetector(
-      onTap: () {
-        if (!isSelected) {
-          setState(() {
-            selectedSource = source;
-          });
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.deepPurple : Colors.grey[200],
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          source,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : Colors.black87,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          if (!isSelected) {
+            setState(() {
+              selectedSource = source;
+            });
+          }
+        },
+        borderRadius: BorderRadius.circular(kCardBorderRadius),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? kPrimaryColor : Colors.white,
+            borderRadius: BorderRadius.circular(kCardBorderRadius),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            source,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isSelected ? Colors.white : Colors.black87,
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 0, top: 24, bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.deepPurple,
-        ),
+  Widget _buildElevatedCard({required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(kCardBorderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
+      child: child,
     );
   }
 }

@@ -106,137 +106,221 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width.toInt();
 
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade300, width: 1),
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF242424),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       clipBehavior: Clip.hardEdge,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AspectRatio(
-            aspectRatio: 16 / 9,
-            child: GestureDetector(
-              onTap: () => _openWebview(context),
-              child: CachedNetworkImage(
-                imageUrl: _getValidImageUrl(product.image),
-                fit: BoxFit.cover,
-                memCacheWidth: screenWidth,
-                placeholder:
-                    (_, __) => const Center(
-                      child: CircularProgressIndicator(strokeWidth: 1.5),
+          Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: 4/3,  // 4:3 비율로 변경하여 이미지 높이 줄임
+                child: GestureDetector(
+                  onTap: () => _openWebview(context),
+                  child: CachedNetworkImage(
+                    imageUrl: _getValidImageUrl(product.image),
+                    fit: BoxFit.cover,
+                    memCacheWidth: screenWidth,
+                    placeholder: (_, __) => Container(
+                      color: Colors.grey[900],
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                        ),
+                      ),
                     ),
-                errorWidget:
-                    (_, __, ___) => const Icon(Icons.broken_image, size: 60),
+                    errorWidget: (_, __, ___) => Container(
+                      color: Colors.grey[900],
+                      child: const Icon(Icons.broken_image,
+                          size: 40, color: Colors.white54),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              if (isLiked != null && onLikeToggle != null)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        isLiked! ? Icons.favorite : Icons.favorite_border,
+                        size: 20,
+                        color: isLiked! ? Colors.pinkAccent : Colors.white,
+                      ),
+                      onPressed: onLikeToggle,
+                      constraints: const BoxConstraints(),
+                      padding: const EdgeInsets.all(8),
+                    ),
+                  ),
+                ),
+            ],
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
+            padding: const EdgeInsets.all(12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        product.mallName,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
                 Text(
                   product.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 13,
+                    height: 1.3,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '₩${_currencyFormatter.format(product.price)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '₩${_currencyFormatter.format(product.price)}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepOrange,
-                        ),
-                      ),
-                    ),
-                    if (isLiked != null && onLikeToggle != null)
-                      IconButton(
-                        icon: Icon(
-                          isLiked! ? Icons.favorite : Icons.favorite_border,
-                          size: 16,
-                          color: isLiked! ? Colors.pinkAccent : Colors.grey,
-                        ),
-                        onPressed: onLikeToggle,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                  ],
-                ),
                 if (product.reason.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    product.reason,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.purple.withOpacity(0.2),
+                          Colors.blue.withOpacity(0.2),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.lightbulb_outline,
+                            size: 14, color: Colors.amber),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            product.reason,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              height: 1.3,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
-                // if (product.reviewCount > 0) ...[
-                const SizedBox(height: 8),
-                // ⭐ 여기만 수정
                 if (product.source == 'ABLY' ||
                     product.source == 'ZIGZAG' ||
                     product.source == 'ATTRANGS' ||
                     product.source == 'HOTPING' ||
-                    product.source == 'MUSINSA')
+                    product.source == 'MUSINSA') ...[
+                  const SizedBox(height: 8),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // 기존 리뷰보기 버튼
-                      TextButton(
-                        onPressed: () => _openReviews(context),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(50, 24),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text(
-                          '리뷰보기',
-                          style: TextStyle(fontSize: 12),
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => _openDetailImage(context),
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.white.withOpacity(0.1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.photo_library_outlined,
+                                  size: 14, color: Colors.white70),
+                              SizedBox(width: 4),
+                              Text(
+                                '상세 이미지',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      // 우측 돋보기 아이콘
-                      IconButton(
-                        icon: const Icon(Icons.search, size: 16),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: () => _openDetailImage(context),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => _openReviews(context),
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.white.withOpacity(0.1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.rate_review_outlined,
+                                  size: 14, color: Colors.white70),
+                              SizedBox(width: 4),
+                              Text(
+                                '리뷰 보기',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                // else
-                // // 그 외 mallName에는 기존대로 리뷰보기만
-                //   Align(
-                //     alignment: Alignment.centerLeft,
-                //     child: TextButton(
-                //       onPressed: () => _openReviews(context),
-                //       style: TextButton.styleFrom(
-                //         padding: EdgeInsets.zero,
-                //         minimumSize: const Size(50, 24),
-                //         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                //       ),
-                //       child: const Text(
-                //         '리뷰보기',
-                //         style: TextStyle(fontSize: 12),
-                //       ),
-                //     ),
-                //   ),
-                // ],
+                ],
               ],
             ),
           ),

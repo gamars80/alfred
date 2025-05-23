@@ -53,85 +53,144 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
         return false;
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF121212),
+        backgroundColor: const Color(0xFF1A1A1A),
         appBar: AppBar(
-          backgroundColor: Colors.black,
-          elevation: 0.5,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           title: const Text(
             '추천 히스토리',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              letterSpacing: -0.5,
+            ),
           ),
           centerTitle: true,
           iconTheme: const IconThemeData(color: Colors.white),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 22),
             onPressed: () => Navigator.pop(context, widget.history),
           ),
         ),
         body: groupedRecommendations.isEmpty
             ? const Center(
-          child: Text('추천 결과가 없습니다.', style: TextStyle(color: Colors.white)),
-        )
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.history_rounded, size: 48, color: Colors.white38),
+                    SizedBox(height: 16),
+                    Text(
+                      '추천 결과가 없습니다.',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              )
             : ListView(
-          children: groupedRecommendations.entries.map((entry) {
-            final mall = entry.key;
-            final products = entry.value;
-            if (products.isEmpty) return const SizedBox.shrink();
+                physics: const BouncingScrollPhysics(),
+                children: groupedRecommendations.entries.map((entry) {
+                  final mall = entry.key;
+                  final products = entry.value;
+                  if (products.isEmpty) return const SizedBox.shrink();
 
-            // 화면 너비 기반 명시적 높이 계산 (padding 포함)
-            final availableWidth = MediaQuery.of(context).size.width;
-            final cardWidth = availableWidth * 0.92 - 16; // viewportFraction(0.92)과 padding(8*2) 고려
-            const textAreaHeight = 160.0; // 텍스트 및 버튼 영역 예상 높이 (조정)
-            final pageHeight = cardWidth + textAreaHeight;
+                  final availableWidth = MediaQuery.of(context).size.width;
+                  final cardWidth = availableWidth * 0.92 - 16;
+                  const textAreaHeight = 160.0;
+                  final pageHeight = cardWidth + textAreaHeight;
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Row(
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('💡 $mall',
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                        const SizedBox(width: 8),
-                        const Expanded(
-                          child: Divider(color: Colors.white24, thickness: 0.7),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.purple.withOpacity(0.6),
+                                      Colors.blue.withOpacity(0.6),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      mall,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Container(
+                                  height: 1,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.white24,
+                                        Colors.white.withOpacity(0.05),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: pageHeight,
+                          child: PageView.builder(
+                            controller: PageController(viewportFraction: 0.92),
+                            itemCount: products.length,
+                            physics: const BouncingScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              final product = products[index];
+                              final isLiked = likedProductIds.contains(product.productId);
+
+                              return Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: ProductCard(
+                                  product: product,
+                                  isLiked: isLiked,
+                                  onLikeToggle: () => _toggleLike(product),
+                                  historyCreatedAt: widget.history.createdAt,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ],
                     ),
-                  ),
-
-                  // 명시적 높이 SizedBox
-                  SizedBox(
-                    height: pageHeight,
-                    child: PageView.builder(
-                      controller: PageController(viewportFraction: 0.92),
-                      itemCount: products.length,
-                      physics: const BouncingScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        final product = products[index];
-                        final isLiked = likedProductIds.contains(product.productId);
-
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                          child: ProductCard(
-                            product: product,
-                            isLiked: isLiked,
-                            onLikeToggle: () => _toggleLike(product),
-                            historyCreatedAt: widget.history.createdAt,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                  );
+                }).toList(),
               ),
-            );
-          }).toList(),
-        ),
       ),
     );
   }
