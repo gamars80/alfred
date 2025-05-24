@@ -56,7 +56,8 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 140, // 원하는 높이 설정
+              height: MediaQuery.of(context).size.width <= 320 ? 120 : 
+                      MediaQuery.of(context).size.width < 360 ? 130 : 140, // 320px에서 더 작게
               child: TabBarView(
                 controller: _tabController,
                 children: [
@@ -99,6 +100,8 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
   }
 
   Widget _buildRankColumn(List<String> items, int startRank) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 360;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(items.length, (i) {
@@ -106,7 +109,7 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
         final keyword = items[i];
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 5),
+          padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 2.5 : 5), // 3.5 → 2.5로 더 축소
           child: InkWell(
             onTap: () {
               Navigator.push(
@@ -122,34 +125,39 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isSmallScreen ? 5 : 6, 
+                    vertical: isSmallScreen ? 1 : 2
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     'TOP $rank',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 9, // 폰트 크기 ↓ 축소
+                      fontSize: isSmallScreen ? 8 : 9, // 더 작은 폰트
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: isSmallScreen ? 4 : 6),
                 Expanded(
                   child: Text(
                     keyword,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 11, // 폰트 크기 ↓ 축소
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 10 : 11, // 더 작은 폰트
                       fontWeight: FontWeight.w500,
                       decoration: TextDecoration.underline,
                       color: Colors.black87,
                     ),
                   ),
                 ),
-                const Icon(Icons.chevron_right, size: 14, color: Colors.grey), // 아이콘도 더 작게
+                Icon(Icons.chevron_right, 
+                     size: isSmallScreen ? 12 : 14, 
+                     color: Colors.grey),
               ],
             ),
           ),

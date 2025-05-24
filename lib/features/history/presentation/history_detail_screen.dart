@@ -50,6 +50,10 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    debugPrint('Screen size: ${screenWidth}x${screenHeight}');
+    
     return WillPopScope(
       onWillPop: () async {
         Navigator.pop(context, widget.history);
@@ -234,9 +238,18 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                    SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
-                                  childAspectRatio: 0.50,
+                                  childAspectRatio: () {
+                                    // 안전 마진을 포함한 더 보수적인 계산
+                                    if (screenWidth <= 320) return 0.52;      // 0.40 → 0.52
+                                    if (screenWidth <= 360) return 0.54;      // 0.41 → 0.54
+                                    if (screenWidth <= 375) return 0.56;      // 0.42 → 0.56
+                                    if (screenWidth <= 390) return 0.58;      // 0.43 → 0.58
+                                    if (screenWidth <= 414) return 0.60;      // 0.44 → 0.60
+                                    if (screenWidth <= 428) return 0.62;      // 0.45 → 0.62
+                                    return 0.64;                              // 0.46 → 0.64
+                                  }(),
                                   mainAxisSpacing: 12,
                                   crossAxisSpacing: 12,
                                 ),

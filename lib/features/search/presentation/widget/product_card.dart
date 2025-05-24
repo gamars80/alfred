@@ -165,30 +165,44 @@ class ProductCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        GestureDetector(
-                          onTap: () => _openReviews(context),
-                          child: Row(
-                            children: const [
-                              Icon(Icons.reviews, size: 14, color: Colors.black54),
-                              SizedBox(width: 4),
-                              Text(
-                                '리뷰보기',
-                                style: TextStyle(fontSize: 10, color: Colors.black54),
-                              ),
-                            ],
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _openReviews(context),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.reviews, size: 12, color: Colors.black54),
+                                SizedBox(width: 2),
+                                Flexible(
+                                  child: Text(
+                                    '리뷰',
+                                    style: TextStyle(fontSize: 9, color: Colors.black54),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () => _openDetailImage(context),
-                          child: Row(
-                            children: const [
-                              Icon(Icons.image_search, size: 14, color: Colors.black54),
-                              SizedBox(width: 4),
-                              Text(
-                                '상세보기',
-                                style: TextStyle(fontSize: 10, color: Colors.black54),
-                              ),
-                            ],
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _openDetailImage(context),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: const [
+                                Icon(Icons.image_search, size: 12, color: Colors.black54),
+                                SizedBox(width: 2),
+                                Flexible(
+                                  child: Text(
+                                    '상세',
+                                    style: TextStyle(fontSize: 9, color: Colors.black54),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
