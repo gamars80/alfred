@@ -173,7 +173,7 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
                 maxCrossAxisExtent: 220,
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 12,
-                childAspectRatio: 0.60, // 여전히 비율은 중요
+                childAspectRatio: MediaQuery.of(context).size.width <= 320 ? 0.52 : 0.60, // 작은 화면에서 더 낮은 비율
               ),
               itemCount: _products.length,
               itemBuilder: (context, index) =>

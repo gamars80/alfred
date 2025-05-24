@@ -74,7 +74,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
       color: kBackgroundColor,
       child: ListView(
         controller: _scrollController,
-        padding: const EdgeInsets.symmetric(vertical: kSpacing),
+        padding: const EdgeInsets.symmetric(vertical: kSpacing / 2),
         children: _buildSections(),
       ),
     );
@@ -88,7 +88,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
       sections.add(_buildSection(
         title: '추천 커뮤니티',
         children: widget.communityPosts.map((post) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: kSpacing, vertical: kSpacing / 2),
+          padding: const EdgeInsets.symmetric(horizontal: kSpacing, vertical: kSpacing / 4),
           child: _buildElevatedCard(
             child: CommunityCard(
               post: post,
@@ -161,16 +161,26 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
           widget.categorizedProducts.entries.where((e) => e.value.isNotEmpty);
       sections.addAll(nonEmptyProductEntries.map((entry) => _buildSection(
             title: entry.key,
-            children: entry.value.map((p) => Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: kSpacing, vertical: kSpacing / 2),
-              child: _buildElevatedCard(
-                child: ProductCard(
-                  product: p,
-                  historyCreatedAt: widget.createdAt,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: kSpacing),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: MediaQuery.of(context).size.width <= 320 ? 0.55 : 0.6,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                  ),
+                  itemCount: entry.value.length,
+                  itemBuilder: (context, index) => ProductCard(
+                    product: entry.value[index],
+                    historyCreatedAt: widget.createdAt,
+                  ),
                 ),
               ),
-            )).toList(),
+            ],
           )));
     }
 
@@ -197,7 +207,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
 
   Widget _buildSection({required String title, required List<Widget> children}) {
     return Padding(
-      padding: const EdgeInsets.only(top: kSpacing * 1.5),
+      padding: const EdgeInsets.only(top: kSpacing),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -206,14 +216,14 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
             child: Text(
               title,
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: kPrimaryColor,
                 letterSpacing: -0.5,
               ),
             ),
           ),
-          const SizedBox(height: kSpacing),
+          const SizedBox(height: kSpacing / 2),
           ...children,
         ],
       ),
@@ -264,7 +274,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
       child: Row(
         children: [
           _buildFilterButton('강남언니'),
-          const SizedBox(width: kSpacing / 2),
+          const SizedBox(width: kSpacing / 4),
           _buildFilterButton('바비톡'),
         ],
       ),

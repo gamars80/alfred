@@ -166,11 +166,11 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
             child: GridView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 220,
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 12,
-                childAspectRatio: 0.60,
+                childAspectRatio: MediaQuery.of(context).size.width <= 320 ? 0.52 : 0.60,
               ),
               itemCount: _products.length,
               itemBuilder: (context, index) =>

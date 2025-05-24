@@ -9,6 +9,8 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
+import android.view.View
+import android.view.WindowManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
@@ -17,7 +19,6 @@ import io.flutter.plugin.common.MethodChannel
 import java.util.Locale
 
 class MainActivity : FlutterActivity() {
-
 
     private val CHANNEL = "com.alfred/voice"
     private var resultHandler: MethodChannel.Result? = null
@@ -33,6 +34,35 @@ class MainActivity : FlutterActivity() {
         Log.d("Voice", "3.5초간 침묵 - 자동 종료: stopListening 호출")
         // 자동 종료 시에는 즉시 결과를 반환하지 않고, stopListening 호출 후 onResults에서 최종 결과를 처리하도록 함.
         speechRecognizer.stopListening()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        // 스플래시 화면을 확실히 표시하도록 설정
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
+        
+        setTheme(R.style.LaunchTheme)
+    }
+
+    override fun onFlutterUiDisplayed() {
+        super.onFlutterUiDisplayed()
+        
+        // Flutter UI가 준비되면 약간의 지연 후 스플래시를 천천히 페이드아웃
+        Handler(Looper.getMainLooper()).postDelayed({
+            window.decorView.animate()
+                .alpha(0f)
+                .setDuration(1500) // 페이드아웃 시간을 1.5초로 증가
+                .withEndAction {
+                    setTheme(R.style.NormalTheme)
+                    window.decorView.alpha = 1f
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+                }
+                .start()
+        }, 500) // 0.5초 지연 후 페이드아웃 시작
     }
 
     override fun configureFlutterEngine(flutterEngine: io.flutter.embedding.engine.FlutterEngine) {
