@@ -80,27 +80,34 @@ class _EventCardState extends State<EventCard> {
             ? 'https://web.babitalk.com/events/${_event.id}'
             : 'https://www.gangnamunni.com/events/${_event.id}';
 
-        if (await canLaunchUrl(Uri.parse(url))) {
+        final uri = Uri.parse(url);
+        try {
           await launchUrl(
-            Uri.parse(url),
-            mode: LaunchMode.externalApplication,
+            uri,
+            mode: LaunchMode.inAppWebView,  // 앱 내 웹뷰로 열기
           );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('URL을 열 수 없습니다.')),
-          );
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('URL을 열 수 없습니다.')),
+            );
+          }
         }
       } else {
         // 200이 아닌 경우
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('API 호출 실패: ${response.statusCode}')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('API 호출 실패: ${response.statusCode}')),
+          );
+        }
       }
     } catch (e) {
       // 네트워크 에러 등 예외 처리
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('서버 연결 중 오류가 발생했습니다.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('오류가 발생했습니다: $e')),
+        );
+      }
     }
   }
 
@@ -131,134 +138,159 @@ class _EventCardState extends State<EventCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F7F8),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GestureDetector(onTap: _openWebView, child: _buildThumbnail(context)),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _event.title,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+      child: IntrinsicHeight(
+        child: InkWell(
+          onTap: _openWebView,
+          borderRadius: BorderRadius.circular(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 좌측 이미지 영역
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                ),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.35,
+                  height: 110,
+                  child: Stack(
+                    children: [
+                      CachedNetworkImage(
+                        imageUrl: _event.thumbnailUrl,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                        filterQuality: FilterQuality.medium,
+                        fadeInDuration: const Duration(milliseconds: 300),
+                        memCacheHeight: (110 * MediaQuery.of(context).devicePixelRatio).toInt(),
+                        memCacheWidth: (MediaQuery.of(context).size.width * 0.35 * MediaQuery.of(context).devicePixelRatio).toInt(),
+                        maxHeightDiskCache: (110 * 2).toInt(),
+                        maxWidthDiskCache: (MediaQuery.of(context).size.width * 0.35 * 2).toInt(),
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey[200],
+                          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[400],
+                          child: const Icon(Icons.error, color: Colors.white),
                         ),
                       ),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        if (_event.source == '바비톡') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ImageWebViewScreen(imageUrl: _event.detailImage),
+                      Positioned(
+                        top: 6,
+                        left: 6,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(0, 0, 0, 0.6),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            _event.source,
+                            style: const TextStyle(
+                              fontSize: 9,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
-                          );
-                        } else {
-                          await _openDetailImage(context);
-                        }
-                      },
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(50, 30),
+                          ),
+                        ),
                       ),
-                      child: const Text('상세보기', style: TextStyle(fontSize: 12, color: Colors.blue)),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
+              ),
+              // 우측 정보 영역
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _event.title,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          TextButton(
+                            onPressed: () async {
+                              if (_event.source == '바비톡') {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ImageWebViewScreen(imageUrl: _event.detailImage),
+                                  ),
+                                );
+                              } else {
+                                await _openDetailImage(context);
+                              }
+                            },
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(40, 24),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const Text('상세보기', 
+                              style: TextStyle(fontSize: 10, color: Colors.blue)
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
                         '${_event.location} · ${_event.hospitalName}',
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        style: const TextStyle(fontSize: 10, color: Colors.grey),
                         overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        _event.liked ? Icons.favorite : Icons.favorite_border,
-                        size: 20,
-                        color: _event.liked ? Colors.red : Colors.grey,
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildPriceSection(),
+                              const SizedBox(height: 2),
+                              _buildRatingSection(),
+                            ],
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              _event.liked ? Icons.favorite : Icons.favorite_border,
+                              size: 18,
+                              color: _event.liked ? Colors.red : Colors.grey,
+                            ),
+                            onPressed: _toggleLike,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
                       ),
-                      onPressed: _toggleLike,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [_buildPriceSection(), _buildRatingSection()],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildThumbnail(BuildContext context) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
-      child: Stack(
-        children: [
-          CachedNetworkImage(
-            imageUrl: _event.thumbnailUrl,
-            width: double.infinity,
-            height: 160,
-            fit: BoxFit.cover,
-            filterQuality: FilterQuality.low,
-            memCacheWidth: MediaQuery.of(context).size.width.toInt(),
-            fadeInDuration: const Duration(milliseconds: 300),
-            placeholder: (context, url) => Container(
-              width: double.infinity,
-              height: 160,
-              color: Colors.grey[200],
-              child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-            ),
-            errorWidget: (context, url, error) => Container(
-              width: double.infinity,
-              height: 160,
-              color: Colors.grey[400],
-              child: const Icon(Icons.error, color: Colors.white),
-            ),
-          ),
-          Positioned(
-            top: 8,
-            left: 8,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(0, 0, 0, 0.6),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                _event.source,
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -266,16 +298,17 @@ class _EventCardState extends State<EventCard> {
   Widget _buildPriceSection() {
     final formatter = NumberFormat('#,###', 'ko_KR');
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         if (_event.discountRate > 0)
           Text(
             '${_event.discountRate}%',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.orange),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.orange),
           ),
         if (_event.discountRate > 0) const SizedBox(width: 4),
         Text(
           '${formatter.format(_event.discountedPrice)}원',
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black),
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black),
         ),
       ],
     );
@@ -284,17 +317,18 @@ class _EventCardState extends State<EventCard> {
   Widget _buildRatingSection() {
     final ratingStr = (_event.rating ?? 0.0).toStringAsFixed(1);
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.star, size: 14, color: Colors.amber),
+        const Icon(Icons.star, size: 12, color: Colors.amber),
         const SizedBox(width: 2),
         Text(
           ratingStr,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black87),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 2),
         Text(
           '(${_event.ratingCount})',
-          style: const TextStyle(fontSize: 11, color: Colors.grey),
+          style: const TextStyle(fontSize: 9, color: Colors.grey),
         ),
       ],
     );
