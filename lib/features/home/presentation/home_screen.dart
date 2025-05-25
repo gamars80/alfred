@@ -86,18 +86,3 @@ class FashionShoppingTab extends StatelessWidget {
     );
   }
 }
-
-// 💉 시술성형 탭 (Placeholder)
-class PlaceholderTab extends StatelessWidget {
-  const PlaceholderTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        '시술/성형 콘텐츠 준비 중...',
-        style: TextStyle(fontSize: 16, color: Colors.grey),
-      ),
-    );
-  }
-}

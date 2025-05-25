@@ -5,6 +5,7 @@ import '../model/popular_community.dart';
 import '../model/popular_event.dart';
 import '../model/popular_product.dart';
 import '../model/popular_weekly_event.dart';
+import '../model/popular_beauty_keyword.dart';
 
 class PopularRepository {
   final Dio _dio = DioClient.dio;
@@ -61,6 +62,10 @@ class PopularRepository {
         .toList();
   }
 
-
-
+  Future<List<PopularBeautyKeyword>> fetchWeeklyTopBeautyKeywords() async {
+    final response = await _dio.get('/api/beauty/weekly/top/keyword');
+    return (response.data as List)
+        .map((e) => PopularBeautyKeyword.fromJson(e))
+        .toList();
+  }
 }
