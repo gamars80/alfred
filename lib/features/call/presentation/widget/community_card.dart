@@ -16,14 +16,14 @@ class _IconText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: Colors.deepPurple),
-        const SizedBox(width: 4),
+        Icon(icon, size: 20, color: const Color(0xFFE091B3)),
+        const SizedBox(width: 6),
         Text(
           count.toString(),
           style: const TextStyle(
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: Color(0xFF4A4A4A),
           ),
         ),
       ],
@@ -75,13 +75,13 @@ class _CommunityCardState extends State<CommunityCard> {
     return RepaintBoundary(
       child: Card(
         color: Colors.white,
-        elevation: 1,
-        shadowColor: const Color.fromRGBO(128, 128, 128, 0.2),
+        elevation: 2,
+        shadowColor: const Color.fromRGBO(128, 128, 128, 0.25),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.grey.shade300, width: 1),
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.grey.shade200, width: 1),
         ),
-        margin: const EdgeInsets.symmetric(vertical: 8),
+        margin: const EdgeInsets.symmetric(vertical: 10),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -89,7 +89,11 @@ class _CommunityCardState extends State<CommunityCard> {
             children: [
               Text(
                 displayText,
-                style: const TextStyle(fontSize: 10, height: 1.4, color: Colors.black87),
+                style: const TextStyle(
+                  fontSize: 11,
+                  height: 1.5,
+                  color: Color(0xFF2D2D2D),
+                ),
               ),
               if (isLong) ...[
                 const SizedBox(height: 4),
@@ -114,9 +118,9 @@ class _CommunityCardState extends State<CommunityCard> {
                       child: const Text(
                         '[더보기]',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
+                          color: Color(0xFFE091B3),
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -127,8 +131,8 @@ class _CommunityCardState extends State<CommunityCard> {
                         children: [
                           Icon(
                             isLiked ? Icons.favorite : Icons.favorite_border,
-                            size: 20,
-                            color: isLiked ? Colors.red : Colors.grey,
+                            size: 24,
+                            color: isLiked ? const Color(0xFFFF4D6D) : Colors.grey,
                           ),
                         ],
                       ),
@@ -139,7 +143,7 @@ class _CommunityCardState extends State<CommunityCard> {
               if (_post.photoUrls.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 SizedBox(
-                  height: 80,
+                  height: 96,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: _post.photoUrls.length,
@@ -183,11 +187,21 @@ class _CommunityCardState extends State<CommunityCard> {
                                   imageFilter: showBlur
                                       ? ImageFilter.blur(sigmaX: 6, sigmaY: 6)
                                       : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                                  child: CachedNetworkImage(
-                                    imageUrl: url,
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.cover,
+                                  child: Transform(
+                                    transform: Matrix4.rotationZ(3.14159),
+                                    alignment: Alignment.center,
+                                    child: CachedNetworkImage(
+                                      imageUrl: url,
+                                      width: 96,
+                                      height: 96,
+                                      fit: BoxFit.cover,
+                                      fadeInDuration: const Duration(milliseconds: 200),
+                                      memCacheWidth: 192,
+                                      errorWidget: (context, url, error) => Container(
+                                        color: Colors.grey[200],
+                                        child: const Icon(Icons.error),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -232,7 +246,7 @@ class _CommunityCardState extends State<CommunityCard> {
                     const SizedBox(width: 16),
                     Text(
                       '출처: ${widget.source}',
-                      style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     ),
                   ],
                 ),
