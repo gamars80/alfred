@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../call/model/product.dart';
 import '../data/search_repository.dart';
 import '../presentation/widget/product_card.dart';
+import 'review_list_screen.dart';
 
 class SourceProductScreen extends StatefulWidget {
   final String source;
@@ -150,16 +151,35 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
           if (_totalCount != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '$_totalCount개의 검색결과',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black54,
+              child: Row(
+                children: [
+                  Text(
+                    '$_totalCount개의 검색결과',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black54,
+                    ),
                   ),
-                ),
+                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ReviewListScreen(
+                            source: widget.source,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.reviews, size: 18),
+                    label: const Text('전체 리뷰'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.deepPurple,
+                    ),
+                  ),
+                ],
               ),
             ),
           Expanded(

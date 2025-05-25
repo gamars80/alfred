@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import '../../auth/common/dio/dio_client.dart';
 import '../../call/model/product.dart';
+import '../model/review.dart';
 
 class ProductPageResult {
   final List<Product> items;
@@ -22,6 +23,29 @@ class ProductPageResult {
       items: items,
       nextCursor: json['nextCursor'],
       totalCount: (json['totalCount'] as num).toInt(),  // ← JSON 의 count 파싱
+    );
+  }
+}
+
+class ReviewPageResult {
+  final List<Review> items;
+  final String? nextCursor;
+  final int totalCount;
+
+  ReviewPageResult({
+    required this.items,
+    this.nextCursor,
+    required this.totalCount,
+  });
+
+  factory ReviewPageResult.fromJson(Map<String, dynamic> json) {
+    final items = (json['items'] as List<dynamic>)
+        .map((item) => Review.fromJson(item))
+        .toList();
+    return ReviewPageResult(
+      items: items,
+      nextCursor: json['nextCursor'],
+      totalCount: (json['totalCount'] as num).toInt(),
     );
   }
 }
@@ -86,6 +110,34 @@ class SearchRepository {
       final response = await _dio.get(uri, queryParameters: params);
       debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
       return ProductPageResult.fromJson(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
+      rethrow;
+    }
+  }
+
+  Future<ReviewPageResult> fetchReviews({
+    String? category,
+    String? source,
+    String? cursor,
+    String? searchKeyword,
+  }) async {
+    final uri = '/api/reviews/search';
+    final params = {
+      if (category != null) 'category': category,
+      if (source != null) 'source': source,
+      'limit': pageSize,
+      if (cursor != null) 'cursor': cursor,
+      if (searchKeyword != null && searchKeyword.isNotEmpty) 'searchKeyword': searchKeyword,
+    };
+
+    debugPrint('📡 [GET] $uri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(uri, queryParameters: params);
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      return ReviewPageResult.fromJson(response.data);
     } on DioException catch (e) {
       debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
       rethrow;
