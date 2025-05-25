@@ -30,9 +30,12 @@ class LikedBeautyEventCard extends StatelessWidget {
             : 'https://www.gangnamunni.com/events/${event.eventId}';
 
         final uri = Uri.parse(url);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        } else {
+        try {
+          await launchUrl(
+            uri,
+            mode: LaunchMode.inAppWebView,
+          );
+        } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('URL을 열 수 없습니다.')),
           );
