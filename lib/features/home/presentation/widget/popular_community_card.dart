@@ -31,9 +31,11 @@ class PopularCommunityCard extends StatelessWidget {
         if (uri != null && await canLaunchUrl(uri)) {
           await launchUrl(uri, mode: LaunchMode.externalApplication);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('링크를 열 수 없습니다.')),
-          );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('링크를 열 수 없습니다.')),
+            );
+          }
         }
       },
       child: Container(
@@ -45,7 +47,7 @@ class PopularCommunityCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 10, red: 0, green: 0, blue: 0),
               blurRadius: 6,
               offset: const Offset(0, 4),
             ),
@@ -57,7 +59,7 @@ class PopularCommunityCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: 153, red: 0, green: 0, blue: 0),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
