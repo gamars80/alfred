@@ -185,9 +185,22 @@ class SearchRepository {
     try {
       final response = await _dio.get(uri, queryParameters: params);
       debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
-      return KeywordReviewPageResult.fromJson(response.data);
+      
+      if (response.data == null) {
+        throw Exception('No data received from server');
+      }
+
+      final result = KeywordReviewPageResult.fromJson(response.data);
+      if (result.items.isEmpty && result.totalCount > 0) {
+        throw Exception('Failed to parse review data');
+      }
+
+      return result;
     } on DioException catch (e) {
       debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint('❌ [Error] $uri\n▶ message: $e');
       rethrow;
     }
   }

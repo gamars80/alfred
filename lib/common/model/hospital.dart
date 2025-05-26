@@ -1,25 +1,22 @@
 class Hospital {
   final int id;
   final String name;
-  final String? address;
-  final String? phone;
-  final String? imageUrl;
+  final String? image;
+  final String? region;
 
   Hospital({
     required this.id,
     required this.name,
-    this.address,
-    this.phone,
-    this.imageUrl,
+    this.image,
+    this.region,
   });
 
   factory Hospital.fromJson(Map<String, dynamic> json) {
     return Hospital(
       id: json['id'] as int,
       name: json['name'] as String,
-      address: json['address'] as String?,
-      phone: json['phone'] as String?,
-      imageUrl: json['imageUrl'] as String?,
+      image: json['image'] as String?,
+      region: json['region'] as String?,
     );
   }
 } 

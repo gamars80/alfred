@@ -94,13 +94,13 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
   }
 
   Future<void> _onSearchTap() async {
-    final keyword = await Navigator.push<String>(
+    final kw = await Navigator.push<String>(
       context,
       MaterialPageRoute(builder: (_) => const ReviewSearchScreen()),
     );
-    if (keyword != null && keyword.isNotEmpty) {
+    if (kw != null && kw.isNotEmpty) {
       setState(() {
-        _searchKeyword = keyword;
+        _searchKeyword = kw;
       });
       _fetchReviews(refresh: true);
     }
@@ -109,23 +109,23 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
-        elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black87),
         title: Text(
           widget.category ?? widget.source!,
           style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: Colors.black),
+            icon: const Icon(Icons.search),
             onPressed: _onSearchTap,
           ),
         ],
@@ -133,18 +133,25 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
       body: Column(
         children: [
           if (_totalCount != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '$_totalCount개의 리뷰',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black54,
-                  ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade100),
                 ),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    '$_totalCount개의 리뷰',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
               ),
             ),
           Expanded(
@@ -152,10 +159,10 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
               children: [
                 MasonryGridView.count(
                   controller: _scrollController,
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(8),
                   crossAxisCount: 2,
-                  mainAxisSpacing: 4,
-                  crossAxisSpacing: 4,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
                   itemCount: _reviews.length,
                   itemBuilder: (context, index) {
                     final review = _reviews[index];
@@ -163,13 +170,28 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                   },
                 ),
                 if (_isLoading)
-                  const Positioned(
+                  Positioned(
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    child: Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Center(child: CircularProgressIndicator()),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.white.withOpacity(0),
+                            Colors.white,
+                          ],
+                        ),
+                      ),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black87),
+                        ),
+                      ),
                     ),
                   ),
               ],

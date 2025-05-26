@@ -43,12 +43,8 @@ class _ReviewSearchScreenState extends State<ReviewSearchScreen> {
     if (_prefs == null) return;
 
     final searches = _prefs!.getStringList(_prefsKey) ?? [];
-    
-    // 중복 제거
     searches.remove(keyword);
-    // 최신 검색어를 맨 앞에 추가
     searches.insert(0, keyword);
-    // 최대 개수 유지
     if (searches.length > _maxRecentSearches) {
       searches.removeLast();
     }
