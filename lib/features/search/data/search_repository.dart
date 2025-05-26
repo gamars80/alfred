@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import '../../auth/common/dio/dio_client.dart';
 import '../../call/model/product.dart';
 import '../model/review.dart';
+import '../model/keyword_review.dart';
 
 class ProductPageResult {
   final List<Product> items;
@@ -43,6 +44,29 @@ class ReviewPageResult {
         .map((item) => Review.fromJson(item))
         .toList();
     return ReviewPageResult(
+      items: items,
+      nextCursor: json['nextCursor'],
+      totalCount: (json['totalCount'] as num).toInt(),
+    );
+  }
+}
+
+class KeywordReviewPageResult {
+  final List<KeywordReview> items;
+  final String? nextCursor;
+  final int totalCount;
+
+  KeywordReviewPageResult({
+    required this.items,
+    this.nextCursor,
+    required this.totalCount,
+  });
+
+  factory KeywordReviewPageResult.fromJson(Map<String, dynamic> json) {
+    final items = (json['items'] as List<dynamic>)
+        .map((item) => KeywordReview.fromJson(item))
+        .toList();
+    return KeywordReviewPageResult(
       items: items,
       nextCursor: json['nextCursor'],
       totalCount: (json['totalCount'] as num).toInt(),
@@ -140,6 +164,43 @@ class SearchRepository {
       return ReviewPageResult.fromJson(response.data);
     } on DioException catch (e) {
       debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
+      rethrow;
+    }
+  }
+
+  Future<KeywordReviewPageResult> fetchKeywordReviews({
+    required String keyword,
+    String? cursor,
+  }) async {
+    final uri = '/api/reviews/beauty/search';
+    final params = {
+      'keyword': keyword,
+      'limit': pageSize,
+      if (cursor != null) 'cursor': cursor,
+    };
+
+    debugPrint('📡 [GET] $uri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(uri, queryParameters: params);
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      
+      if (response.data == null) {
+        throw Exception('No data received from server');
+      }
+
+      final result = KeywordReviewPageResult.fromJson(response.data);
+      if (result.items.isEmpty && result.totalCount > 0) {
+        throw Exception('Failed to parse review data');
+      }
+
+      return result;
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
+      rethrow;
+    } catch (e) {
+      debugPrint('❌ [Error] $uri\n▶ message: $e');
       rethrow;
     }
   }
