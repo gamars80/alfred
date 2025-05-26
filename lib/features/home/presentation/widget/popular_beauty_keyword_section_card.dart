@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../model/popular_beauty_keyword.dart';
+import '../../../../features/search/presentation/page/keyword_review_page.dart';
 
 class PopularBeautyKeywordSectionCard extends StatelessWidget {
   final List<PopularBeautyKeyword> keywords;
@@ -61,48 +62,60 @@ class _KeywordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 110,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        border: Border.all(
-          color: Colors.grey[800]!,
-          width: 1,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => KeywordReviewPage(
+              keyword: keyword.keyword,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 110,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          border: Border.all(
+            color: Colors.grey[800]!,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
         ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-            decoration: BoxDecoration(
-              color: Colors.grey[800],
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              '$rank',
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontWeight: FontWeight.bold,
-                fontSize: 11,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: Colors.grey[800],
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                '$rank',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              keyword.keyword,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                keyword.keyword,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
