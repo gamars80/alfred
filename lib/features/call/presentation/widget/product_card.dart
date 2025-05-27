@@ -2,6 +2,7 @@ import 'package:alfred_clean/features/call/presentation/product_webview_screen.d
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../auth/common/dio/dio_client.dart';
 import '../../../auth/presentation/product_detail_image_viewer_screen.dart';
@@ -39,7 +40,8 @@ class ProductCard extends StatelessWidget {
     return url;
   }
 
-  void _openWebview(BuildContext context) {
+  void _openWebview2(BuildContext context) {
+    debugPrint("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -51,6 +53,34 @@ class ProductCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openWebview(BuildContext context) async {
+    final String url = product.link;
+    final uri = Uri.parse(url);
+
+    final String apiPath = '/api/products/${product.productId}/${historyCreatedAt}/${Uri.encodeComponent(product.source!)}/open';
+
+    try {
+      // 1. API 호출 (POST 방식)
+      final response = await await DioClient.dio.post(apiPath);
+
+      // 2. 성공했을 경우에만 웹뷰 열기
+      if (response.statusCode == 200) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.inAppWebView,
+        );
+      } else {
+        throw Exception('API 호출 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('상품 페이지를 열 수 없습니다.')),
+        );
+      }
+    }
   }
 
   void _openReviews(BuildContext context) {

@@ -269,8 +269,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
               final updated = await Navigator.push<RecommendationHistory>(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => HistoryDetailScreen(
-                      history: _histories[idx]),
+                  builder: (context) => HistoryDetailScreen(history: _histories[idx]),
                 ),
               );
               if (updated != null) {
@@ -312,7 +311,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
               final updated = await Navigator.push<BeautyHistory>(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => BeautyHistoryDetailScreen(history: history),
+                  builder: (context) => HistoryDetailScreen(history: _histories[idx]),
                 ),
               );
               if (updated != null) {
