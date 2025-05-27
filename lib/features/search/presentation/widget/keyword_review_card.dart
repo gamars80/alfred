@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import '../../model/keyword_review.dart';
 import '../../../../common/widget/rating_stars.dart';
 
@@ -15,7 +16,7 @@ class KeywordReviewCard extends StatefulWidget {
 }
 
 class _KeywordReviewCardState extends State<KeywordReviewCard> {
-  static const int maxTextLength = 200;
+  static const int maxTextLength = 100;
   bool _isExpanded = false;
 
   String get _displayText {
@@ -56,8 +57,8 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
                   Text(
                     _displayText,
                     style: TextStyle(
-                      fontSize: 14,
-                      height: 1.5,
+                      fontSize: 10,
+                      height: 1.4,
                       color: Colors.grey.shade800,
                     ),
                   ),
@@ -69,11 +70,11 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
                         });
                       },
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.only(top: 6),
                         child: Text(
                           _isExpanded ? '접기' : '더보기',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             color: Colors.blue.shade700,
                             fontWeight: FontWeight.w500,
                           ),
@@ -172,11 +173,20 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                image.isBlur ? image.smallUrl : image.url,
-                height: 104,
-                width: 104,
-                fit: BoxFit.cover,
+              child: ImageFiltered(
+                imageFilter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withAlpha(50),
+                    BlendMode.darken,
+                  ),
+                  child: Image.network(
+                    image.isBlur ? image.smallUrl : image.url,
+                    height: 104,
+                    width: 104,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             ),
           );
