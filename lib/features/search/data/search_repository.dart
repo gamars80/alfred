@@ -171,12 +171,16 @@ class SearchRepository {
   Future<KeywordReviewPageResult> fetchKeywordReviews({
     required String keyword,
     String? cursor,
+    bool? hasEvent,
+    String? searchText,
   }) async {
     final uri = '/api/reviews/beauty/search';
     final params = {
       'keyword': keyword,
       'limit': pageSize,
       if (cursor != null) 'cursor': cursor,
+      if (hasEvent != null) 'hasEvent': hasEvent,
+      if (searchText != null && searchText.isNotEmpty) 'searchText': searchText,
     };
 
     debugPrint('📡 [GET] $uri');
