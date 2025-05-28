@@ -22,17 +22,24 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
 
   Future<void> _launchReviewUrl(BuildContext context) async {
     final url = Uri.parse('https://web.babitalk.com/reviews/${widget.review.reviewId}');
-
     try {
-      await launchUrl(
-        url,
-        mode: LaunchMode.inAppWebView,
-      );
-    } catch (e) {
+      await launchUrl(url, mode: LaunchMode.inAppWebView);
+    } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('리뷰 페이지를 열 수 없습니다.')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('리뷰 페이지를 열 수 없습니다.')));
+      }
+    }
+  }
+
+  Future<void> _launchEventUrl(BuildContext context) async {
+    final url = Uri.parse('https://web.babitalk.com/events/${widget.review.event!.id}');
+    try {
+      await launchUrl(url, mode: LaunchMode.inAppWebView);
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('이벤트 페이지를 열 수 없습니다.')));
       }
     }
   }
@@ -45,6 +52,42 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
   }
 
   bool get _shouldShowMoreButton => widget.review.text.length > maxTextLength;
+
+  /// 흐리게 + 블라인드 패턴 효과
+  Widget _buildImageBlind(String url) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: ShaderMask(
+        shaderCallback: (rect) {
+          return LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white,
+              Colors.white.withValues(red: 255, green: 255, blue: 255, alpha: 153),
+              Colors.white,
+              Colors.white.withValues(red: 255, green: 255, blue: 255, alpha: 153),
+            ],
+            stops: [0.0, 0.25, 0.5, 0.75],
+            tileMode: TileMode.repeated,
+            transform: const GradientRotation(90 * 3.1416 / 180),
+          ).createShader(rect);
+        },
+        blendMode: BlendMode.dstIn,
+        child: ImageFiltered(
+          imageFilter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+          child: Image.network(
+            url,
+            width: 104,
+            height: 104,
+            fit: BoxFit.cover,
+            loadingBuilder: (ctx, child, progress) =>
+            progress == null ? child : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +120,7 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
                 ),
               ],
             ),
-            if (widget.review.images.isNotEmpty) 
+            if (widget.review.images.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
                 child: _buildImages(),
@@ -89,24 +132,16 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
                 children: [
                   Text(
                     _displayText,
-                    style: TextStyle(
-                      fontSize: 10,
-                      height: 1.4,
-                      color: Colors.grey.shade800,
-                    ),
+                    style: TextStyle(fontSize: 10, height: 1.4, color: Colors.grey.shade800),
                   ),
                   if (_shouldShowMoreButton)
                     GestureDetector(
-                      onTap: () => _launchReviewUrl(context),
+                      onTap: () => setState(() => _isExpanded = !_isExpanded),
                       child: Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Text(
                           _isExpanded ? '접기' : '더보기',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.blue.shade700,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: TextStyle(fontSize: 13, color: Colors.blue.shade700, fontWeight: FontWeight.w500),
                         ),
                       ),
                     ),
@@ -132,20 +167,13 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
           if (widget.review.doctor != null)
             Row(
               children: [
-                if (widget.review.doctor?.profilePhoto != null)
+                if (widget.review.doctor!.profilePhoto != null)
                   Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 2,
-                      ),
+                      border: Border.all(color: Colors.white, width: 2),
                       boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade200,
-                          blurRadius: 4,
-                          spreadRadius: 1,
-                        ),
+                        BoxShadow(color: Colors.grey.shade200, blurRadius: 4, spreadRadius: 1),
                       ],
                     ),
                     child: CircleAvatar(
@@ -158,96 +186,65 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
                 Expanded(
                   child: Text(
                     '${widget.review.doctor!.name} ${widget.review.doctor!.position}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade900,
-                    ),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade900),
                   ),
                 ),
               ],
             ),
           if (widget.review.event != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.grey.shade200),
               ),
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(8),
               child: Row(
                 children: [
                   if (widget.review.event!.image != null)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.network(
-                        widget.review.event!.image!,
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
+                    GestureDetector(
+                      onTap: () => _launchEventUrl(context),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.network(
+                          widget.review.event!.image!,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.fill,
+                        ),
                       ),
                     ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (widget.review.event!.isLive)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade50,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              'LIVE',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.red.shade700,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        const SizedBox(height: 4),
                         Text(
                           widget.review.event!.name,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 2,
+                          style: const TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.w600),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Row(
                           children: [
                             if (widget.review.event!.discountPrice != null) ...[
                               Text(
                                 '${(((widget.review.event!.price - widget.review.event!.discountPrice!) / widget.review.event!.price) * 100).round()}%',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.red.shade700,
-                                ),
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.red.shade700),
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 '${widget.review.event!.discountPrice! ~/ 10000}만원',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.black),
                               ),
+                              if (widget.review.event!.includeVat)
+                                Text(
+                                  ' (VAT포함)',
+                                  style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                                ),
                             ],
-                            if (widget.review.event!.includeVat)
-                              Text(
-                                ' (VAT포함)',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
                           ],
                         ),
                       ],
@@ -262,6 +259,7 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
     );
   }
 
+
   Widget _buildImages() {
     return Container(
       height: 120,
@@ -274,44 +272,23 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
         scrollDirection: Axis.horizontal,
         itemCount: widget.review.images.length,
         padding: const EdgeInsets.symmetric(horizontal: 8),
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final image = widget.review.images[index];
+          final img = widget.review.images[index];
           return GestureDetector(
             onTap: () => _launchReviewUrl(context),
             child: Container(
+              width: 104,
+              height: 104,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade200,
-                    blurRadius: 4,
-                    spreadRadius: 1,
-                  ),
-                ],
+                boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 4, spreadRadius: 1)],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: ImageFiltered(
-                  imageFilter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.mode(
-                      Colors.black.withAlpha(50),
-                      BlendMode.darken,
-                    ),
-                    child: Image.network(
-                      image.isBlur ? image.smallUrl : image.url,
-                      height: 104,
-                      width: 104,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
+              child: _buildImageBlind(img.isBlur ? img.smallUrl : img.url),
             ),
           );
         },
       ),
     );
   }
-} 
+}

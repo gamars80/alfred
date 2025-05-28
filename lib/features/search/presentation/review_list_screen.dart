@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../data/search_repository.dart';
 import '../model/review.dart';
@@ -75,7 +76,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
 
       setState(() {
         _totalCount = response.totalCount;
-        _reviews.addAll(response.items);
+        _reviews.addAll(response.items.reversed);
         _cursor = response.nextCursor;
         _hasMore = response.nextCursor != null;
       });
@@ -164,6 +165,8 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
                   itemCount: _reviews.length,
+                  addAutomaticKeepAlives: false,
+                  addRepaintBoundaries: true,
                   itemBuilder: (context, index) {
                     final review = _reviews[index];
                     return _ReviewCard(review: review);
@@ -206,67 +209,78 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
 class _ReviewCard extends StatelessWidget {
   final Review review;
 
-  const _ReviewCard({required this.review});
+  const _ReviewCard({
+    super.key,
+    required this.review,
+  });
+
+  Widget _buildMosaicImage(String imageUrl) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: ColorFiltered(
+        colorFilter: ColorFilter.mode(
+          Colors.black.withOpacity(0.4),
+          BlendMode.darken,
+        ),
+        child: ImageFiltered(
+          imageFilter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Transform(
+            transform: Matrix4.rotationZ(3.14159),
+            alignment: Alignment.center,
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+              filterQuality: FilterQuality.low,
+              memCacheWidth: 50,
+              memCacheHeight: 50,
+              maxWidthDiskCache: 600,
+              maxHeightDiskCache: 600,
+              fadeInDuration: const Duration(milliseconds: 200),
+              placeholder: (context, url) =>
+                  Container(color: Colors.grey[200]),
+              errorWidget: (context, url, error) =>
+                  Container(color: Colors.grey[200]),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     if (review.imageUrls.isEmpty) return const SizedBox.shrink();
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ReviewDetailScreen(review: review),
-          ),
-        );
-      },
-      child: Card(
-        margin: const EdgeInsets.all(2),
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          children: [
-            if (review.imageUrls.length == 1)
-              CachedNetworkImage(
-                imageUrl: review.imageUrls.first,
-                fit: BoxFit.cover,
-                placeholder: (context, url) =>
-                    Container(color: Colors.grey[200]),
-                errorWidget: (context, url, error) =>
-                    Container(color: Colors.grey[200]),
-              )
-            else
-              _SwipeableImages(imageUrls: review.imageUrls),
-            Positioned(
-              top: 8,
-              left: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  review.mallName ?? '',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ReviewDetailScreen(review: review),
             ),
-            if (review.imageUrls.length > 1)
+          );
+        },
+        child: Card(
+          margin: const EdgeInsets.all(2),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              if (review.imageUrls.length == 1)
+                Container(
+                  constraints: const BoxConstraints.expand(),
+                  child: _buildMosaicImage(review.imageUrls.first),
+                )
+              else
+                _SwipeableImages(imageUrls: review.imageUrls),
               Positioned(
                 top: 8,
-                right: 8,
+                left: 8,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
@@ -276,28 +290,52 @@ class _ReviewCard extends StatelessWidget {
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.swipe_left,
-                        color: Colors.white,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${review.imageUrls.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    review.mallName ?? '',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
-          ],
+              if (review.imageUrls.length > 1)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.swipe_left,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${review.imageUrls.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -349,13 +387,36 @@ class _SwipeableImagesState extends State<_SwipeableImages> {
             controller: _pageController,
             itemCount: widget.imageUrls.length,
             itemBuilder: (context, index) {
-              return CachedNetworkImage(
-                imageUrl: widget.imageUrls[index],
-                fit: BoxFit.cover,
-                placeholder: (context, url) =>
-                    Container(color: Colors.grey[200]),
-                errorWidget: (context, url, error) =>
-                    Container(color: Colors.grey[200]),
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.4),
+                    BlendMode.darken,
+                  ),
+                  child: ImageFiltered(
+                    imageFilter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                    child: Transform(
+                      transform: Matrix4.rotationZ(3.14159),
+                      alignment: Alignment.center,
+                      child: CachedNetworkImage(
+                        imageUrl: widget.imageUrls[index],
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                        filterQuality: FilterQuality.low,
+                        memCacheWidth: 50,
+                        memCacheHeight: 50,
+                        maxWidthDiskCache: 600,
+                        maxHeightDiskCache: 600,
+                        fadeInDuration: const Duration(milliseconds: 200),
+                        placeholder: (context, url) =>
+                            Container(color: Colors.grey[200]),
+                        errorWidget: (context, url, error) =>
+                            Container(color: Colors.grey[200]),
+                      ),
+                    ),
+                  ),
+                ),
               );
             },
           ),
