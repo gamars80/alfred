@@ -280,7 +280,7 @@ class ProductCard extends StatelessWidget {
                           product.source == 'ZIGZAG' ||
                           product.source == 'ATTRANGS' ||
                           product.source == 'HOTPING' ||
-                          product.source == 'MUSINSA')
+                          product.source == 'MUSINSA' || product.source == 'XEXYMIX')
                         Container(
                           height: 20,
                           margin: const EdgeInsets.only(top: 2),

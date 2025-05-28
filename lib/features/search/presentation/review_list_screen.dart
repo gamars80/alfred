@@ -1,11 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../data/search_repository.dart';
 import '../model/review.dart';
-import 'search_screen.dart';
 import 'review_search_screen.dart';
 import 'review_detail_screen.dart';
 
@@ -27,7 +25,6 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
   final _repo = SearchRepository();
   final _scrollController = ScrollController();
   int? _totalCount;
-
   final List<Review> _reviews = [];
   String? _cursor;
   bool _isLoading = false;
@@ -214,40 +211,6 @@ class _ReviewCard extends StatelessWidget {
     required this.review,
   });
 
-  Widget _buildMosaicImage(String imageUrl) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: ColorFiltered(
-        colorFilter: ColorFilter.mode(
-          Colors.black.withOpacity(0.4),
-          BlendMode.darken,
-        ),
-        child: ImageFiltered(
-          imageFilter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Transform(
-            transform: Matrix4.rotationZ(3.14159),
-            alignment: Alignment.center,
-            child: CachedNetworkImage(
-              imageUrl: imageUrl,
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
-              filterQuality: FilterQuality.low,
-              memCacheWidth: 50,
-              memCacheHeight: 50,
-              maxWidthDiskCache: 600,
-              maxHeightDiskCache: 600,
-              fadeInDuration: const Duration(milliseconds: 200),
-              placeholder: (context, url) =>
-                  Container(color: Colors.grey[200]),
-              errorWidget: (context, url, error) =>
-                  Container(color: Colors.grey[200]),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (review.imageUrls.isEmpty) return const SizedBox.shrink();
@@ -271,21 +234,25 @@ class _ReviewCard extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: Stack(
             children: [
-              if (review.imageUrls.length == 1)
-                Container(
-                  constraints: const BoxConstraints.expand(),
-                  child: _buildMosaicImage(review.imageUrls.first),
+              AspectRatio(
+                aspectRatio: 1,
+                child: review.imageUrls.length == 1
+                    ? ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: CachedNetworkImage(
+                    imageUrl: review.imageUrls.first,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(color: Colors.grey[200]),
+                    errorWidget: (context, url, error) => Container(color: Colors.grey[200]),
+                  ),
                 )
-              else
-                _SwipeableImages(imageUrls: review.imageUrls),
+                    : _SwipeableImages(imageUrls: review.imageUrls),
+              ),
               Positioned(
                 top: 8,
                 left: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(12),
@@ -305,10 +272,7 @@ class _ReviewCard extends StatelessWidget {
                   top: 8,
                   right: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.black54,
                       borderRadius: BorderRadius.circular(12),
@@ -316,11 +280,7 @@ class _ReviewCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.swipe_left,
-                          color: Colors.white,
-                          size: 14,
-                        ),
+                        const Icon(Icons.swipe_left, color: Colors.white, size: 14),
                         const SizedBox(width: 4),
                         Text(
                           '${review.imageUrls.length}',
@@ -389,33 +349,11 @@ class _SwipeableImagesState extends State<_SwipeableImages> {
             itemBuilder: (context, index) {
               return ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: ColorFiltered(
-                  colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.4),
-                    BlendMode.darken,
-                  ),
-                  child: ImageFiltered(
-                    imageFilter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                    child: Transform(
-                      transform: Matrix4.rotationZ(3.14159),
-                      alignment: Alignment.center,
-                      child: CachedNetworkImage(
-                        imageUrl: widget.imageUrls[index],
-                        fit: BoxFit.cover,
-                        alignment: Alignment.center,
-                        filterQuality: FilterQuality.low,
-                        memCacheWidth: 50,
-                        memCacheHeight: 50,
-                        maxWidthDiskCache: 600,
-                        maxHeightDiskCache: 600,
-                        fadeInDuration: const Duration(milliseconds: 200),
-                        placeholder: (context, url) =>
-                            Container(color: Colors.grey[200]),
-                        errorWidget: (context, url, error) =>
-                            Container(color: Colors.grey[200]),
-                      ),
-                    ),
-                  ),
+                child: CachedNetworkImage(
+                  imageUrl: widget.imageUrls[index],
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(color: Colors.grey[200]),
+                  errorWidget: (context, url, error) => Container(color: Colors.grey[200]),
                 ),
               );
             },
@@ -428,7 +366,7 @@ class _SwipeableImagesState extends State<_SwipeableImages> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 widget.imageUrls.length,
-                (index) => Container(
+                    (index) => Container(
                   width: 6,
                   height: 6,
                   margin: const EdgeInsets.symmetric(horizontal: 2),
@@ -446,4 +384,4 @@ class _SwipeableImagesState extends State<_SwipeableImages> {
       ),
     );
   }
-} 
+}
