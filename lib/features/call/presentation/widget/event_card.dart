@@ -8,6 +8,7 @@ import '../../../auth/presentation/event_image_viewer_screen.dart';
 import '../../../auth/presentation/event_multi_images_viewer_screen.dart';
 import '../../../like/data/like_repository.dart';
 import '../../model/event.dart';
+import '../event_webview_screen.dart';
 
 
 class EventCard extends StatefulWidget {
@@ -67,34 +68,25 @@ class _EventCardState extends State<EventCard> {
   }
 
   Future<void> _openWebView() async {
-    // 1) API 호출 URL
     final apiPath = '/api/events/${_event.id}/${widget.historyCreatedAt}/${Uri.encodeComponent(_event.source)}/open';
 
     try {
-      // 2) API 호출
       final response = await DioClient.dio.post(apiPath);
 
-      // 3) 성공(200)일 때만 외부 브라우저로 열기
       if (response.statusCode == 200) {
         final String url = _event.source == '바비톡'
             ? 'https://web.babitalk.com/events/${_event.id}'
             : 'https://www.gangnamunni.com/events/${_event.id}';
 
-        final uri = Uri.parse(url);
-        try {
-          await launchUrl(
-            uri,
-            mode: LaunchMode.inAppWebView,  // 앱 내 웹뷰로 열기
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => EventWebViewScreen(url: url),
+            ),
           );
-        } catch (e) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('URL을 열 수 없습니다.')),
-            );
-          }
         }
       } else {
-        // 200이 아닌 경우
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('API 호출 실패: ${response.statusCode}')),
@@ -102,7 +94,6 @@ class _EventCardState extends State<EventCard> {
         }
       }
     } catch (e) {
-      // 네트워크 에러 등 예외 처리
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('오류가 발생했습니다: $e')),
@@ -110,6 +101,7 @@ class _EventCardState extends State<EventCard> {
       }
     }
   }
+
 
   Future<void> _openDetailImage(BuildContext context) async {
     try {

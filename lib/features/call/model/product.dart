@@ -65,7 +65,7 @@ class Product {
 
   factory Product.fromHistoryJson(Map<String, dynamic> json) {
     return Product(
-      recommendationId: json['id'] ?? '',
+      recommendationId: (json['id'] ?? '').toString(),
       name: json['productName'] ?? '',
       productId: json['productId'] ?? '',
       price: json['productPrice'] ?? 0,

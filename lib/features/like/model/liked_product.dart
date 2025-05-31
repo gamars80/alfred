@@ -1,4 +1,5 @@
 class LikedProduct {
+  final int historyId;
   final String recommendId;
   final String productId;
   final String mallName;
@@ -13,6 +14,7 @@ class LikedProduct {
   final DateTime likedAt;
 
   LikedProduct({
+    required this.historyId,
     required this.recommendId,
     required this.productId,
     required this.mallName,
@@ -29,6 +31,7 @@ class LikedProduct {
 
   factory LikedProduct.fromJson(Map<String, dynamic> json) {
     return LikedProduct(
+      historyId:      json['historyId'],
       recommendId:      json['recommendId'] as String,
       productId:        json['productId'] as String,
       mallName:         json['mallName'] as String,

@@ -23,7 +23,7 @@ class PopularProductCard extends StatelessWidget {
   Future<void> _handleImageClick(BuildContext context) async {
     final encodedSource = Uri.encodeComponent(product.source);
     final apiPath =
-        '/api/products/${product.productId}/${product.historyAddedAt}/$encodedSource/open/${product.userId}';
+        '/api/products/${product.productId}/${product.historyId}/$encodedSource/open/${product.userId}';
 
     try {
       final response = await DioClient.dio.post(apiPath);
@@ -136,7 +136,7 @@ class PopularProductCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Expanded(
                     child: Text(
                       product.productName,

@@ -311,7 +311,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
               final updated = await Navigator.push<BeautyHistory>(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => HistoryDetailScreen(history: _histories[idx]),
+                  builder: (context) => BeautyHistoryDetailScreen(history: history), // ✅ 올바른 화면과 객체 전달
                 ),
               );
               if (updated != null) {

@@ -260,6 +260,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                                       likedProductIds.contains(product.productId);
 
                                   return ProductCard(
+                                    id: widget.history.id,
                                     product: product,
                                     isLiked: isLiked,
                                     onLikeToggle: () => _toggleLike(product),
@@ -294,14 +295,14 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
     try {
       if (wasLiked) {
         await likeRepo.deleteLike(
-          historyCreatedAt: widget.history.createdAt,
+          historyId: widget.history.id,
           recommendationId: product.recommendationId,
           productId: product.productId,
           mallName: product.mallName,
         );
       } else {
         await likeRepo.postLike(
-          historyCreatedAt: widget.history.createdAt,
+          historyId: widget.history.id,
           recommendationId: product.recommendationId,
           productId: product.productId,
           mallName: product.mallName,

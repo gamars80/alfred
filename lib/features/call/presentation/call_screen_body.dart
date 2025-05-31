@@ -18,6 +18,7 @@ const kCardBorderRadius = 12.0;
 const kSpacing = 16.0;
 
 class CallScreenBody extends StatefulWidget {
+  final int id;
   final int createdAt;
   final Map<String, List<Product>> categorizedProducts;
   final List<CommunityPost> communityPosts;
@@ -27,6 +28,7 @@ class CallScreenBody extends StatefulWidget {
 
   const CallScreenBody({
     super.key,
+    required this.id,
     required this.createdAt,
     required this.categorizedProducts,
     required this.communityPosts,
@@ -175,6 +177,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
                   ),
                   itemCount: entry.value.length,
                   itemBuilder: (context, index) => ProductCard(
+                    id: widget.id,
                     product: entry.value[index],
                     historyCreatedAt: widget.createdAt,
                   ),

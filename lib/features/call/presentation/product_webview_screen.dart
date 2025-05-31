@@ -5,14 +5,14 @@ import '../../auth/common/dio/dio_client.dart';
 class ProductWebViewScreen extends StatefulWidget {
   final String url;
   final String productId;
-  final int historyCreatedAt;
+  final int historyId;
   final String source;
 
   const ProductWebViewScreen({
     super.key,
     required this.url,
     required this.productId,
-    required this.historyCreatedAt,
+    required this.historyId,
     required this.source,
   });
 
@@ -30,7 +30,8 @@ class _ProductWebViewScreenState extends State<ProductWebViewScreen> {
   Future<void> _handleOpenFlow() async {
     try {
       final apiPath =
-          '/api/products/${widget.productId}/${widget.historyCreatedAt}/${Uri.encodeComponent(widget.source)}/open';
+          '/api/products/${widget.productId}/${widget.historyId}/${Uri.encodeComponent(widget.source)}/open';
+
 
       final response = await DioClient.dio.post(apiPath);
 
