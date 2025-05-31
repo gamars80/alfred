@@ -37,6 +37,7 @@ class _CallScreenState extends State<CallScreen> {
   List<Hospital> _hospitals = [];
   List<String>? _choiceItemTypes;
   int _createdAt = 0;
+  int _id = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +56,7 @@ class _CallScreenState extends State<CallScreen> {
             _isLoading
                 ? const AlfredLoadingOverlay()
                 : CallScreenBody(
+              id: _id,
               createdAt: _createdAt,
               categorizedProducts: _categorizedProducts,
               communityPosts: _communityPosts,
@@ -105,6 +107,7 @@ class _CallScreenState extends State<CallScreen> {
           _events = data.events;
           _hospitals = data.hospitals;
           _youtubeVideos = data.youtubeVideos;
+          _id = data.id;
           _createdAt = data.createdAt;
           // ── 여기서 성별/연령대 초기화 ───────────────────
           _selectedGender = null;

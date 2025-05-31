@@ -17,8 +17,12 @@ class HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tags = extractTags(history.gptCondition);
-
+    final List<String> tags = [];
+    tags.add('#${history.gender}');
+    tags.add('#${history.age}');
+    if (history.useCase != null) tags.add('#${history.useCase!}');
+    if (history.season != null) tags.add('#${history.season!}');
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(

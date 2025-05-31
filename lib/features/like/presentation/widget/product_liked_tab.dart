@@ -108,7 +108,7 @@ class _FashionLikedTabState extends State<FashionLikedTab> {
   Future<void> _removeLike(LikedProduct p) async {
     try {
       await likeRepo.deleteLike(
-        historyCreatedAt: int.parse(p.historyAddedAt),
+        historyId: p.historyId,
         recommendationId: p.recommendId,
         productId: p.productId,
         mallName: p.mallName,
@@ -196,7 +196,7 @@ class _FashionLikedTabState extends State<FashionLikedTab> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => ProductWebViewScreen(
-                          url: product.productLink, productId: product.productId, historyCreatedAt: int.parse(product.historyAddedAt), source: product.source,
+                          url: product.productLink, productId: product.productId, historyId: product.historyId, source: product.source,
                         ),
                       ),
                     ),

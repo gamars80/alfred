@@ -29,6 +29,7 @@ class ProductApi {
       final data = response.data as Map<String, dynamic>;
 
       // 응답에서 생성 시점 타임스탬프 파싱
+      final id = data['id'] as int;
       final createdAt = data['createdAt'] as int?;
       if (createdAt == null) {
         throw Exception('API 응답에 "createdAt" 필드가 없습니다');
@@ -59,7 +60,7 @@ class ProductApi {
         return MapEntry(category, products);
       });
 
-      return RecommendedProductsResult(createdAt: createdAt, items: itemsMap);
+      return RecommendedProductsResult(id: id, createdAt: createdAt, items: itemsMap);
     } on DioException catch (e) {
       debugPrint(
         '❌ [DioException] type=${e.type}, message=${e.message}, error=${e.error}',

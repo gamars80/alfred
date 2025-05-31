@@ -11,6 +11,7 @@ import '../../model/product.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
+  final int id;
   final int historyCreatedAt;
   final bool? isLiked;
   final VoidCallback? onLikeToggle;
@@ -19,6 +20,7 @@ class ProductCard extends StatelessWidget {
   const ProductCard({
     super.key,
     required this.product,
+    required this.id,
     required this.historyCreatedAt,
     this.isLiked,
     this.onLikeToggle,
@@ -40,30 +42,47 @@ class ProductCard extends StatelessWidget {
     return url;
   }
 
+  // Future<void> _openWebview(BuildContext context) async {
+  //   final String url = product.link;
+  //   final uri = Uri.parse(url);
+  //
+  //   final String apiPath = '/api/products/${product.productId}/${historyCreatedAt}/${Uri.encodeComponent(product.source!)}/open';
+  //
+  //   try {
+  //     final response = await DioClient.dio.post(apiPath);
+  //
+  //     if (response.statusCode == 200) {
+  //       await launchUrl(
+  //         uri,
+  //         mode: LaunchMode.inAppWebView,
+  //       );
+  //     } else {
+  //       throw Exception('API 호출 실패: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     if (context.mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text('상품 페이지를 열 수 없습니다.')),
+  //       );
+  //     }
+  //   }
+  // }
+
   Future<void> _openWebview(BuildContext context) async {
-    final String url = product.link;
-    final uri = Uri.parse(url);
-
-    final String apiPath = '/api/products/${product.productId}/${historyCreatedAt}/${Uri.encodeComponent(product.source!)}/open';
-
-    try {
-      final response = await DioClient.dio.post(apiPath);
-
-      if (response.statusCode == 200) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.inAppWebView,
-        );
-      } else {
-        throw Exception('API 호출 실패: ${response.statusCode}');
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('상품 페이지를 열 수 없습니다.')),
-        );
-      }
-    }
+    debugPrint("aaaaaaaaaaaaaaaaaaaaaaaa");
+    debugPrint("id:::::::::::::::::::::::::::${id}");
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProductWebViewScreen(
+          url: product.link,
+          productId: product.productId,
+          historyId: id,
+          // historyCreatedAt: historyCreatedAt,
+          source: product.source!,
+        ),
+      ),
+    );
   }
 
   void _openReviews(BuildContext context) {
@@ -279,7 +298,7 @@ class ProductCard extends StatelessWidget {
                       if (product.source == 'ABLY' ||
                           product.source == 'ZIGZAG' ||
                           product.source == 'ATTRANGS' ||
-                          product.source == 'HOTPING' ||
+                          product.source == 'HOTPING' ||  product.source == '29CM' ||
                           product.source == 'MUSINSA' || product.source == 'XEXYMIX')
                         Container(
                           height: 20,

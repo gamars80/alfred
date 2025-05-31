@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:url_launcher/url_launcher.dart';
+import '../../../call/presentation/event_webview_screen.dart';
 import '../../model/keyword_review.dart';
 import '../../../../common/widget/rating_stars.dart';
 
@@ -23,23 +24,38 @@ class _KeywordReviewCardState extends State<KeywordReviewCard> {
   Future<void> _launchReviewUrl(BuildContext context) async {
     final url = Uri.parse('https://web.babitalk.com/reviews/${widget.review.reviewId}');
     try {
-      await launchUrl(url, mode: LaunchMode.inAppWebView);
+      await launchUrl(url, mode: LaunchMode.externalApplication);
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('리뷰 페이지를 열 수 없습니다.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('리뷰 페이지를 열 수 없습니다.')),
+        );
       }
     }
   }
 
+  // Future<void> _launchEventUrl(BuildContext context) async {
+  //   final url = 'https://web.babitalk.com/events/${widget.review.event!.id}';
+  //   debugPrint("url::::::::::::::::::::::::$url");
+  //   if (context.mounted) {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder: (_) => EventWebViewScreen(url: url),
+  //       ),
+  //     );
+  //   }
+  // }
+
   Future<void> _launchEventUrl(BuildContext context) async {
     final url = Uri.parse('https://web.babitalk.com/events/${widget.review.event!.id}');
     try {
-      await launchUrl(url, mode: LaunchMode.inAppWebView);
+      await launchUrl(url, mode: LaunchMode.externalApplication);
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('이벤트 페이지를 열 수 없습니다.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이벤트 페이지를 열 수 없습니다.')),
+        );
       }
     }
   }

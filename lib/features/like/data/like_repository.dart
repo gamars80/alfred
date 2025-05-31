@@ -22,13 +22,13 @@ class LikeRepository {
   }
 
   Future<void> postLike({
-    required int historyCreatedAt,
+    required int historyId,
     required String recommendationId,
     required String productId,
     required String mallName,
   }) async {
     await _dio.post('/api/likes', data: {
-      'historyCreatedAt': '$historyCreatedAt',
+      'historyId': historyId,
       'recommendationId': recommendationId,
       'productId': productId,
       'mallName': mallName,
@@ -36,13 +36,13 @@ class LikeRepository {
   }
 
   Future<void> deleteLike({
-    required int historyCreatedAt,
+    required int historyId,
     required String recommendationId,
     required String productId,
     required String mallName,
   }) async {
     final payload = {
-      'historyCreatedAt': '$historyCreatedAt',
+      'historyId': historyId,
       'recommendationId': recommendationId,
       'productId': productId,
       'mallName': mallName,

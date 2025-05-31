@@ -25,6 +25,7 @@ class LikedProductCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.06),
           borderRadius: BorderRadius.circular(16),
+
           border: Border.all(color: Colors.white10),
         ),
         child: Column(

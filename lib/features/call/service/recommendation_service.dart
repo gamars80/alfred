@@ -1,5 +1,7 @@
 // ✅ recommendation_service.dart
 
+import 'package:flutter/cupertino.dart';
+
 import '../data/beauty_api.dart';
 import '../data/product_api.dart';
 import '../model/community_post.dart';
@@ -9,6 +11,7 @@ import '../model/product.dart';
 import '../model/youtube_video.dart';
 
 class RecommendationResult {
+  final int id;
   final int createdAt;  // 생성 시점 타임스탬프
   final Map<String, List<Product>> products;
   final List<CommunityPost> communityPosts;
@@ -17,6 +20,7 @@ class RecommendationResult {
   final List<YouTubeVideo> youtubeVideos;
 
   RecommendationResult({
+    this.id = 0,
     this.createdAt = 0,
     this.products = const {},
     this.communityPosts = const [],
@@ -27,10 +31,12 @@ class RecommendationResult {
 }
 
 class RecommendedProductsResult {
+  final int id;
   final int createdAt;
   final Map<String, List<Product>> items;
 
   RecommendedProductsResult({
+    required this.id,
     required this.createdAt,
     required this.items,
   });
@@ -48,7 +54,11 @@ class RecommendationService {
       if (selectedCategory == '쇼핑') {
         final api = ProductApi();
         final result = await api.fetchRecommendedProducts(query); // RecommendedProductsResult
+        debugPrint("result id::::::::::::::::::::::::${result.id}");
+        debugPrint("result id::::::::::::::::::::::::${result.id}");
+        debugPrint("result id::::::::::::::::::::::::${result.id}");
         onSuccess(RecommendationResult(
+          id: result.id,
           createdAt: result.createdAt,
           products: result.items,
         ));
@@ -56,6 +66,7 @@ class RecommendationService {
         final api = BeautyApi();
         final result = await api.fetchBeautyData(query);
         onSuccess(RecommendationResult(
+          id: 0,
           createdAt: result.createdAt,
           communityPosts: result.communityPosts,
           events: result.events,
