@@ -13,6 +13,7 @@ class RecommendationHistory {
   final String age;
   final String? useCase;
   final String? season;
+  final String? itemType;
   final bool hasRating;
   final int? myRating;
   final String status;
@@ -28,12 +29,18 @@ class RecommendationHistory {
     required this.age,
     required this.useCase,
     required this.season,
+    required this.itemType,
     required this.hasRating,
     required this.myRating,
     required this.status
   });
 
-  RecommendationHistory copyWith({List<Product>? recommendations}) {
+  RecommendationHistory copyWith({
+    List<Product>? recommendations,
+    bool? hasRating,
+    int? myRating,
+    String? status,
+  }) {
     return RecommendationHistory(
       id: id,
       // userId: userId,
@@ -43,11 +50,12 @@ class RecommendationHistory {
       age: age,
       useCase: useCase,
       season: season,
+      itemType: itemType,
       // gptCondition: gptCondition,
       recommendations: recommendations ?? this.recommendations,
-      hasRating: hasRating,
-      myRating: myRating,
-      status: status,
+      hasRating: hasRating ?? this.hasRating,
+      myRating: myRating ?? this.myRating,
+      status: status ?? this.status,
     );
   }
 
@@ -61,6 +69,7 @@ class RecommendationHistory {
       age: json['age'],
       useCase: json['useCase'],
       season: json['season'],
+      itemType: json['itemTypes'],
       hasRating: json['hasRating'],
       myRating: json['myRating'],
       status: json['status'],
