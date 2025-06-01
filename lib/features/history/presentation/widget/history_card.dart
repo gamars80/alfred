@@ -20,6 +20,7 @@ class HistoryCard extends StatelessWidget {
     final List<String> tags = [];
     tags.add('#${history.gender}');
     tags.add('#${history.age}');
+    if (history.itemType != null) tags.add('#${history.itemType!}');
     if (history.useCase != null) tags.add('#${history.useCase!}');
     if (history.season != null) tags.add('#${history.season!}');
     
@@ -70,7 +71,39 @@ class HistoryCard extends StatelessWidget {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: List.generate(5, (index) {
+                        return Icon(
+                          (history.hasRating && history.myRating != null && index < history.myRating!) 
+                              ? Icons.star 
+                              : Icons.star_border,
+                          size: 18,
+                          color: Colors.amber,
+                        );
+                      }),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: history.status == 'WAITING' ? Colors.orange.shade50 : Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        history.status == 'WAITING' ? '처리대기중' : '완료',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: history.status == 'WAITING' ? Colors.orange : Colors.green,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
