@@ -1,7 +1,48 @@
+//plugins {
+//    id 'com.google.gms.google-services' version '4.4.2' apply false
+//}
+//
+//allprojects {
+//    repositories {
+//        google()
+//        mavenCentral()
+//    }
+//}
+//
+//// Flutter 외 커스텀 빌드 디렉토리 지정 (선택 사항)
+//def newBuildDir = rootProject.layout.buildDirectory.dir("../../build").get()
+//rootProject.layout.buildDirectory.set(newBuildDir)
+//
+//subprojects {
+//    def newSubprojectBuildDir = newBuildDir.dir(project.name)
+//    layout.buildDirectory.set(newSubprojectBuildDir)
+//    evaluationDependsOn(":app")
+//}
+//
+//// clean task 정의 (필수는 아님, 유지 가능)
+//tasks.register("clean", Delete) {
+//    delete rootProject.buildDirectory
+//}
+//
+buildscript {
+    ext.kotlin_version = '2.1.0'  // ✅ Kotlin 버전 명시
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.gms:google-services:4.4.2' // 이미 있으므로 OK
+    }
+}
+
 plugins {
     id 'com.google.gms.google-services' version '4.4.2' apply false
 }
 
+// 나머지 코드는 그대로 유지
 allprojects {
     repositories {
         google()
@@ -9,7 +50,6 @@ allprojects {
     }
 }
 
-// Flutter 외 커스텀 빌드 디렉토리 지정 (선택 사항)
 def newBuildDir = rootProject.layout.buildDirectory.dir("../../build").get()
 rootProject.layout.buildDirectory.set(newBuildDir)
 
@@ -19,8 +59,6 @@ subprojects {
     evaluationDependsOn(":app")
 }
 
-// clean task 정의 (필수는 아님, 유지 가능)
 tasks.register("clean", Delete) {
     delete rootProject.buildDirectory
 }
-
