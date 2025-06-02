@@ -138,7 +138,6 @@ class _CallScreenState extends State<CallScreen> {
         break;
       }
 
-
       if (_errorMessage == 'Choice Type' && _choiceItemTypes != null) {
         Fluttertoast.showToast(
           msg: '죄송합니다 주인님 ${_choiceItemTypes!.join(', ')} 중에 하나만 명령해 주세요',
@@ -181,6 +180,23 @@ class _CallScreenState extends State<CallScreen> {
         );
         break;
       }
+
+      if (_errorMessage == 'alreadyRecommend') {
+        setState(() {
+          _selectedCategory = '쇼핑';
+          _errorMessage = null;
+        });
+        _commandController.clear();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('이미 유사한 조건의 상품 추천이 존재합니다 😊'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 5),
+          ),
+        );
+        break;
+      }
+
 
       if (success) break;
 

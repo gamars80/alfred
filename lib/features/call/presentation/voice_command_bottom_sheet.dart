@@ -1,10 +1,9 @@
-// ✅ voice_command_bottom_sheet.dart (카테고리 상태 외부 반영 추가)
+// lib/features/call/presentation/voice_command_bottom_sheet.dart
 import 'package:alfred_clean/features/call/presentation/widget/voice_command_input_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../model/age_range.dart';
-
 
 class VoiceCommandBottomSheet {
   static Future<String?> show({
@@ -31,7 +30,11 @@ class VoiceCommandBottomSheet {
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
+          // ↓ 네이티브 음성인식을 호출하는 부분
           Future<void> handleMic() async {
+            // 이미 MainActivity에서 권한을 요청했기 때문에, 여기서는
+            // 단순히 네이티브 메서드(startListening)만 호출하면 됩니다.
+
             modalIsListening = true;
             setModalState(() {});
 
@@ -41,7 +44,7 @@ class VoiceCommandBottomSheet {
               if (result != null && result.isNotEmpty) {
                 controller.text = result;
               }
-            } catch (_) {
+            } catch (e) {
               Fluttertoast.showToast(msg: '음성 인식에 실패했습니다.');
             }
 
@@ -53,7 +56,9 @@ class VoiceCommandBottomSheet {
             decoration: const BoxDecoration(
               color: Color(0xFFFDFDFD),
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, -4))],
+              boxShadow: [
+                BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, -4))
+              ],
             ),
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom + 16,
@@ -79,7 +84,7 @@ class VoiceCommandBottomSheet {
                       controller: controller,
                       isListening: modalIsListening,
                       isLoading: isLoading,
-                      onMicPressed: handleMic,
+                      onMicPressed: handleMic, // 네이티브 startListening 호출
                       onSubmit: () {
                         final q = controller.text.trim();
                         if (q.isEmpty) {
