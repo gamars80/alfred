@@ -8,6 +8,11 @@
         android:label="alfred_clean"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-4542840362692423~1999745247"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

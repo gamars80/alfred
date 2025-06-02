@@ -189,7 +189,7 @@ class _CallScreenState extends State<CallScreen> {
         _commandController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('이미 유사한 조건의 상품 추천이 존재합니다 😊'),
+            content: Text('주인님 이미 유사한 조건의 상품 추천이 존재 합니다. 24시간 뒤에 새롭게 추천 됩니다. 😊'),
             behavior: SnackBarBehavior.floating,
             duration: Duration(seconds: 5),
           ),
