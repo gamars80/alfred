@@ -365,7 +365,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                       const Text(
                         "주인님 저희 추천에 평가를 내려주세요",
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF1A1A1A),
                         ),
@@ -383,7 +383,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                                   await _submitRating(newRating);
                                 },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
                               child: Icon(
                                 index < _selectedRating ? Icons.star : Icons.star_border,
                                 size: 40,
