@@ -3,12 +3,14 @@ import 'package:alfred_clean/features/call/presentation/widget/event_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/hospital_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/youtube_list.dart';
 import 'package:alfred_clean/features/call/presentation/widget/product_card.dart';
+import 'package:alfred_clean/features/call/presentation/widget/fashion_command_card.dart';
 import 'package:flutter/material.dart';
 import '../model/community_post.dart';
 import '../model/event.dart';
 import '../model/hostpital.dart';
 import '../model/product.dart';
 import '../model/youtube_video.dart';
+import '../data/product_api.dart';
 
 // 디자인 시스템 상수
 const kPrimaryColor = Color(0xFF6200EE);
@@ -46,6 +48,8 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   int selectedProcedureTab = 0;
   final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
+  List<RecentFashionCommand> _recentCommands = [];
+  bool _isLoadingCommands = false;
 
   @override
   void initState() {
@@ -58,6 +62,20 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
         });
       }
     });
+    _loadRecentCommands();
+  }
+
+  Future<void> _loadRecentCommands() async {
+    if (_isLoadingCommands) return;
+    setState(() => _isLoadingCommands = true);
+    try {
+      final commands = await ProductApi().fetchRecentFashionCommands();
+      setState(() => _recentCommands = commands);
+    } catch (e) {
+      debugPrint('❌ Failed to load recent commands: $e');
+    } finally {
+      setState(() => _isLoadingCommands = false);
+    }
   }
 
   @override
@@ -84,6 +102,16 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
 
   List<Widget> _buildSections() {
     final List<Widget> sections = [];
+
+    // 최신 패션 명령 섹션
+    if (_recentCommands.isNotEmpty) {
+      sections.add(_buildSection(
+        title: '최신 패션 명령',
+        children: _recentCommands.map((command) => FashionCommandCard(
+          command: command,
+        )).toList(),
+      ));
+    }
 
     // 커뮤니티 섹션
     if (widget.communityPosts.isNotEmpty) {
@@ -209,23 +237,55 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   }
 
   Widget _buildSection({required String title, required List<Widget> children}) {
+    final bool isFashionCommand = title == '최신 패션 명령';
+    
     return Padding(
       padding: const EdgeInsets.only(top: kSpacing),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: kSpacing),
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: kPrimaryColor,
-                letterSpacing: -0.5,
+          if (isFashionCommand)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: kSpacing),
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1A1A1A),
+                  letterSpacing: -0.5,
+                ),
+              ),
+            )
+          else
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: kSpacing, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(kCardBorderRadius),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF8E2DE2).withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              margin: const EdgeInsets.symmetric(horizontal: kSpacing),
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
-          ),
           const SizedBox(height: kSpacing / 2),
           ...children,
         ],
