@@ -182,20 +182,35 @@ class _CallScreenState extends State<CallScreen> {
       }
 
       if (_errorMessage == 'alreadyRecommend') {
+        final wasShopping = _selectedCategory == '쇼핑';
+
         setState(() {
-          _selectedCategory = '쇼핑';
+          // 쇼핑이었을 때만 카테고리를 '쇼핑'으로 설정 (실제로는 이미 '쇼핑' 상태이므로 유지)
+          if (wasShopping) {
+            _selectedCategory = '쇼핑';
+          }
+          // 시술/성형이었을 땐 _selectedCategory를 그대로 두어야 하므로 별도 처리 없음
           _errorMessage = null;
         });
+
         _commandController.clear();
+
+        // 쇼핑 메시지와 일반 메시지를 분기
+        final snackMessage = wasShopping
+            ? '주인님 이미 유사한 조건의 상품 추천이 존재 합니다. 24시간 뒤에 새롭게 추천 됩니다. 😊'
+            : '주인님 이미 유사한 조건의 추천이 존재 합니다. 24시간 뒤에 새롭게 추천 됩니다. 😊';
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('주인님 이미 유사한 조건의 상품 추천이 존재 합니다. 24시간 뒤에 새롭게 추천 됩니다. 😊'),
+          SnackBar(
+            content: Text(snackMessage),
             behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 5),
+            duration: const Duration(seconds: 5),
           ),
         );
+
         break;
       }
+
 
 
       if (success) break;
