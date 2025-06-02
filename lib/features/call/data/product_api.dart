@@ -84,4 +84,40 @@ class ProductApi {
       rethrow;
     }
   }
+
+  /// 최근 패션 명령 조회 API
+  Future<List<RecentFashionCommand>> fetchRecentFashionCommands() async {
+    try {
+      final response = await _dio.get(
+        '/api/recomendation-history/recently-recommend-history',
+      );
+
+      final List<dynamic> data = response.data as List<dynamic>;
+      return data.map((item) => RecentFashionCommand.fromJson(item)).toList();
+    } catch (e) {
+      debugPrint('❌ [fetchRecentFashionCommands] Error: $e');
+      rethrow;
+    }
+  }
+}
+
+/// 최근 패션 명령 모델
+class RecentFashionCommand {
+  final int id;
+  final int createdAt;
+  final String query;
+
+  RecentFashionCommand({
+    required this.id,
+    required this.createdAt,
+    required this.query,
+  });
+
+  factory RecentFashionCommand.fromJson(Map<String, dynamic> json) {
+    return RecentFashionCommand(
+      id: json['id'] as int,
+      createdAt: json['createdAt'] as int,
+      query: json['query'] as String,
+    );
+  }
 }
