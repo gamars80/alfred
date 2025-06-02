@@ -46,8 +46,10 @@ class CallScreenBody extends StatefulWidget {
 class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStateMixin {
   String selectedSource = '강남언니';
   int selectedProcedureTab = 0;
+  int selectedFashionTab = 0;
   final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
+  late TabController _fashionTabController;
   List<RecentFashionCommand> _recentCommands = [];
   bool _isLoadingCommands = false;
 
@@ -55,10 +57,18 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _fashionTabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {
           selectedProcedureTab = _tabController.index;
+        });
+      }
+    });
+    _fashionTabController.addListener(() {
+      if (!_fashionTabController.indexIsChanging) {
+        setState(() {
+          selectedFashionTab = _fashionTabController.index;
         });
       }
     });
@@ -82,6 +92,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   void dispose() {
     _scrollController.dispose();
     _tabController.dispose();
+    _fashionTabController.dispose();
     super.dispose();
   }
 
@@ -103,13 +114,33 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   List<Widget> _buildSections() {
     final List<Widget> sections = [];
 
-    // 최신 패션 명령 섹션
-    if (_recentCommands.isNotEmpty) {
-      sections.add(_buildSection(
-        title: '최신 패션 명령',
-        children: _recentCommands.map((command) => FashionCommandCard(
-          command: command,
-        )).toList(),
+    // Debug prints to check the values
+    debugPrint('Community posts: ${widget.communityPosts.length}');
+    debugPrint('Events: ${widget.events.length}');
+    debugPrint('Hospitals: ${widget.hospitals.length}');
+    debugPrint('Recent commands: ${_recentCommands.length}');
+
+    final bool hasRecommendedContent = 
+        widget.communityPosts.isNotEmpty || 
+        widget.events.isNotEmpty || 
+        widget.hospitals.isNotEmpty ||
+        widget.youtubeVideos.isNotEmpty ||
+        widget.categorizedProducts.isNotEmpty;
+
+    // 다른 추천 컨텐츠가 없을 때만 최신 패션 명령 섹션 표시
+    if (_recentCommands.isNotEmpty && !hasRecommendedContent) {
+      sections.add(Column(
+        children: [
+          _buildFashionTabBar(),
+          const SizedBox(height: kSpacing),
+          if (selectedFashionTab == 0) // 패션 탭이 선택된 경우에만 표시
+            _buildSection(
+              title: '최신 패션 명령',
+              children: _recentCommands.map((command) => FashionCommandCard(
+                command: command,
+              )).toList(),
+            ),
+        ],
       ));
     }
 
@@ -397,6 +428,44 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
         ],
       ),
       child: child,
+    );
+  }
+
+  Widget _buildFashionTabBar() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: kSpacing),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(kCardBorderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TabBar(
+        controller: _fashionTabController,
+        labelColor: kPrimaryColor,
+        unselectedLabelColor: Colors.grey,
+        indicatorColor: kPrimaryColor,
+        indicatorSize: TabBarIndicatorSize.label,
+        tabs: const [
+          Tab(
+            child: Text(
+              '패션',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Tab(
+            child: Text(
+              '시술성형',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

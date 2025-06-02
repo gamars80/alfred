@@ -89,6 +89,8 @@ class RecommendationService {
         onError('both');
       } else if (msg.contains('Not ItemType')) {
         onError('itemType');
+      } else if (msg.contains('Already Recommend')) {
+        onError('alreadyRecommend');
       } else {
         onError('unknown');
       }
