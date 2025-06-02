@@ -17,7 +17,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.alfred_clean"
-        minSdk 21
+        minSdk 23 // ✅ 여기만 23으로 변경
         targetSdk 35
         versionCode 1
         versionName "1.0"
