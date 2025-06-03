@@ -1,19 +1,17 @@
-import 'package:alfred_clean/features/search/presentation/search_screen.dart';
-import 'package:alfred_clean/features/search/presentation/widget/sort_dropdown.dart';
-import 'package:dio/dio.dart';
+// lib/features/search/presentation/source_product_screen.dart
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import '../../../common/widget/ad_banner_widget.dart';
 import '../../call/model/product.dart';
 import '../data/search_repository.dart';
 import '../presentation/widget/product_card.dart';
 import 'review_list_screen.dart';
+import 'search_screen.dart';
+import 'widget/sort_dropdown.dart';
 
 class SourceProductScreen extends StatefulWidget {
   final String source;
-
-  const SourceProductScreen({
-    super.key,
-    required this.source,
-  });
+  const SourceProductScreen({super.key, required this.source});
 
   @override
   State<SourceProductScreen> createState() => _SourceProductScreenState();
@@ -21,7 +19,7 @@ class SourceProductScreen extends StatefulWidget {
 
 class _SourceProductScreenState extends State<SourceProductScreen> {
   final _repo = SearchRepository();
-  final _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   int? _totalCount;
 
   final List<Product> _products = [];
@@ -34,6 +32,7 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
 
   @override
   void initState() {
+    debugPrint('SourceProductScreen - initState called with source: ${widget.source}');
     super.initState();
     _fetchProducts();
     _scrollController.addListener(_onScroll);
@@ -41,11 +40,13 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
 
   @override
   void dispose() {
+    debugPrint('SourceProductScreen - dispose called');
     _scrollController.dispose();
     super.dispose();
   }
 
   void _onScroll() {
+    debugPrint('SourceProductScreen - onScroll called, position: ${_scrollController.position.pixels}, maxExtent: ${_scrollController.position.maxScrollExtent}');
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200 &&
         !_isLoading &&
@@ -55,9 +56,14 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
   }
 
   Future<void> _fetchProducts({bool refresh = false}) async {
+    debugPrint('SourceProductScreen - fetchProducts called, refresh: $refresh');
+    
+    if (_isLoading) return; // 이미 로딩 중이면 중복 요청 방지
+    
     setState(() => _isLoading = true);
 
     if (refresh) {
+      debugPrint('SourceProductScreen - Refreshing products - clearing existing data');
       _products.clear();
       _cursor = null;
       _hasMore = true;
@@ -65,6 +71,7 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
     }
 
     try {
+      debugPrint('SourceProductScreen - Fetching products from repository - source: ${widget.source}, cursor: $_cursor');
       final response = await _repo.fetchProductsBySource(
         source: widget.source,
         cursor: _cursor,
@@ -73,23 +80,29 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
         searchKeyword: _searchKeyword,
       );
 
+      if (!mounted) return;
+
       setState(() {
         _totalCount = response.totalCount;
         _products.addAll(response.items);
         _cursor = response.nextCursor;
         _hasMore = response.nextCursor != null;
+        debugPrint('SourceProductScreen - State updated - total products: ${_products.length}, hasMore: $_hasMore');
       });
     } on DioException catch (e) {
-      debugPrint('상품 조회 중 에러: ${e.message}');
+      debugPrint('SourceProductScreen - Error fetching products: ${e.message}');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('검색 중 서버 오류가 발생했습니다.')),
+          SnackBar(
+            content: Text(e.response?.statusCode == 500 
+              ? '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' 
+              : '검색 중 오류가 발생했습니다.'),
+          ),
         );
       }
+      setState(() => _hasMore = false); // 에러 발생 시 더 이상 로드하지 않음
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -98,15 +111,14 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
       _sortBy = sortBy;
       _sortDir = sortDir;
     });
-
     _scrollController.animateTo(
       0.0,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
-
     _fetchProducts(refresh: true);
   }
+
 
   Future<void> _onSearchTap() async {
     final kw = await Navigator.push<String>(
@@ -114,20 +126,18 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
       MaterialPageRoute(builder: (_) => const SearchScreen()),
     );
     if (kw != null && kw.isNotEmpty) {
-      setState(() {
-        _searchKeyword = kw;
-      });
+      setState(() => _searchKeyword = kw);
       _fetchProducts(refresh: true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('SourceProductScreen - build called, products length: ${_products.length}');
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.black),
         title: Text(
@@ -167,35 +177,68 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => ReviewListScreen(
-                            source: widget.source,
-                          ),
+                          builder: (_) =>
+                              ReviewListScreen(source: widget.source),
                         ),
                       );
                     },
                     icon: const Icon(Icons.reviews, size: 18),
                     label: const Text('전체 리뷰'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.deepPurple,
-                    ),
+                    style: TextButton.styleFrom(foregroundColor: Colors.deepPurple),
                   ),
                 ],
               ),
             ),
           Expanded(
-            child: GridView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 220,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 12,
-                childAspectRatio: MediaQuery.of(context).size.width <= 320 ? 0.52 : 0.60,
-              ),
-              itemCount: _products.length,
-              itemBuilder: (context, index) =>
-                  ProductCard(product: _products[index]),
-            ),
+            child: _products.isEmpty
+              ? const Center(
+                  child: Text(
+                    '검색 결과가 없습니다.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                )
+              : CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
+                    for (int i = 0; i < _products.length; i += 10) ...[
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        sliver: SliverGrid(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 0.60,
+                          ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final productIndex = i + index;
+                              if (productIndex >= _products.length || productIndex >= i + 10) return null;
+                              return ProductCard(product: _products[productIndex]);
+                            },
+                            childCount: 10,
+                          ),
+                        ),
+                      ),
+                      if (i + 10 <= _products.length) // 10개 단위로 광고 표시
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.grey[50],
+                              ),
+                              child: const AdBannerWidget(),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ],
+                ),
           ),
           if (_isLoading)
             const Padding(
@@ -206,4 +249,38 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
       ),
     );
   }
-} 
+
+  // 전체 아이템 개수 계산 (상품 + 광고)
+  int _calculateTotalItems() {
+    if (_products.isEmpty) return 0;
+    
+    // 10개마다 광고 1개 추가 (row 단위가 아닌 개별 상품 기준)
+    final productRows = (_products.length / 2).ceil(); // 2개씩 표시하므로 row 수 계산
+    final adCount = (_products.length - 1) ~/ 10; // 10개 단위로 광고 추가
+    final totalCount = productRows + adCount;
+    
+    debugPrint('SourceProductScreen - Calculating total items: products=${_products.length}, rows=$productRows, ads=$adCount, total=$totalCount');
+    return totalCount;
+  }
+
+  // 2개의 상품을 포함하는 row 위젯 생성
+  Widget _buildProductRow(int leftIndex, int? rightIndex) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: ProductCard(product: _products[leftIndex]),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: rightIndex != null && rightIndex < _products.length
+                ? ProductCard(product: _products[rightIndex])
+                : const SizedBox(), // 오른쪽 상품이 없을 경우 빈 공간
+          ),
+        ],
+      ),
+    );
+  }
+}

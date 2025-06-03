@@ -26,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _tabController = TabController(length: tabs.length, vsync: this);
   }
 
+
   @override
   void dispose() {
     _tabController.dispose();

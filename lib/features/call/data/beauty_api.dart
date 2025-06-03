@@ -4,6 +4,7 @@ import '../../auth/common/dio/dio_client.dart';
 import '../model/community_post.dart';
 import '../model/event.dart';
 import '../model/hostpital.dart';
+import '../model/recent_beauty_command.dart';
 import '../model/youtube_video.dart';
 
 /// 시술 커뮤니티 + 유튜브 영상 결과를 담는 DTO
@@ -99,5 +100,36 @@ class BeautyApi {
       rethrow;
     }
   }
+
+
+  Future<List<RecentBeautyCommand>> fetchRecentBeautyCommands({int limit = 10}) async {
+    try {
+      debugPrint('▶️ 뷰티 히스토리 요청: /api/recomendation-history/beauty-history?limit=$limit');
+      final response = await _dio.get(
+        '/api/recomendation-history/beauty-history',
+        queryParameters: {'limit': limit},
+        options: Options(receiveTimeout: const Duration(seconds: 30)),
+      );
+
+      final rawData = response.data;
+      if (rawData is! Map<String, dynamic> || rawData['histories'] == null) {
+        throw Exception('예상치 못한 데이터 형식: ${rawData.runtimeType}');
+      }
+
+      final historiesJson = rawData['histories'] as List<dynamic>;
+      return historiesJson
+          .map((e) => RecentBeautyCommand.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      debugPrint('⚠️ DioException: ${e.message}');
+      debugPrint('⚙️ response data: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      debugPrint('❌ 파싱 중 예외 발생: $e');
+      debugPrint('$st');
+      rethrow;
+    }
+  }
+
 }
 
