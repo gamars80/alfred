@@ -1,6 +1,6 @@
 // lib/features/search/presentation/widget/category_product_screen.dart
-
 import 'package:alfred_clean/features/search/presentation/search_screen.dart';
+import 'package:alfred_clean/common/widget/ad_banner_widget.dart'; // AdBannerWidget import 추가
 import 'package:alfred_clean/features/search/presentation/widget/sort_dropdown.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -185,19 +185,54 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
               ),
             ),
           Expanded(
-            child: GridView.builder(
-              controller: _scrollController,
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 220,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 12,
-                childAspectRatio: MediaQuery.of(context).size.width <= 320 ? 0.52 : 0.60, // 작은 화면에서 더 낮은 비율
+            child: _products.isEmpty
+                ? const Center(
+              child: Text(
+                '검색 결과가 없습니다.',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
               ),
-              itemCount: _products.length,
-              itemBuilder: (context, index) =>
-                  ProductCard(product: _products[index]),
+            )
+                : CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                for (int i = 0; i < _products.length; i += 10) ...[
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    sliver: SliverGrid(
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 220,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 0.60,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                          final productIndex = i + index;
+                          if (productIndex >= _products.length || productIndex >= i + 10) return null;
+                          return ProductCard(product: _products[productIndex]);
+                        },
+                        childCount: (_products.length - i) >= 10 ? 10 : (_products.length - i),
+                      ),
+                    ),
+                  ),
+                  if (i + 10 <= _products.length)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.grey[50],
+                          ),
+                          child: const AdBannerWidget(),
+                        ),
+                      ),
+                    ),
+                ],
+              ],
             ),
           ),
           if (_isLoading)
