@@ -58,7 +58,7 @@ class _WeeklyTopProductSectionState extends State<WeeklyTopProductSection> {
                   itemBuilder: (_, __) => const PopularProductSkeletonCard(),
                 );
               } else if (snapshot.hasError) {
-                return Center(child: Text('불러오기 실패: \${snapshot.error}'));
+                return Center(child: Text('불러오기 실패: ${snapshot.error}'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const Center(child: Text('데이터 없음'));
               }

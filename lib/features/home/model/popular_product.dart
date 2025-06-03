@@ -1,7 +1,7 @@
 class PopularProduct {
   final int historyId;
   final String userId;
-  final int productId;
+  final String productId;
   final String mallName;
   final int cnt;
   final String productName;
