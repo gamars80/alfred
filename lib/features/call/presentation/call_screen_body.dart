@@ -1,3 +1,4 @@
+import 'package:alfred_clean/features/call/presentation/widget/beauty_command_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/community_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/event_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/hospital_card.dart';
@@ -5,10 +6,12 @@ import 'package:alfred_clean/features/call/presentation/widget/youtube_list.dart
 import 'package:alfred_clean/features/call/presentation/widget/product_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/fashion_command_card.dart';
 import 'package:flutter/material.dart';
+import '../data/beauty_api.dart';
 import '../model/community_post.dart';
 import '../model/event.dart';
 import '../model/hostpital.dart';
 import '../model/product.dart';
+import '../model/recent_beauty_command.dart';
 import '../model/youtube_video.dart';
 import '../data/product_api.dart';
 
@@ -50,6 +53,11 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
   late TabController _fashionTabController;
+
+  // ===== 뷰티 명령 관련 상태 추가 =====
+  List<RecentBeautyCommand> _recentBeautyCommands = [];
+  bool _isLoadingBeautyCommands = false;
+
   List<RecentFashionCommand> _recentCommands = [];
   bool _isLoadingCommands = false;
 
@@ -73,6 +81,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
       }
     });
     _loadRecentCommands();
+    _loadRecentBeautyCommands();
   }
 
   Future<void> _loadRecentCommands() async {
@@ -85,6 +94,19 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
       debugPrint('❌ Failed to load recent commands: $e');
     } finally {
       setState(() => _isLoadingCommands = false);
+    }
+  }
+
+  Future<void> _loadRecentBeautyCommands() async {
+    if (_isLoadingBeautyCommands) return;
+    setState(() => _isLoadingBeautyCommands = true);
+    try {
+      final beautyCommands = await BeautyApi().fetchRecentBeautyCommands(limit: 10);
+      setState(() => _recentBeautyCommands = beautyCommands);
+    } catch (e) {
+      debugPrint('❌ Failed to load recent beauty commands: $e');
+    } finally {
+      setState(() => _isLoadingBeautyCommands = false);
     }
   }
 
@@ -118,109 +140,147 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
     debugPrint('Community posts: ${widget.communityPosts.length}');
     debugPrint('Events: ${widget.events.length}');
     debugPrint('Hospitals: ${widget.hospitals.length}');
-    debugPrint('Recent commands: ${_recentCommands.length}');
+    debugPrint('Recent fashion commands: ${_recentCommands.length}');
+    debugPrint('Recent beauty commands: ${_recentBeautyCommands.length}');
 
-    final bool hasRecommendedContent = 
-        widget.communityPosts.isNotEmpty || 
-        widget.events.isNotEmpty || 
-        widget.hospitals.isNotEmpty ||
-        widget.youtubeVideos.isNotEmpty ||
-        widget.categorizedProducts.isNotEmpty;
+    // 다른 추천 컨텐츠가 있을 때는 최신 명령 섹션을 생략
+    final bool hasRecommendedContent =
+        widget.communityPosts.isNotEmpty ||
+            widget.events.isNotEmpty ||
+            widget.hospitals.isNotEmpty ||
+            widget.youtubeVideos.isNotEmpty ||
+            widget.categorizedProducts.isNotEmpty;
 
-    // 다른 추천 컨텐츠가 없을 때만 최신 패션 명령 섹션 표시
-    if (_recentCommands.isNotEmpty && !hasRecommendedContent) {
-      sections.add(Column(
-        children: [
-          _buildFashionTabBar(),
-          const SizedBox(height: kSpacing),
-          if (selectedFashionTab == 0) // 패션 탭이 선택된 경우에만 표시
-            _buildSection(
-              title: '최신 패션 명령',
-              children: _recentCommands.map((command) => FashionCommandCard(
-                command: command,
-              )).toList(),
-            ),
-        ],
-      ));
+    // 다른 추천 컨텐츠가 없을 때만 “최신 패션/뷰티 명령” 섹션 표시
+    if (!hasRecommendedContent && (_recentCommands.isNotEmpty || _recentBeautyCommands.isNotEmpty)) {
+      sections.add(
+        Column(
+          children: [
+            // 패션 / 시술성형 탭바
+            _buildFashionTabBar(),
+            const SizedBox(height: kSpacing),
+
+            // ====== 패션 탭 ======
+            if (selectedFashionTab == 0 && _recentCommands.isNotEmpty)
+              _buildSection(
+                title: '최신 패션 명령',
+                children: _recentCommands
+                    .map((command) => FashionCommandCard(command: command))
+                    .toList(),
+              ),
+
+            // ====== 시술성형 탭 ======
+            if (selectedFashionTab == 1 && _recentBeautyCommands.isNotEmpty)
+              _buildSection(
+                title: '최신 뷰티 명령',
+                children: _recentBeautyCommands
+                    .map((command) => BeautyCommandCard(command: command))
+                    .toList(),
+              ),
+          ],
+        ),
+      );
     }
 
     // 커뮤니티 섹션
     if (widget.communityPosts.isNotEmpty) {
-      sections.add(_buildSection(
-        title: '추천 커뮤니티',
-        children: widget.communityPosts.map((post) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: kSpacing, vertical: kSpacing / 4),
-          child: _buildElevatedCard(
-            child: CommunityCard(
-              post: post,
-              source: post.source,
-              historyCreatedAt: widget.createdAt,
-              initialLiked: post.liked,
-            ),
-          ),
-        )).toList(),
-      ));
+      sections.add(
+        _buildSection(
+          title: '추천 커뮤니티',
+          children: widget.communityPosts.map((post) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: kSpacing,
+                vertical: kSpacing / 4,
+              ),
+              child: _buildElevatedCard(
+                child: CommunityCard(
+                  post: post,
+                  source: post.source,
+                  historyCreatedAt: widget.createdAt,
+                  initialLiked: post.liked,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      );
     }
 
-    // 시술 섹션
+    // 시술(이벤트/병원) 섹션
     if (widget.events.isNotEmpty || widget.hospitals.isNotEmpty) {
-      sections.add(_buildSection(
-        title: '추천 시술',
-        children: [
-          _buildCustomTabBar(),
-          const SizedBox(height: kSpacing),
-          if (selectedProcedureTab == 0) ...[
-            _buildSourceFilter(),
-            const SizedBox(height: kSpacing / 2),
-            ...widget.events
-                .where((e) => e.source?.trim() == selectedSource.trim())
-                .map((e) => Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: kSpacing, vertical: kSpacing / 2),
-                      child: _buildElevatedCard(
-                        child: EventCard(
-                          event: e,
-                          historyCreatedAt: widget.createdAt,
-                        ),
-                      ),
-                    ))
-                .toList(),
-          ] else ...[
-            ...widget.hospitals.map((h) => Padding(
+      sections.add(
+        _buildSection(
+          title: '추천 시술',
+          children: [
+            _buildCustomTabBar(),
+            const SizedBox(height: kSpacing),
+            if (selectedProcedureTab == 0) ...[
+              _buildSourceFilter(),
+              const SizedBox(height: kSpacing / 2),
+              ...widget.events
+                  .where((e) => e.source?.trim() == selectedSource.trim())
+                  .map((e) {
+                return Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: kSpacing, vertical: kSpacing / 2),
+                    horizontal: kSpacing,
+                    vertical: kSpacing / 2,
+                  ),
+                  child: _buildElevatedCard(
+                    child: EventCard(
+                      event: e,
+                      historyCreatedAt: widget.createdAt,
+                    ),
+                  ),
+                );
+              })
+                  .toList(),
+            ] else ...[
+              ...widget.hospitals.map((h) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: kSpacing,
+                    vertical: kSpacing / 2,
+                  ),
                   child: _buildElevatedCard(
                     child: HospitalCard(
                       hospital: h,
                       historyCreatedAt: widget.createdAt,
                     ),
                   ),
-                ))
+                );
+              }).toList(),
+            ],
           ],
-        ],
-      ));
+        ),
+      );
     }
 
     // YouTube 섹션
     if (widget.youtubeVideos.isNotEmpty) {
-      sections.add(_buildSection(
-        title: '추천 YouTube 영상',
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: kSpacing),
-            child: _buildElevatedCard(
-              child: YouTubeList(videos: widget.youtubeVideos),
+      sections.add(
+        _buildSection(
+          title: '추천 YouTube 영상',
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: kSpacing),
+              child: _buildElevatedCard(
+                child: YouTubeList(videos: widget.youtubeVideos),
+              ),
             ),
-          ),
-        ],
-      ));
+          ],
+        ),
+      );
     }
 
     // 제품 섹션
     if (widget.categorizedProducts.isNotEmpty) {
-      final nonEmptyProductEntries =
-          widget.categorizedProducts.entries.where((e) => e.value.isNotEmpty);
-      sections.addAll(nonEmptyProductEntries.map((entry) => _buildSection(
+      final nonEmptyProductEntries = widget.categorizedProducts.entries
+          .where((e) => e.value.isNotEmpty);
+
+      sections.addAll(
+        nonEmptyProductEntries.map((entry) {
+          return _buildSection(
             title: entry.key,
             children: [
               Padding(
@@ -230,22 +290,28 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: MediaQuery.of(context).size.width <= 320 ? 0.55 : 0.6,
+                    childAspectRatio:
+                    MediaQuery.of(context).size.width <= 320 ? 0.55 : 0.6,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
                   ),
                   itemCount: entry.value.length,
-                  itemBuilder: (context, index) => ProductCard(
-                    id: widget.id,
-                    product: entry.value[index],
-                    historyCreatedAt: widget.createdAt,
-                  ),
+                  itemBuilder: (context, index) {
+                    return ProductCard(
+                      id: widget.id,
+                      product: entry.value[index],
+                      historyCreatedAt: widget.createdAt,
+                    );
+                  },
                 ),
               ),
             ],
-          )));
+          );
+        }).toList(),
+      );
     }
 
+    // 아무런 추천 컨텐츠가 없으면 안내 문구 노출
     if (sections.isEmpty) {
       return [
         const Center(
@@ -260,7 +326,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
               ),
             ),
           ),
-        )
+        ),
       ];
     }
 
@@ -268,14 +334,16 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   }
 
   Widget _buildSection({required String title, required List<Widget> children}) {
-    final bool isFashionCommand = title == '최신 패션 명령';
-    
+    // “최신 패션 명령” 또는 “최신 뷰티 명령”인 경우 단순 텍스트로 표시
+    final bool isSimpleCommand =
+        title == '최신 패션 명령' || title == '최신 뷰티 명령';
+
     return Padding(
       padding: const EdgeInsets.only(top: kSpacing),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (isFashionCommand)
+          if (isSimpleCommand)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: kSpacing),
               child: Text(

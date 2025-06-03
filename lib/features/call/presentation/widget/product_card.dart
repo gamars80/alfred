@@ -42,35 +42,9 @@ class ProductCard extends StatelessWidget {
     return url;
   }
 
-  // Future<void> _openWebview(BuildContext context) async {
-  //   final String url = product.link;
-  //   final uri = Uri.parse(url);
-  //
-  //   final String apiPath = '/api/products/${product.productId}/${historyCreatedAt}/${Uri.encodeComponent(product.source!)}/open';
-  //
-  //   try {
-  //     final response = await DioClient.dio.post(apiPath);
-  //
-  //     if (response.statusCode == 200) {
-  //       await launchUrl(
-  //         uri,
-  //         mode: LaunchMode.inAppWebView,
-  //       );
-  //     } else {
-  //       throw Exception('API 호출 실패: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     if (context.mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text('상품 페이지를 열 수 없습니다.')),
-  //       );
-  //     }
-  //   }
-  // }
 
   Future<void> _openWebview(BuildContext context) async {
-    debugPrint("aaaaaaaaaaaaaaaaaaaaaaaa");
-    debugPrint("id:::::::::::::::::::::::::::${id}");
+    
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -257,11 +231,11 @@ class ProductCard extends StatelessWidget {
                                   product.reason,
                                   style: const TextStyle(
                                     fontSize: 8,
-                                    height: 1.0,
+                                    height: 1.2,
                                     fontWeight: FontWeight.w600,
                                     color: Color(0xFF1976D2),
                                   ),
-                                  maxLines: 1,
+                                  maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
@@ -280,7 +254,6 @@ class ProductCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(height: 2),
                             Text(
                               '₩${_currencyFormatter.format(product.price)}',
                               style: const TextStyle(

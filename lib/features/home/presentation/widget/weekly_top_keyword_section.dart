@@ -112,6 +112,9 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
           padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 2.5 : 5), // 3.5 → 2.5로 더 축소
           child: InkWell(
             onTap: () {
+              final isCategory = _tabController.index == 0;
+              debugPrint('WeeklyTopKeywordSection - Navigating to ${isCategory ? "CategoryProductScreen" : "SourceProductScreen"} with ${isCategory ? "category" : "source"}: $keyword');
+              
               Navigator.push(
                 context,
                 MaterialPageRoute(

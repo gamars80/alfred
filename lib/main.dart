@@ -10,6 +10,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // ✅ Google Mobile Ads SDK 초기화
+  await MobileAds.instance.initialize();
+
   // ✅ Kakao SDK 초기화
   KakaoSdk.init(nativeAppKey: '22e6b88148da0c4cb1293cbe664cecc4');
 
