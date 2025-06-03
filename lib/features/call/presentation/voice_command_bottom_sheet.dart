@@ -159,7 +159,7 @@ class VoiceCommandBottomSheet {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (error == 'gender' || error == 'both') ...[
-          const Text('성별을 선택해주세요', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+          const Text('성별을 선택해주세요', style: TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -168,20 +168,20 @@ class VoiceCommandBottomSheet {
                 groupValue: selectedGender,
                 onChanged: (v) => onGenderChanged(v),
               ),
-              const Text('남자'),
+              const Text('남자', style: TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w600)),
               const SizedBox(width: 16),
               Radio<String>(
                 value: 'FEMALE',
                 groupValue: selectedGender,
                 onChanged: (v) => onGenderChanged(v),
               ),
-              const Text('여자'),
+              const Text('여자', style: TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w600)),
             ],
           ),
         ],
         if (error == 'age' || error == 'both') ...[
           const SizedBox(height: 16),
-          const Text('연령대를 선택해주세요', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+          const Text('연령대를 선택해주세요', style: TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,

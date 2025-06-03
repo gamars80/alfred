@@ -84,6 +84,7 @@ class ProductCard extends StatelessWidget {
       }
 
       if (imageUrls.isNotEmpty && context.mounted) {
+        debugPrint("imageUrls:::::::::::::::::::::::::$imageUrls");
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -272,7 +273,7 @@ class ProductCard extends StatelessWidget {
                           product.source == 'ZIGZAG' ||
                           product.source == 'ATTRANGS' ||
                           product.source == 'HOTPING' ||  product.source == '29CM' ||
-                          product.source == 'MUSINSA' || product.source == 'XEXYMIX')
+                          product.source == 'MUSINSA' || product.source == 'XEXYMIX' || product.source == 'QUEENIT')
                         Container(
                           height: 20,
                           margin: const EdgeInsets.only(top: 2),
