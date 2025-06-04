@@ -4,24 +4,27 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/auth_api.dart' as my_auth;
 
-class IdPasswordLoginScreen extends StatefulWidget {
-  const IdPasswordLoginScreen({Key? key}) : super(key: key);
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({Key? key}) : super(key: key);
 
   @override
-  State<IdPasswordLoginScreen> createState() => _IdPasswordLoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _idController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _passwordConfirmController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _obscurePasswordConfirm = true;
 
   @override
   void dispose() {
     _idController.dispose();
     _passwordController.dispose();
+    _passwordConfirmController.dispose();
     super.dispose();
   }
 
@@ -51,29 +54,37 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
     return null;
   }
 
-  Future<void> _login() async {
+  String? _validatePasswordConfirm(String? value) {
+    if (value == null || value.isEmpty) {
+      return '비밀번호 확인을 입력해주세요';
+    }
+    if (value != _passwordController.text) {
+      return '비밀번호가 일치하지 않습니다';
+    }
+    return null;
+  }
+
+  Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
-      final loginResp = await my_auth.AuthApi.loginWithIdPassword(
+      final signupResp = await my_auth.AuthApi.registerNormalUser(
         loginId: _idController.text,
         password: _passwordController.text,
       );
 
-      if (loginResp.needSignup) {
-        Fluttertoast.showToast(msg: '회원가입을 먼저 해주세요');
-        return;
-      }
-
-      if (loginResp.token != null) {
+      if (signupResp.token != null) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('accessToken', loginResp.token!);
-        if (mounted) context.go('/main');
+        await prefs.setString('accessToken', signupResp.token!);
+        if (mounted) {
+          Fluttertoast.showToast(msg: '회원가입이 완료되었습니다');
+          context.go('/main');
+        }
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: '로그인에 실패했습니다');
+      Fluttertoast.showToast(msg: '회원가입에 실패했습니다');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -206,7 +217,7 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
                                   color: goldColor.withOpacity(0.8),
                                   fontSize: 14,
                                 ),
-                                hintText: '영문, 숫자, 특수문자 포함 (10자 미만)',
+                                hintText: '영문, 숫자, 특수문자 포함 (15자 미만)',
                                 hintStyle: TextStyle(
                                   color: Colors.white.withOpacity(0.3),
                                   fontSize: 12,
@@ -225,6 +236,42 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
                               ),
                               obscureText: _obscurePassword,
                               validator: _validatePassword,
+                              textInputAction: TextInputAction.next,
+                            ),
+                          ),
+                          Divider(color: goldColor.withOpacity(0.3), height: 1),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 52,
+                            child: TextFormField(
+                              controller: _passwordConfirmController,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                floatingLabelBehavior: FloatingLabelBehavior.always,
+                                labelText: '비밀번호 확인',
+                                labelStyle: TextStyle(
+                                  color: goldColor.withOpacity(0.8),
+                                  fontSize: 14,
+                                ),
+                                hintText: '비밀번호를 한번 더 입력해주세요',
+                                hintStyle: TextStyle(
+                                  color: Colors.white.withOpacity(0.3),
+                                  fontSize: 12,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                isDense: true,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePasswordConfirm ? Icons.visibility_off : Icons.visibility,
+                                    color: goldColor,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => setState(() => _obscurePasswordConfirm = !_obscurePasswordConfirm),
+                                ),
+                              ),
+                              obscureText: _obscurePasswordConfirm,
+                              validator: _validatePasswordConfirm,
                               textInputAction: TextInputAction.done,
                             ),
                           ),
@@ -232,7 +279,7 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Login button with gold gradient
+                    // Signup button with gold gradient
                     Container(
                       height: 48,
                       decoration: BoxDecoration(
@@ -252,7 +299,7 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
                         ],
                       ),
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : _login,
+                        onPressed: _isLoading ? null : _signup,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
@@ -271,31 +318,13 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
                                 ),
                               )
                             : const Text(
-                                '로그인',
+                                '회원가입',
                                 style: TextStyle(
                                   fontSize: 15,
                                   color: Color(0xFF1A1A1A),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Signup button with subtle styling
-                    TextButton(
-                      onPressed: () {
-                        context.push('/signup');
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: goldColor.withOpacity(0.8),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                      ),
-                      child: const Text(
-                        '회원가입',
-                        style: TextStyle(
-                          fontSize: 13,
-                          decoration: TextDecoration.underline,
-                        ),
                       ),
                     ),
                   ],
@@ -309,7 +338,6 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
   }
 }
 
-// Custom painter for Alfred butler logo
 class ButlerLogoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/id_password_login_screen.dart';
+import '../features/auth/presentation/signup_screen.dart';
 import '../features/auth/presentation/main_tab.dart';
 import '../features/auth/presentation/splash_screen.dart';
 import '../features/auth/presentation/webview_screen.dart';
@@ -18,6 +19,7 @@ final router = GoRouter(
     GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
     GoRoute(path: '/id-password-login', builder: (context, state) => const IdPasswordLoginScreen()),
+    GoRoute(path: '/signup', builder: (context, state) => const SignupScreen()),
     GoRoute(path: '/home', builder: (context, state) => const MainTab()),
     GoRoute(
       path: '/main',
