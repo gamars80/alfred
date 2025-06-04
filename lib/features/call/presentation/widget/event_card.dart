@@ -74,9 +74,16 @@ class _EventCardState extends State<EventCard> {
       final response = await DioClient.dio.post(apiPath);
 
       if (response.statusCode == 200) {
-        final String url = _event.source == '바비톡'
-            ? 'https://web.babitalk.com/events/${_event.id}'
-            : 'https://www.gangnamunni.com/events/${_event.id}';
+        String url;
+        debugPrint('source::::::::::::::::::::::${_event.source}');
+        debugPrint('detailLink::::::::::::::::::::::${_event.detailLink}');
+        if (_event.source == '여신티켓') {
+          url = _event.detailLink ?? 'https://www.gangnamunni.com/events/${_event.id}';
+        } else if (_event.source == '바비톡') {
+          url = 'https://web.babitalk.com/events/${_event.id}';
+        } else {
+          url = 'https://www.gangnamunni.com/events/${_event.id}';
+        }
 
         if (mounted) {
           Navigator.push(
@@ -158,15 +165,15 @@ class _EventCardState extends State<EventCard> {
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
-                        filterQuality: FilterQuality.medium,
-                        fadeInDuration: const Duration(milliseconds: 300),
+                        filterQuality: FilterQuality.low,
+                        fadeInDuration: const Duration(milliseconds: 0),
+                        placeholderFadeInDuration: const Duration(milliseconds: 0),
                         memCacheHeight: (110 * MediaQuery.of(context).devicePixelRatio).toInt(),
                         memCacheWidth: (MediaQuery.of(context).size.width * 0.35 * MediaQuery.of(context).devicePixelRatio).toInt(),
                         maxHeightDiskCache: (110 * 2).toInt(),
                         maxWidthDiskCache: (MediaQuery.of(context).size.width * 0.35 * 2).toInt(),
                         placeholder: (context, url) => Container(
-                          color: Colors.grey[200],
-                          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          color: const Color(0xFFEEEEEE),
                         ),
                         errorWidget: (context, url, error) => Container(
                           color: Colors.grey[400],
@@ -254,14 +261,16 @@ class _EventCardState extends State<EventCard> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _buildPriceSection(),
-                              const SizedBox(height: 2),
-                              _buildRatingSection(),
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildPriceSection(),
+                                const SizedBox(height: 2),
+                                _buildRatingSection(),
+                              ],
+                            ),
                           ),
                           IconButton(
                             icon: Icon(
@@ -295,18 +304,22 @@ class _EventCardState extends State<EventCard> {
         if (_event.discountRate > 0)
           Text(
             '${_event.discountRate}%',
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.orange),
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange),
           ),
         if (_event.discountRate > 0) const SizedBox(width: 4),
         Text(
           '${formatter.format(_event.discountedPrice)}원',
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black),
+          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black),
         ),
       ],
     );
   }
 
   Widget _buildRatingSection() {
+    if (_event.rating == null || _event.rating == 0 || _event.ratingCount == 0) {
+      return const SizedBox.shrink();
+    }
+    
     final ratingStr = (_event.rating ?? 0.0).toStringAsFixed(1);
     return Row(
       mainAxisSize: MainAxisSize.min,

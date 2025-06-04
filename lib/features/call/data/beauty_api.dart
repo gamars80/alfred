@@ -66,6 +66,7 @@ class BeautyApi {
       }).toList();
 
       final events = eventsJson.map((e) {
+        debugPrint('🎯 Raw event data: $e');
         return Event.fromJson(e as Map<String, dynamic>);
       }).toList();
 
