@@ -1,4 +1,5 @@
 import 'hostpital.dart';
+import 'package:flutter/foundation.dart';
 
 class Event {
   final int id;
@@ -13,6 +14,7 @@ class Event {
   final int ratingCount;
   final String detailImage;
   final bool liked;
+  final String? detailLink;
 
   Event({
     required this.id,
@@ -27,9 +29,14 @@ class Event {
     required this.ratingCount,
     required this.detailImage,
     required this.liked,
+    this.detailLink,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
+    debugPrint('Event.fromJson raw data: $json');
+    final detailLink = json['detailLink']?.toString() ?? json['detail_link']?.toString();
+    debugPrint('Parsed detailLink: $detailLink');
+    
     return Event(
       id: json['id'],
       title: json['title'],
@@ -42,7 +49,8 @@ class Event {
       rating: double.tryParse(json['rating']?.toString() ?? ''),
       ratingCount: json['ratingCount'],
       detailImage: json['detailImage'] ?? '',
-      liked: json['liked'] ?? false, // 기본 false
+      liked: json['liked'] ?? false,
+      detailLink: detailLink,
     );
   }
 
@@ -60,6 +68,7 @@ class Event {
       ratingCount: ratingCount,
       detailImage: detailImage,
       liked: liked ?? this.liked,
+      detailLink: detailLink,
     );
   }
 
