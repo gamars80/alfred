@@ -13,6 +13,18 @@ class AuthApi {
     return LoginResponse.fromJson(response.data);
   }
 
+  static Future<LoginResponse> loginWithIdPassword({
+    required String loginId,
+    required String password,
+  }) async {
+    final response = await _dio.post('/auth/login', data: {
+      'loginId': loginId,
+      'password': password,
+      'loginType': 'NORMAL',
+    });
+    return LoginResponse.fromJson(response.data);
+  }
+
   static Future<SignupResponse> registerKakaoUser({
     required String loginId,
     required String email,
@@ -25,6 +37,21 @@ class AuthApi {
       'name': name,
       'phoneNumber': phoneNumber,
       'joinType': 'KAKAO',
+    });
+    return SignupResponse.fromJson(response.data);
+  }
+
+  static Future<SignupResponse> registerNormalUser({
+    required String loginId,
+    required String password,
+  }) async {
+    final response = await _dio.post('/auth/signup', data: {
+      'loginId': loginId,
+      'password': password,
+      'email': '',
+      'name': '',
+      'phoneNumber': '',
+      'joinType': 'NORMAL',
     });
     return SignupResponse.fromJson(response.data);
   }
