@@ -317,7 +317,20 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 16),
+                    // ID/Password login button
+                    TextButton(
+                      onPressed: () => context.push('/id-password-login'),
+                      child: Text(
+                        '아이디/비밀번호로 로그인',
+                        style: TextStyle(
+                          color: const Color(0xFFD4AF37).withOpacity(0.8),
+                          fontSize: 14,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     
                     // Privacy notice with gold accent
                     Row(
