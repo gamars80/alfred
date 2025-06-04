@@ -40,4 +40,19 @@ class AuthApi {
     });
     return SignupResponse.fromJson(response.data);
   }
+
+  static Future<SignupResponse> registerNormalUser({
+    required String loginId,
+    required String password,
+  }) async {
+    final response = await _dio.post('/auth/signup', data: {
+      'loginId': loginId,
+      'password': password,
+      'email': '',
+      'name': '',
+      'phoneNumber': '',
+      'joinType': 'NORMAL',
+    });
+    return SignupResponse.fromJson(response.data);
+  }
 }
