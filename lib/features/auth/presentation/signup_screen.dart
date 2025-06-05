@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import '../data/auth_api.dart' as my_auth;
 
 class SignupScreen extends StatefulWidget {
@@ -19,6 +20,8 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscurePasswordConfirm = true;
+  bool _privacyPolicyChecked = true;
+  bool _termsOfServiceChecked = true;
 
   @override
   void dispose() {
@@ -64,8 +67,14 @@ class _SignupScreenState extends State<SignupScreen> {
     return null;
   }
 
+
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    if (!_privacyPolicyChecked || !_termsOfServiceChecked) {
+      Fluttertoast.showToast(msg: '개인정보 처리방침과 이용약관에 동의해주세요');
+      return;
+    }
 
     setState(() => _isLoading = true);
 
@@ -88,6 +97,28 @@ class _SignupScreenState extends State<SignupScreen> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  void _openWebView(String url, String title) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: Text(title),
+            backgroundColor: const Color(0xFF0A0A0A),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: WebViewWidget(
+            controller: WebViewController()
+              ..setJavaScriptMode(JavaScriptMode.unrestricted)
+              ..loadRequest(Uri.parse(url)),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -274,6 +305,63 @@ class _SignupScreenState extends State<SignupScreen> {
                               validator: _validatePasswordConfirm,
                               textInputAction: TextInputAction.done,
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Privacy Policy and Terms of Service checkboxes
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1A1A),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: goldColor.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          CheckboxListTile(
+                            value: _privacyPolicyChecked,
+                            onChanged: (value) => setState(() => _privacyPolicyChecked = value ?? true),
+                            title: GestureDetector(
+                              onTap: () => _openWebView(
+                                'https://halved-molybdenum-484.notion.site/1dbf9670410180c0b7c6f9baf0204286',
+                                '개인정보 처리방침',
+                              ),
+                              child: Text(
+                                '개인정보 처리방침 동의',
+                                style: TextStyle(
+                                  color: goldColor,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                            checkColor: const Color(0xFF1A1A1A),
+                            activeColor: goldColor,
+                            side: BorderSide(color: goldColor),
+                          ),
+                          Divider(color: goldColor.withOpacity(0.3), height: 1),
+                          CheckboxListTile(
+                            value: _termsOfServiceChecked,
+                            onChanged: (value) => setState(() => _termsOfServiceChecked = value ?? true),
+                            title: GestureDetector(
+                              onTap: () => _openWebView(
+                                'https://halved-molybdenum-484.notion.site/1dbf9670410180b2a3f7ca3670ddb26d',
+                                '이용약관',
+                              ),
+                              child: Text(
+                                '이용약관 동의',
+                                style: TextStyle(
+                                  color: goldColor,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                            checkColor: const Color(0xFF1A1A1A),
+                            activeColor: goldColor,
+                            side: BorderSide(color: goldColor),
                           ),
                         ],
                       ),
