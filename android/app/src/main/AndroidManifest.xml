@@ -39,7 +39,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data
-                    android:scheme="kakao22e6b88148da0c4cb1293cbe664cecc4"
+                    android:scheme="kakao636c3e43525e486f2e79eae490764c37"
                     android:host="oauth"/>
             </intent-filter>
             
@@ -52,7 +52,7 @@
 
         <meta-data
             android:name="com.kakao.sdk.AppKey"
-            android:value="22e6b88148da0c4cb1293cbe664cecc4" />
+            android:value="636c3e43525e486f2e79eae490764c37" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

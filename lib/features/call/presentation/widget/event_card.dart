@@ -112,25 +112,55 @@ class _EventCardState extends State<EventCard> {
 
   Future<void> _openDetailImage(BuildContext context) async {
     try {
-      final response = await DioClient.dio.get('/api/events/${_event.id}/detail-image');
-      final List<String> imageUrls = List<String>.from(response.data ?? []);
+      if (_event.source == '여신티켓') {
+        // Extract ref parameter from detailLink
+        String? ref;
+        if (_event.detailLink != null) {
+          final uri = Uri.parse(_event.detailLink!);
+          ref = uri.queryParameters['ref'];
+        }
 
-      if (imageUrls.isNotEmpty) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => MultiImageWebViewScreen(imageUrls: imageUrls),
-          ),
+        final response = await DioClient.dio.get(
+          '/api/events/${_event.id}/yeoshin-detail-image',
+          queryParameters: {'ref': ref},
         );
+        final List<String> imageUrls = List<String>.from(response.data ?? []);
+
+        if (imageUrls.isNotEmpty && mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => MultiImageWebViewScreen(imageUrls: imageUrls),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('이미지를 불러오지 못했습니다.')),
+          );
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이미지를 불러오지 못했습니다.')),
-        );
+        final response = await DioClient.dio.get('/api/events/${_event.id}/detail-image');
+        final List<String> imageUrls = List<String>.from(response.data ?? []);
+
+        if (imageUrls.isNotEmpty && mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => MultiImageWebViewScreen(imageUrls: imageUrls),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('이미지를 불러오지 못했습니다.')),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('서버 오류가 발생했습니다.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('서버 오류가 발생했습니다.')),
+        );
+      }
     }
   }
 
