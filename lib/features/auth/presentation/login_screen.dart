@@ -14,6 +14,7 @@ class LoginScreen extends StatelessWidget {
 
   /// Navigate to WebView with url and title
   void _openWebView(BuildContext context, String url, String title) {
+    debugPrint('url:::::::::::::::::::$url');
     final uriString = Uri(
       path: '/webview',
       queryParameters: {'url': url, 'title': title},
@@ -24,17 +25,17 @@ class LoginScreen extends StatelessWidget {
   Future<void> _loginWithKakao(BuildContext context) async {
     try {
       // 실제 연동 시 주석 해제
-      /*
-      bool installed = await isKakaoTalkInstalled();
-      OAuthToken token = installed
-          ? await UserApi.instance.loginWithKakaoTalk()
-          : await UserApi.instance.loginWithKakaoAccount();
-      final user = await UserApi.instance.me();
-      final loginId = user.id.toString();
-      final email = user.kakaoAccount?.email ?? '';
-      final name = user.kakaoAccount?.profile?.nickname ?? '';
-      final phoneNumber = user.kakaoAccount?.phoneNumber ?? '';
-      */
+
+      // bool installed = await isKakaoTalkInstalled();
+      // OAuthToken token = installed
+      //     ? await UserApi.instance.loginWithKakaoTalk()
+      //     : await UserApi.instance.loginWithKakaoAccount();
+      // final user = await UserApi.instance.me();
+      // final loginId = user.id.toString();
+      // final email = user.kakaoAccount?.email ?? '';
+      // final name = user.kakaoAccount?.profile?.nickname ?? '';
+      // final phoneNumber = user.kakaoAccount?.phoneNumber ?? '';
+
       const loginId = '4008586108';
       const email = '';
       const name = '';
