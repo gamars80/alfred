@@ -20,7 +20,7 @@ class MyPageScreen extends StatelessWidget {
             title: const Text('명령권 내역', style: TextStyle(color: Colors.black)),
             trailing: const Icon(Icons.chevron_right, color: Colors.black54),
             onTap: () {
-              // TODO: Implement order history navigation
+              context.push('/mypage/command-authority-history');
             },
           ),
           const Divider(height: 1, color: Colors.black12),
