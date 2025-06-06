@@ -12,6 +12,7 @@ import '../features/call/presentation/call_screen.dart';
 import '../features/hospital/presentation/hospital_detail_screen.dart';
 import '../features/mypage/presentation/mypage_screen.dart';
 import '../features/mypage/presentation/settings_screen.dart';
+import '../features/mypage/presentation/command_authority_history_screen.dart';
 import '../main.dart';
 
 final router = GoRouter(
@@ -51,7 +52,19 @@ final router = GoRouter(
         );
       },
     ),
-    GoRoute(path: '/mypage', builder: (context, state) => const MyPageScreen()),
-    GoRoute(path: '/mypage/settings', builder: (context, state) => SettingsScreen()),
+    GoRoute(
+      path: '/mypage',
+      builder: (context, state) => const MyPageScreen(),
+      routes: [
+        GoRoute(
+          path: 'settings',
+          builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: 'command-authority-history',
+          builder: (context, state) => const CommandAuthorityHistoryScreen(),
+        ),
+      ],
+    ),
   ],
 );

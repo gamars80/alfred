@@ -26,20 +26,20 @@ class LoginScreen extends StatelessWidget {
     try {
       // 실제 연동 시 주석 해제
 
-      // bool installed = await isKakaoTalkInstalled();
-      // OAuthToken token = installed
-      //     ? await UserApi.instance.loginWithKakaoTalk()
-      //     : await UserApi.instance.loginWithKakaoAccount();
-      // final user = await UserApi.instance.me();
-      // final loginId = user.id.toString();
-      // final email = user.kakaoAccount?.email ?? '';
-      // final name = user.kakaoAccount?.profile?.nickname ?? '';
-      // final phoneNumber = user.kakaoAccount?.phoneNumber ?? '';
+      bool installed = await isKakaoTalkInstalled();
+      OAuthToken token = installed
+          ? await UserApi.instance.loginWithKakaoTalk()
+          : await UserApi.instance.loginWithKakaoAccount();
+      final user = await UserApi.instance.me();
+      final loginId = user.id.toString();
+      final email = user.kakaoAccount?.email ?? '';
+      final name = user.kakaoAccount?.profile?.nickname ?? '';
+      final phoneNumber = user.kakaoAccount?.phoneNumber ?? '';
 
-      const loginId = '4008586108';
-      const email = '';
-      const name = '';
-      const phoneNumber = '';
+      // const loginId = '4008586108';
+      // const email = '';
+      // const name = '';
+      // const phoneNumber = '';
 
       // 1) 토큰 여부 확인용 로그인 호출
       final loginResp = await my_auth.AuthApi.loginWithKakaoId(loginId);
