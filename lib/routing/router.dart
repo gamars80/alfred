@@ -52,6 +52,6 @@ final router = GoRouter(
       },
     ),
     GoRoute(path: '/mypage', builder: (context, state) => const MyPageScreen()),
-    GoRoute(path: '/mypage/settings', builder: (context, state) => const SettingsScreen()),
+    GoRoute(path: '/mypage/settings', builder: (context, state) => SettingsScreen()),
   ],
 );
