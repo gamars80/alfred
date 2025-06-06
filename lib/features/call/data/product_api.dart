@@ -60,12 +60,12 @@ class ProductApi {
         return MapEntry(category, products);
       });
 
+
       return RecommendedProductsResult(id: id, createdAt: createdAt, items: itemsMap);
     } on DioException catch (e) {
       debugPrint(
         '❌ [DioException] type=${e.type}, message=${e.message}, error=${e.error}',
       );
-      debugPrint('   response: ${e.response}');
 
       final data = e.response?.data;
       // Choice Type 예외 처리
