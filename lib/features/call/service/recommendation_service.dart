@@ -91,6 +91,8 @@ class RecommendationService {
         onError('itemType');
       } else if (msg.contains('Already Recommend')) {
         onError('alreadyRecommend');
+      } else if (msg.contains('Not enough Command')) {
+        onError('not_enough_command');
       } else {
         onError('unknown');
       }
@@ -98,3 +100,4 @@ class RecommendationService {
     }
   }
 }
+

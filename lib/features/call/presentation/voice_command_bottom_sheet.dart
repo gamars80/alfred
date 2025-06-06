@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../model/age_range.dart';
+import 'package:dio/dio.dart';
+import '../../auth/common/dio/dio_client.dart';
 
 class VoiceCommandBottomSheet {
+  static final Dio _dio = DioClient.dio;
+
   static Future<String?> show({
     required BuildContext context,
     required String selectedCategory,
@@ -23,6 +27,7 @@ class VoiceCommandBottomSheet {
     String? localAge = selectedAge;
     String localCategory = selectedCategory;
     bool modalIsListening = false;
+    int? remainingCommands;
 
     return showModalBottomSheet<String>(
       context: context,
@@ -30,6 +35,28 @@ class VoiceCommandBottomSheet {
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
+          // 명령권 조회 API 호출
+          Future<void> fetchRemainingCommands() async {
+            try {
+              final response = await _dio.get('/api/self/command-authority');
+              
+              if (response.statusCode == 200) {
+                final data = response.data;
+                remainingCommands = data['remainingCount'] as int;
+                setModalState(() {});
+              }
+            } on DioException catch (e) {
+              debugPrint('Error fetching remaining commands: ${e.message}');
+            } catch (e) {
+              debugPrint('Error fetching remaining commands: $e');
+            }
+          }
+
+          // 컴포넌트가 처음 빌드될 때 명령권 조회
+          if (remainingCommands == null) {
+            fetchRemainingCommands();
+          }
+
           // ↓ 네이티브 음성인식을 호출하는 부분
           Future<void> handleMic() async {
             // 이미 MainActivity에서 권한을 요청했기 때문에, 여기서는
@@ -72,11 +99,12 @@ class VoiceCommandBottomSheet {
                 children: [
                   _buildCategorySelector(
                     localCategory,
-                        (v) {
+                    (v) {
                       localCategory = v;
                       onCategoryChanged(v);
                       setModalState(() {});
                     },
+                    remainingCommands,
                   ),
                   const SizedBox(height: 16),
                   if (errorMessage == null)
@@ -100,12 +128,12 @@ class VoiceCommandBottomSheet {
                       errorMessage,
                       localGender,
                       localAge,
-                          (v) {
+                      (v) {
                         localGender = v;
                         onGenderChanged(v);
                         setModalState(() {});
                       },
-                          (v) {
+                      (v) {
                         localAge = v;
                         onAgeChanged(v);
                         setModalState(() {});
@@ -122,9 +150,11 @@ class VoiceCommandBottomSheet {
     );
   }
 
+
   static Widget _buildCategorySelector(
       String selected,
       ValueChanged<String> onChanged,
+      int? remainingCommands,
       ) {
     return Row(
       children: [
@@ -142,6 +172,16 @@ class VoiceCommandBottomSheet {
             if (v != null) onChanged(v);
           },
         ),
+        const Spacer(),
+        if (remainingCommands != null)
+          Text(
+            '명령권: ${remainingCommands}회',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
       ],
     );
   }
