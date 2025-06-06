@@ -173,7 +173,7 @@ class _CallScreenState extends State<CallScreen> {
         _commandController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('어떤 물건인지 더 구체적으로 말씀해 주세요! 예: “여성용 여름 반팔 티셔츠” 같이요 😊'),
+            content: Text('어떤 물건인지 더 구체적으로 말씀해 주세요! 예: "여성용 여름 반팔 티셔츠" 같이요 😊'),
             behavior: SnackBarBehavior.floating,
             duration: Duration(seconds: 5),
           ),
@@ -211,7 +211,20 @@ class _CallScreenState extends State<CallScreen> {
         break;
       }
 
-
+      if (_errorMessage == 'not_enough_command') {
+        setState(() {
+          _errorMessage = null;
+        });
+        _commandController.clear();
+        
+        Fluttertoast.showToast(
+          msg: '명령권이 존재하지 않습니다. 내일 다시 시도해주세요',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+        );
+        
+        break;
+      }
 
       if (success) break;
 
