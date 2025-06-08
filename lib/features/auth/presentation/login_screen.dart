@@ -1,5 +1,6 @@
 import 'package:alfred_clean/features/auth/presentation/webview_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
@@ -9,8 +10,16 @@ import '../data/auth_api.dart' as my_auth;
 import '../model/login_response.dart';
 import '../model/signup_response.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  bool _isProcessingCode = false;
+  bool _isSignedUp = false;  // Add flag to track signup status
 
   /// Navigate to WebView with url and title
   void _openWebView(BuildContext context, String url, String title) {
@@ -22,50 +31,74 @@ class LoginScreen extends StatelessWidget {
     context.push(uriString);
   }
 
-  Future<void> _loginWithKakao(BuildContext context) async {
+  Future<void> _handleKakaoLogin(BuildContext context, String loginId, String email, String name, String phoneNumber) async {
     try {
-      // 실제 연동 시 주석 해제
-
-      bool installed = await isKakaoTalkInstalled();
-      OAuthToken token = installed
-          ? await UserApi.instance.loginWithKakaoTalk()
-          : await UserApi.instance.loginWithKakaoAccount();
-      final user = await UserApi.instance.me();
-      final loginId = user.id.toString();
-      final email = user.kakaoAccount?.email ?? '';
-      final name = user.kakaoAccount?.profile?.nickname ?? '';
-      final phoneNumber = user.kakaoAccount?.phoneNumber ?? '';
-
-      // const loginId = '4008586108';
-      // const email = '';
-      // const name = '';
-      // const phoneNumber = '';
-
-      // 1) 토큰 여부 확인용 로그인 호출
       final loginResp = await my_auth.AuthApi.loginWithKakaoId(loginId);
 
       if (loginResp.needSignup) {
-        // 2) 신규 회원: 약관 동의 모달
         final agreed = await _showAgreementBottomSheet(context);
         if (!agreed) return;
 
-        // 3) 회원가입 API 호출
         final signupResp = await my_auth.AuthApi.registerKakaoUser(
           loginId: loginId,
           email: email,
           name: name,
           phoneNumber: phoneNumber,
         );
-        // 4) 토큰 저장 및 집사호출 메뉴로 이동
-        await _saveTokenAndNavigate(context, signupResp.token, route: '/main');
+
+        if (signupResp.token == null || signupResp.token!.isEmpty) {
+          _showError(context, '회원가입 후 토큰 발급에 실패했습니다');
+          return;
+        }
+
+        // 상태 관리 필요 없으면 생략 가능
+        // setState(() => _isSignedUp = true);
+
+        await _saveTokenAndNavigate(context, signupResp.token!, route: '/main');
       } else {
-        // 기존 회원: 바로 토큰 저장 및 메인으로 이동
         await _saveTokenAndNavigate(context, loginResp.token, route: '/main');
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint("카카오 로그인 핸들링 실패: $e\n$stack");
       _showError(context, '로그인에 실패했습니다');
     }
   }
+
+  Future<void> _loginWithKakao(BuildContext context) async {
+    try {
+      if (await isKakaoTalkInstalled()) {
+        try {
+          // 1. 카카오톡 앱 로그인 시도
+          final token = await UserApi.instance.loginWithKakaoTalk();
+          await _afterLogin(context, token);
+          return;
+        } catch (e) {
+          // 카카오톡 로그인 실패 → fallback 로그
+          debugPrint("카카오톡 로그인 실패, fallback으로 전환: $e");
+          // e.code == NotSupportError 등일 수 있음
+        }
+      }
+
+      // 2. fallback: 카카오 계정 로그인 (웹뷰)
+      final token = await UserApi.instance.loginWithKakaoAccount();
+      await _afterLogin(context, token);
+    } catch (e) {
+      debugPrint("카카오 로그인 실패: $e");
+      _showError(context, '카카오 로그인에 실패했습니다');
+    }
+  }
+
+  Future<void> _afterLogin(BuildContext context, OAuthToken token) async {
+    await TokenManagerProvider.instance.manager.setToken(token);
+    final user = await UserApi.instance.me();
+    final loginId = user.id.toString();
+    final email = user.kakaoAccount?.email ?? '';
+    final name = user.kakaoAccount?.profile?.nickname ?? '';
+    final phoneNumber = user.kakaoAccount?.phoneNumber ?? '';
+
+    await _handleKakaoLogin(context, loginId, email, name, phoneNumber);
+  }
+
 
   Future<void> _saveTokenAndNavigate(
       BuildContext context,
@@ -154,6 +187,62 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check for kakao oauth code in the route
+    final code = GoRouterState.of(context).uri.queryParameters['code'];
+    if (code != null && !_isProcessingCode) {
+      _isProcessingCode = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        try {
+          debugPrint('Handling kakao oauth code: $code');
+          
+          final prefs = await SharedPreferences.getInstance();
+          final codeVerifier = prefs.getString('kakao_code_verifier');
+          
+          if (codeVerifier == null) {
+            debugPrint('Code verifier not found, starting new login flow');
+            await _loginWithKakao(context);
+            return;
+          }
+
+          debugPrint('Using code verifier: $codeVerifier');
+          
+          final token = await AuthApi.instance.issueAccessToken(
+            authCode: code,
+            codeVerifier: codeVerifier,
+            redirectUri: KakaoSdk.redirectUri,
+          );
+          
+          debugPrint('Got kakao token: ${token.accessToken}');
+          
+          await TokenManagerProvider.instance.manager.setToken(token);
+          
+          final user = await UserApi.instance.me();
+          debugPrint('Got kakao user info: ${user.id}');
+          
+          final loginId = user.id.toString();
+          final email = user.kakaoAccount?.email ?? '';
+          final name = user.kakaoAccount?.profile?.nickname ?? '';
+          final phoneNumber = user.kakaoAccount?.phoneNumber ?? '';
+
+          await _handleKakaoLogin(context, loginId, email, name, phoneNumber);
+        } catch (e, stack) {
+          debugPrint('Kakao login error: $e\n$stack');
+          if (!_isSignedUp) {
+            _showError(context, '카카오 로그인에 실패했습니다');
+            if (context.mounted) {
+              context.go('/login');
+            }
+          }
+        } finally {
+          if (mounted) {
+            setState(() {
+              _isProcessingCode = false;
+            });
+          }
+        }
+      });
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A), // Deep black
       body: Container(
@@ -369,7 +458,9 @@ class LoginScreen extends StatelessWidget {
   }
 
   void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 }
 

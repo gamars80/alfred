@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/id_password_login_screen.dart';
@@ -18,6 +19,16 @@ import '../main.dart';
 final router = GoRouter(
   navigatorKey: navigatorKey,
   initialLocation: '/',
+  redirect: (context, state) async {
+    // Handle kakao oauth redirect
+    if (state.uri.toString().startsWith('kakao')) {
+      final code = state.uri.queryParameters['code'];
+      if (code != null) {
+        return '/login?code=$code';
+      }
+    }
+    return null;
+  },
   routes: [
     GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),

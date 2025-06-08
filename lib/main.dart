@@ -14,8 +14,11 @@ void main() async {
   await MobileAds.instance.initialize();
 
   // ✅ Kakao SDK 초기화
-  KakaoSdk.init(nativeAppKey: '636c3e43525e486f2e79eae490764c37');
-
+  KakaoSdk.init(
+    nativeAppKey: '636c3e43525e486f2e79eae490764c37',
+    // javaScriptAppKey: '...사용 중이면 설정...',
+    loggingEnabled: true,
+  );
   // ✅ .env 환경변수 로드
   await dotenv.load();
 
