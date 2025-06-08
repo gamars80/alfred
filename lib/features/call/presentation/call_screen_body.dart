@@ -14,6 +14,7 @@ import '../model/product.dart';
 import '../model/recent_beauty_command.dart';
 import '../model/youtube_video.dart';
 import '../data/product_api.dart';
+import 'widget/food_products_grid.dart';
 
 // 디자인 시스템 상수
 const kPrimaryColor = Color(0xFF6200EE);
@@ -30,6 +31,7 @@ class CallScreenBody extends StatefulWidget {
   final List<Event> events;
   final List<Hospital> hospitals;
   final List<YouTubeVideo> youtubeVideos;
+  final String selectedCategory;
 
   const CallScreenBody({
     super.key,
@@ -40,6 +42,7 @@ class CallScreenBody extends StatefulWidget {
     required this.events,
     required this.hospitals,
     required this.youtubeVideos,
+    required this.selectedCategory,
   });
 
   @override
@@ -128,13 +131,13 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
       child: ListView(
         controller: _scrollController,
         padding: const EdgeInsets.symmetric(vertical: kSpacing / 2),
-        children: _buildSections(),
+        children: _buildSections(context),
       ),
     );
   }
 
-  List<Widget> _buildSections() {
-    final List<Widget> sections = [];
+  List<Widget> _buildSections(BuildContext context) {
+    final sections = <Widget>[];
 
     // Debug prints to check the values
     debugPrint('Community posts: ${widget.communityPosts.length}');
@@ -151,7 +154,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
             widget.youtubeVideos.isNotEmpty ||
             widget.categorizedProducts.isNotEmpty;
 
-    // 다른 추천 컨텐츠가 없을 때만 “최신 패션/뷰티 명령” 섹션 표시
+    // 다른 추천 컨텐츠가 없을 때만 "최신 패션/뷰티 명령" 섹션 표시
     if (!hasRecommendedContent && (_recentCommands.isNotEmpty || _recentBeautyCommands.isNotEmpty)) {
       sections.add(
         Column(
@@ -273,42 +276,42 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
       );
     }
 
-    // 제품 섹션
+    // 쇼핑 상품 섹션
     if (widget.categorizedProducts.isNotEmpty) {
-      final nonEmptyProductEntries = widget.categorizedProducts.entries
-          .where((e) => e.value.isNotEmpty);
-
-      sections.addAll(
-        nonEmptyProductEntries.map((entry) {
-          return _buildSection(
-            title: entry.key,
+      if (widget.selectedCategory == '음식/식자재') {
+        sections.add(
+          SizedBox(
+            height: MediaQuery.of(context).size.height - 200, // 적절한 높이 설정
+            child: FoodProductsGrid(products: widget.categorizedProducts),
+          ),
+        );
+      } else {
+        sections.add(
+          _buildSection(
+            title: '추천 상품',
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: kSpacing),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio:
-                    MediaQuery.of(context).size.width <= 320 ? 0.55 : 0.6,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                  ),
-                  itemCount: entry.value.length,
-                  itemBuilder: (context, index) {
-                    return ProductCard(
-                      id: widget.id,
-                      product: entry.value[index],
-                      historyCreatedAt: widget.createdAt,
-                    );
-                  },
-                ),
-              ),
+              _buildSourceFilter(),
+              const SizedBox(height: kSpacing / 2),
+              ...widget.categorizedProducts[selectedSource]
+                  ?.map((p) => Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: kSpacing,
+                          vertical: kSpacing / 2,
+                        ),
+                        child: _buildElevatedCard(
+                          child: ProductCard(
+                            product: p,
+                            historyCreatedAt: widget.createdAt,
+                            id: widget.id,
+                          ),
+                        ),
+                      ))
+                  .toList() ??
+                  [],
             ],
-          );
-        }).toList(),
-      );
+          ),
+        );
+      }
     }
 
     // 아무런 추천 컨텐츠가 없으면 안내 문구 노출
@@ -334,7 +337,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   }
 
   Widget _buildSection({required String title, required List<Widget> children}) {
-    // “최신 패션 명령” 또는 “최신 뷰티 명령”인 경우 단순 텍스트로 표시
+    // "최신 패션 명령" 또는 "최신 뷰티 명령"인 경우 단순 텍스트로 표시
     final bool isSimpleCommand =
         title == '최신 패션 명령' || title == '최신 뷰티 명령';
 
