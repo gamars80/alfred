@@ -63,6 +63,7 @@ class _CallScreenState extends State<CallScreen> {
               events: _events,
               hospitals: _hospitals,
               youtubeVideos: _youtubeVideos,
+              selectedCategory: _selectedCategory,
             ),
           ],
         ),

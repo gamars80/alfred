@@ -4,11 +4,13 @@ import 'package:flutter/cupertino.dart';
 
 import '../data/beauty_api.dart';
 import '../data/product_api.dart';
+import '../data/food_api.dart';
 import '../model/community_post.dart';
 import '../model/event.dart';
 import '../model/hostpital.dart';
 import '../model/product.dart';
 import '../model/youtube_video.dart';
+import '../model/food_recommendation.dart';
 
 class RecommendationResult {
   final int id;
@@ -18,6 +20,11 @@ class RecommendationResult {
   final List<Event> events;
   final List<Hospital> hospitals;
   final List<YouTubeVideo> youtubeVideos;
+  final List<String>? ingredients;
+  final String? suggested;
+  final bool? isSeasonal;
+  final String? recipeSummary;
+  final List<String>? requiredIngredients;
 
   RecommendationResult({
     this.id = 0,
@@ -27,6 +34,11 @@ class RecommendationResult {
     this.events = const [],
     this.hospitals = const [],
     this.youtubeVideos = const [],
+    this.ingredients,
+    this.suggested,
+    this.isSeasonal,
+    this.recipeSummary,
+    this.requiredIngredients,
   });
 }
 
@@ -51,9 +63,22 @@ class RecommendationService {
     required void Function(List<String> itemTypes) onChoiceType,  // Choice Type callback
   }) async {
     try {
-      if (selectedCategory == '쇼핑') {
+      if (selectedCategory == '음식/식자재') {
+        final api = FoodApi();
+        final result = await api.fetchFoodRecommendation(query);
+        onSuccess(RecommendationResult(
+          id: result.id,
+          createdAt: result.createdAt,
+          products: result.items,
+          ingredients: result.ingredients,
+          suggested: result.suggested,
+          isSeasonal: result.isSeasonal,
+          recipeSummary: result.recipeSummary,
+          requiredIngredients: result.requiredIngredients,
+        ));
+      } else if (selectedCategory == '쇼핑') {
         final api = ProductApi();
-        final result = await api.fetchRecommendedProducts(query); // RecommendedProductsResult
+        final result = await api.fetchRecommendedProducts(query);
         debugPrint("result id::::::::::::::::::::::::${result.id}");
         debugPrint("result id::::::::::::::::::::::::${result.id}");
         debugPrint("result id::::::::::::::::::::::::${result.id}");

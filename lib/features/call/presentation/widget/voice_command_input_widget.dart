@@ -27,11 +27,15 @@ class _VoiceCommandInputWidgetState extends State<VoiceCommandInputWidget> {
   Widget build(BuildContext context) {
     final promptText = widget.category == '시술/성형'
         ? '어떤 고민이 있으신가요?'
-        : '어떤 상품을 찾아드릴까요?';
+        : widget.category == '음식/식자재'
+            ? '먹고 싶은 것을 말씀하세요'
+            : '어떤 상품을 찾아드릴까요?';
 
     final hintText = widget.category == '시술/성형'
         ? '코가 낮아서 이참에 수술을 해볼까 생각중이야'
-        : '예: 20대 여자친구에게 선물할 원피스 추천해줘';
+        : widget.category == '음식/식자재'
+            ? '김치찌개가 먹고싶어'
+            : '예: 20대 여자친구에게 선물할 원피스 추천해줘';
 
     return Container(
       decoration: const BoxDecoration(
