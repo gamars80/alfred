@@ -32,6 +32,7 @@ class CallScreenBody extends StatefulWidget {
   final List<Hospital> hospitals;
   final List<YouTubeVideo> youtubeVideos;
   final String selectedCategory;
+  final String? recipeSummary;
 
   const CallScreenBody({
     super.key,
@@ -43,6 +44,7 @@ class CallScreenBody extends StatefulWidget {
     required this.hospitals,
     required this.youtubeVideos,
     required this.selectedCategory,
+    this.recipeSummary,
   });
 
   @override
@@ -85,6 +87,25 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
     });
     _loadRecentCommands();
     _loadRecentBeautyCommands();
+  }
+
+  @override
+  void didUpdateWidget(CallScreenBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedCategory == '쇼핑' && widget.categorizedProducts.isNotEmpty) {
+      // 쇼핑 카테고리이고 상품이 있을 때, 첫 번째 available source를 selectedSource로 설정
+      final sources = widget.categorizedProducts.keys.toList();
+      if (sources.isNotEmpty && selectedSource != sources[0]) {
+        setState(() {
+          selectedSource = sources[0];
+        });
+      }
+    } else if (widget.selectedCategory == '시술/성형' && selectedSource != '강남언니') {
+      // 시술/성형 카테고리일 때는 '강남언니'로 초기화
+      setState(() {
+        selectedSource = '강남언니';
+      });
+    }
   }
 
   Future<void> _loadRecentCommands() async {
@@ -145,6 +166,13 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
     debugPrint('Hospitals: ${widget.hospitals.length}');
     debugPrint('Recent fashion commands: ${_recentCommands.length}');
     debugPrint('Recent beauty commands: ${_recentBeautyCommands.length}');
+    debugPrint('Selected category: ${widget.selectedCategory}');
+    debugPrint('Categorized products: ${widget.categorizedProducts}');
+    debugPrint('Selected source: $selectedSource');
+    if (widget.selectedCategory == '쇼핑') {
+      debugPrint('Available sources: ${widget.categorizedProducts.keys.toList()}');
+      debugPrint('Products for selected source: ${widget.categorizedProducts[selectedSource]?.length ?? 0}');
+    }
 
     // 다른 추천 컨텐츠가 있을 때는 최신 명령 섹션을 생략
     final bool hasRecommendedContent =
@@ -281,35 +309,48 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
       if (widget.selectedCategory == '음식/식자재') {
         sections.add(
           SizedBox(
-            height: MediaQuery.of(context).size.height - 200, // 적절한 높이 설정
-            child: FoodProductsGrid(products: widget.categorizedProducts),
+            height: MediaQuery.of(context).size.height - 200,
+            child: FoodProductsGrid(
+              products: widget.categorizedProducts,
+              recipeSummary: widget.recipeSummary,
+            ),
           ),
         );
       } else {
-        sections.add(
-          _buildSection(
-            title: '추천 상품',
-            children: [
-              _buildSourceFilter(),
-              const SizedBox(height: kSpacing / 2),
-              ...widget.categorizedProducts[selectedSource]
-                  ?.map((p) => Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: kSpacing,
-                          vertical: kSpacing / 2,
-                        ),
-                        child: _buildElevatedCard(
-                          child: ProductCard(
-                            product: p,
-                            historyCreatedAt: widget.createdAt,
-                            id: widget.id,
-                          ),
-                        ),
-                      ))
-                  .toList() ??
-                  [],
-            ],
-          ),
+        // 패션 상품 등 다른 카테고리의 상품들
+        final nonEmptyProductEntries = widget.categorizedProducts.entries
+            .where((e) => e.value.isNotEmpty);
+
+        sections.addAll(
+          nonEmptyProductEntries.map((entry) {
+            return _buildSection(
+              title: entry.key,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: kSpacing),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio:
+                          MediaQuery.of(context).size.width <= 320 ? 0.55 : 0.6,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                    ),
+                    itemCount: entry.value.length,
+                    itemBuilder: (context, index) {
+                      return ProductCard(
+                        id: widget.id,
+                        product: entry.value[index],
+                        historyCreatedAt: widget.createdAt,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
         );
       }
     }
@@ -434,6 +475,26 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   }
 
   Widget _buildSourceFilter() {
+    // 쇼핑 카테고리일 때는 쇼핑몰 소스만 표시
+    if (widget.selectedCategory == '쇼핑') {
+      final sources = widget.categorizedProducts.keys.toList();
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: kSpacing),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: sources.map((source) {
+              return Padding(
+                padding: const EdgeInsets.only(right: kSpacing / 4),
+                child: _buildFilterButton(source),
+              );
+            }).toList(),
+          ),
+        ),
+      );
+    }
+    
+    // 시술/성형 카테고리일 때는 강남언니, 바비톡만 표시
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: kSpacing),
       child: Row(
