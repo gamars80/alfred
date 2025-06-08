@@ -23,18 +23,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
       try {
         final hasToken = await AuthApi.instance.hasToken();
         if (hasToken) {
-          await UserApi.instance.unlink();
-          debugPrint('카카오 연결 해제 완료 ✅');
+          await UserApi.instance.logout();
+          debugPrint('카카오 로그아웃 완료 ✅');
         } else {
-          debugPrint('❗ 카카오 토큰 없음 → unlink 생략');
+          debugPrint('❗ 카카오 토큰 없음 → 로그아웃 생략');
         }
       } catch (e) {
-        debugPrint('카카오 연결 해제 실패 ❌: $e');
+        debugPrint('카카오 로그아웃 실패 ❌: $e');
       }
 
       // 2. 로컬 토큰 삭제
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('accessToken');
+      // await prefs.remove('kakao_code_verifier');
 
       // 3. 로그인 화면으로 이동
       if (!mounted) return;
@@ -48,16 +49,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _handleWithdraw() async {
     if (_isProcessing) return;
-    
+
     setState(() => _isProcessing = true);
-    
+
     try {
       final success = await _myPageService.withdrawUser();
-      
+
       if (!mounted) return;
-      
+
       if (success) {
-        // 회원탈퇴 성공 시 로그아웃 프로세스 실행
+        // ✅ 카카오 계정 연결 끊기
+        try {
+          await UserApi.instance.unlink();
+          debugPrint('카카오 연결 끊기 완료 ✅');
+        } catch (e) {
+          debugPrint('카카오 unlink 실패 ❌: $e');
+        }
+
+        // ✅ 로그아웃 프로세스 실행
         await _handleLogout();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -82,6 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

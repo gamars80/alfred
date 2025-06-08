@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../common/dio/dio_client.dart';
 import '../model/login_response.dart';
@@ -9,6 +10,7 @@ class AuthApi {
   static final Dio _dio = DioClient.dio;
 
   static Future<LoginResponse> loginWithKakaoId(String loginId) async {
+    debugPrint("loginId::::::::::::::::$loginId");
     final response = await _dio.post('/auth/login', data: {'loginId': loginId});
     return LoginResponse.fromJson(response.data);
   }
