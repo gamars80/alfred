@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../auth/common/dio/dio_client.dart';
 import '../model/food_recommendation.dart';
+import '../data/product_api.dart';  // Import ChoiceTypeException
 
 class FoodApi {
   final Dio _dio = DioClient.dio;
@@ -24,6 +25,13 @@ class FoodApi {
       );
 
       final data = e.response?.data;
+      // Choice Type 예외 처리 추가
+      if (data is Map<String, dynamic> &&
+          data['error'] == 'Choice Type' &&
+          data['itemTypes'] != null) {
+        throw ChoiceTypeException(List<String>.from(data['itemTypes']));
+      }
+      // 기타 메시지 기반 에러
       if (data is Map<String, dynamic> && data['message'] != null) {
         throw Exception(data['message']);
       }
