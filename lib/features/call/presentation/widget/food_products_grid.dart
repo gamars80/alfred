@@ -37,6 +37,97 @@ class FoodProductsGrid extends StatelessWidget {
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final allProducts = products.values.expand((products) => products).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (recipeSummary != null || requiredIngredients != null)
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                if (recipeSummary != null)
+                  _buildSectionCard(
+                    title: '알프레드의 간단 조리법',
+                    content: recipeSummary!,
+                    icon: Icons.restaurant_menu,
+                    isRecipe: true,
+                  ),
+                if (recipeSummary != null && requiredIngredients != null)
+                  const SizedBox(height: 16),
+                if (requiredIngredients != null)
+                  _buildSectionCard(
+                    title: '알프레드의 식재료 추천',
+                    content: requiredIngredients!,
+                    icon: Icons.shopping_basket,
+                  ),
+              ],
+            ),
+          ),
+        if (allProducts.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Color(0xFFE0E0E0),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.local_mall_outlined,
+                        color: Colors.deepPurple,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '추천 상품 ${allProducts.length}개',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ],
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.7,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 20,
+          ),
+          itemCount: allProducts.length,
+          itemBuilder: (context, index) {
+            return FoodProductCard(product: allProducts[index]);
+          },
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
   Widget _buildSectionCard({
     required String title,
     required String content,
@@ -71,13 +162,55 @@ class FoodProductsGrid extends StatelessWidget {
             ),
             const Divider(height: 24, thickness: 1),
             if (isRecipe)
-              Text(
-                content,
-                style: const TextStyle(
-                  fontSize: 14,
-                  height: 1.8,
-                  color: Color(0xFF1A1A1A),
-                ),
+              Column(
+                children: content
+                    .replaceAll('[', '')
+                    .replaceAll(']', '')
+                    .split(RegExp(r'\s*\d+\.\s*'))
+                    .where((step) => step.isNotEmpty)
+                    .map((step) => step.trim())
+                    .toList()
+                    .asMap()
+                    .entries
+                    .map((entry) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: const BoxDecoration(
+                            color: Colors.deepPurple,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${entry.key + 1}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            entry.value,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              height: 1.5,
+                              color: Color(0xFF1A1A1A),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
               )
             else
               Wrap(
@@ -107,55 +240,6 @@ class FoodProductsGrid extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final allProducts = products.values.expand((products) => products).toList();
-
-    return Column(
-      children: [
-        if (recipeSummary != null || requiredIngredients != null)
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                if (recipeSummary != null)
-                  _buildSectionCard(
-                    title: '알프레드의 간단 조리법',
-                    content: recipeSummary!,
-                    icon: Icons.restaurant_menu,
-                    isRecipe: true,
-                  ),
-                if (recipeSummary != null && requiredIngredients != null)
-                  const SizedBox(height: 16),
-                if (requiredIngredients != null)
-                  _buildSectionCard(
-                    title: '알프레드의 식재료 추천',
-                    content: requiredIngredients!,
-                    icon: Icons.shopping_basket,
-                  ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.7,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-          ),
-          itemCount: allProducts.length,
-          itemBuilder: (context, index) {
-            return FoodProductCard(product: allProducts[index]);
-          },
-        ),
-      ],
     );
   }
 } 
