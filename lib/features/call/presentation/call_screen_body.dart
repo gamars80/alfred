@@ -33,6 +33,7 @@ class CallScreenBody extends StatefulWidget {
   final List<YouTubeVideo> youtubeVideos;
   final String selectedCategory;
   final String? recipeSummary;
+  final String? requiredIngredients;
 
   const CallScreenBody({
     super.key,
@@ -45,6 +46,7 @@ class CallScreenBody extends StatefulWidget {
     required this.youtubeVideos,
     required this.selectedCategory,
     this.recipeSummary,
+    this.requiredIngredients,
   });
 
   @override
@@ -313,6 +315,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
             child: FoodProductsGrid(
               products: widget.categorizedProducts,
               recipeSummary: widget.recipeSummary,
+              requiredIngredients: widget.requiredIngredients,
             ),
           ),
         );

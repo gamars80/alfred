@@ -30,6 +30,7 @@ class _CallScreenState extends State<CallScreen> {
   String? _errorMessage;
   String _selectedCategory = '쇼핑';
   String? _recipeSummary;
+  String? _requiredIngredients;
 
   Map<String, List<Product>> _categorizedProducts = {};
   List<CommunityPost> _communityPosts = [];
@@ -66,6 +67,7 @@ class _CallScreenState extends State<CallScreen> {
               youtubeVideos: _youtubeVideos,
               selectedCategory: _selectedCategory,
               recipeSummary: _recipeSummary,
+              requiredIngredients: _requiredIngredients,
             ),
           ],
         ),
@@ -113,6 +115,7 @@ class _CallScreenState extends State<CallScreen> {
           _id = data.id;
           _createdAt = data.createdAt;
           _recipeSummary = data.recipeSummary;
+          _requiredIngredients = data.requiredIngredients?.join(', ');
           // ── 여기서 성별/연령대 초기화 ───────────────────
           _selectedGender = null;
           _selectedAge = null;
