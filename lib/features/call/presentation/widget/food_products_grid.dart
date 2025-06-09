@@ -32,8 +32,8 @@ class FoodProductsGrid extends StatelessWidget {
           .values
           .join('\n');
     } else {
-      // 식재료의 경우 쉼표로 구분
-      return text.split(',').map((item) => item.trim()).join('\n');
+      // 식재료의 경우 쉼표로 구분하여 리스트로 반환
+      return text.split(',').map((item) => item.trim()).where((item) => item.isNotEmpty).join(',');
     }
   }
 
@@ -70,14 +70,40 @@ class FoodProductsGrid extends StatelessWidget {
               ],
             ),
             const Divider(height: 24, thickness: 1),
-            Text(
-              _formatText(content, isRecipe: isRecipe),
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.8,
-                color: Color(0xFF1A1A1A),
+            if (isRecipe)
+              Text(
+                content,
+                style: const TextStyle(
+                  fontSize: 14,
+                  height: 1.8,
+                  color: Color(0xFF1A1A1A),
+                ),
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _formatText(content)
+                    .split(',')
+                    .map((item) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.deepPurple.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            item.trim(),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                        ))
+                    .toList(),
               ),
-            ),
           ],
         ),
       ),
@@ -114,20 +140,20 @@ class FoodProductsGrid extends StatelessWidget {
               ],
             ),
           ),
-        Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.7,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: allProducts.length,
-            itemBuilder: (context, index) {
-              return FoodProductCard(product: allProducts[index]);
-            },
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.7,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
           ),
+          itemCount: allProducts.length,
+          itemBuilder: (context, index) {
+            return FoodProductCard(product: allProducts[index]);
+          },
         ),
       ],
     );

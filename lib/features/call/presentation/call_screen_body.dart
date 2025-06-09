@@ -310,13 +310,10 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
     if (widget.categorizedProducts.isNotEmpty) {
       if (widget.selectedCategory == '음식/식자재') {
         sections.add(
-          SizedBox(
-            height: MediaQuery.of(context).size.height - 200,
-            child: FoodProductsGrid(
-              products: widget.categorizedProducts,
-              recipeSummary: widget.recipeSummary,
-              requiredIngredients: widget.requiredIngredients,
-            ),
+          FoodProductsGrid(
+            products: widget.categorizedProducts,
+            recipeSummary: widget.recipeSummary,
+            requiredIngredients: widget.requiredIngredients,
           ),
         );
       } else {
