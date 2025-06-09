@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:249528163122:android:7f2873720f607c44dc552b",
+        "mobilesdk_app_id": "1:249528163122:android:dadc1dc9958f3cdadc552b",
         "android_client_info": {
-          "package_name": "com.example.alfred_clean"
+          "package_name": "com.gamars.alfred"
         }
       },
       "oauth_client": [],

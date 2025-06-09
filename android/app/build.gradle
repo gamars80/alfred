@@ -16,7 +16,7 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.example.alfred_clean"
+        applicationId "com.gamars.alfred"
         minSdk 23 // ✅ 여기만 23으로 변경
         targetSdk 35
         versionCode 1
