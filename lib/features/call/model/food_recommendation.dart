@@ -9,6 +9,7 @@ class FoodRecommendationResult {
   final String recipeSummary;
   final List<String> requiredIngredients;
   final Map<String, List<Product>> items;
+  final String? suggestionReason;
 
   FoodRecommendationResult({
     required this.id,
@@ -19,6 +20,7 @@ class FoodRecommendationResult {
     required this.recipeSummary,
     required this.requiredIngredients,
     required this.items,
+    this.suggestionReason,
   });
 
   factory FoodRecommendationResult.fromJson(Map<String, dynamic> json) {
@@ -36,6 +38,7 @@ class FoodRecommendationResult {
           (value as List).map((e) => Product.fromJson(e as Map<String, dynamic>)).toList(),
         ),
       ),
+      suggestionReason: json['suggestionReason'] as String?,
     );
   }
 }
