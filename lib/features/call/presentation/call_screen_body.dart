@@ -340,6 +340,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
                           MediaQuery.of(context).size.width <= 320 ? 0.55 : 0.6,
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 12,
+                        mainAxisExtent: 280
                     ),
                     itemCount: entry.value.length,
                     itemBuilder: (context, index) {
