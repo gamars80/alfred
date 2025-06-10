@@ -31,14 +31,29 @@ class FoodApi {
           data['itemTypes'] != null) {
         throw ChoiceTypeException(List<String>.from(data['itemTypes']));
       }
+
+      // DynamoDB 에러 처리
+      if (e.response?.statusCode == 500 && 
+          data is Map<String, dynamic> && 
+          data['message']?.toString().contains('DynamoDb') == true) {
+        // DynamoDB 에러지만 Choice Type 응답이 있는 경우
+        if (data['itemTypes'] != null) {
+          throw ChoiceTypeException(List<String>.from(data['itemTypes']));
+        }
+        // 일반적인 DynamoDB 에러인 경우
+        throw Exception('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      }
+
       // 기타 메시지 기반 에러
       if (data is Map<String, dynamic> && data['message'] != null) {
         throw Exception(data['message']);
       }
-      rethrow;
+      
+      // 기타 모든 DioException
+      throw Exception('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } catch (e, stack) {
       debugPrint('❌ [UnknownError] $e\n$stack');
-      rethrow;
+      throw Exception('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
   }
 } 
