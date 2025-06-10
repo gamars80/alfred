@@ -34,6 +34,7 @@ class CallScreenBody extends StatefulWidget {
   final String selectedCategory;
   final String? recipeSummary;
   final String? requiredIngredients;
+  final String? suggestionReason;
 
   const CallScreenBody({
     super.key,
@@ -47,6 +48,7 @@ class CallScreenBody extends StatefulWidget {
     required this.selectedCategory,
     this.recipeSummary,
     this.requiredIngredients,
+    this.suggestionReason,
   });
 
   @override
@@ -314,6 +316,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
             products: widget.categorizedProducts,
             recipeSummary: widget.recipeSummary,
             requiredIngredients: widget.requiredIngredients,
+            suggestionReason: widget.suggestionReason,
           ),
         );
       } else {
