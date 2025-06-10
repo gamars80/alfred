@@ -114,14 +114,13 @@ class FoodProductsGrid extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.7,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 20,
+            crossAxisSpacing: 9,
+            mainAxisSpacing: 11,
+            // 이 높이(예: 260) 이하로는 안 작아지기 때문에 overflow 걱정 끝!
+            mainAxisExtent: 260,
           ),
           itemCount: allProducts.length,
-          itemBuilder: (context, index) {
-            return FoodProductCard(product: allProducts[index]);
-          },
+          itemBuilder: (context, index) => FoodProductCard(product: allProducts[index]),
         ),
         const SizedBox(height: 16),
       ],
