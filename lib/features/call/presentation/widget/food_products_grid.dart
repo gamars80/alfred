@@ -2,17 +2,27 @@ import 'package:flutter/material.dart';
 import '../../model/product.dart';
 import 'food_product_card.dart';
 
-class FoodProductsGrid extends StatelessWidget {
+class FoodProductsGrid extends StatefulWidget {
   final Map<String, List<Product>> products;
   final String? recipeSummary;
   final String? requiredIngredients;
+  final String? suggestionReason;
 
   const FoodProductsGrid({
     super.key,
     required this.products,
     this.recipeSummary,
     this.requiredIngredients,
+    this.suggestionReason,
   });
+
+  @override
+  State<FoodProductsGrid> createState() => _FoodProductsGridState();
+}
+
+class _FoodProductsGridState extends State<FoodProductsGrid> {
+  bool _isRecipeExpanded = false;
+  bool _isIngredientsExpanded = false;
 
   String _formatText(String text, {bool isRecipe = false}) {
     if (text.startsWith('[') && text.endsWith(']')) {
@@ -20,49 +30,60 @@ class FoodProductsGrid extends StatelessWidget {
     }
     
     if (isRecipe) {
-      // 번호로 시작하는 스텝들을 찾아서 분리
       final steps = text.split(RegExp(r'\s*\d+\.\s*'))
           .where((step) => step.isNotEmpty)
           .map((step) => step.trim())
           .toList();
       
-      // 각 스텝 앞에 번호를 다시 붙여서 반환
       return steps.asMap()
           .map((index, step) => MapEntry(index, '${index + 1}. $step'))
           .values
           .join('\n');
     } else {
-      // 식재료의 경우 쉼표로 구분하여 리스트로 반환
       return text.split(',').map((item) => item.trim()).where((item) => item.isNotEmpty).join(',');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final allProducts = products.values.expand((products) => products).toList();
+    final allProducts = widget.products.values.expand((products) => products).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (recipeSummary != null || requiredIngredients != null)
+        if (widget.recipeSummary != null || widget.requiredIngredients != null || widget.suggestionReason != null)
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                if (recipeSummary != null)
-                  _buildSectionCard(
+                if (widget.suggestionReason != null)
+                  _buildExpandableSection(
+                    title: '알프레드의 추천이유',
+                    content: widget.suggestionReason!,
+                    icon: Icons.lightbulb_outline,
+                    isExpanded: false,
+                    onExpansionChanged: (_) {},
+                  ),
+                if (widget.suggestionReason != null && (widget.recipeSummary != null || widget.requiredIngredients != null))
+                  const SizedBox(height: 16),
+                if (widget.recipeSummary != null)
+                  _buildExpandableSection(
                     title: '알프레드의 간단 조리법',
-                    content: recipeSummary!,
+                    content: widget.recipeSummary!,
                     icon: Icons.restaurant_menu,
                     isRecipe: true,
+                    isExpanded: _isRecipeExpanded,
+                    onExpansionChanged: (value) => setState(() => _isRecipeExpanded = value),
                   ),
-                if (recipeSummary != null && requiredIngredients != null)
+                if (widget.recipeSummary != null && widget.requiredIngredients != null)
                   const SizedBox(height: 16),
-                if (requiredIngredients != null)
-                  _buildSectionCard(
+                if (widget.requiredIngredients != null)
+                  _buildExpandableSection(
                     title: '알프레드의 식재료 추천',
-                    content: requiredIngredients!,
+                    content: widget.requiredIngredients!,
                     icon: Icons.shopping_basket,
+                    isExpanded: _isIngredientsExpanded,
+                    onExpansionChanged: (value) => setState(() => _isIngredientsExpanded = value),
                   ),
               ],
             ),
@@ -127,11 +148,13 @@ class FoodProductsGrid extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionCard({
+  Widget _buildExpandableSection({
     required String title,
     required String content,
     required IconData icon,
     bool isRecipe = false,
+    required bool isExpanded,
+    required Function(bool) onExpansionChanged,
   }) {
     return Card(
       elevation: 2,
@@ -140,25 +163,28 @@ class FoodProductsGrid extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(color: Colors.grey.shade200),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: Colors.deepPurple),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                  ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          title: Row(
+            children: [
+              Icon(icon, color: Colors.deepPurple, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          initiallyExpanded: isExpanded,
+          onExpansionChanged: onExpansionChanged,
+          tilePadding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          children: [
             const Divider(height: 24, thickness: 1),
             if (isRecipe)
               Column(

@@ -25,6 +25,7 @@ class RecommendationResult {
   final bool? isSeasonal;
   final String? recipeSummary;
   final List<String>? requiredIngredients;
+  final String? suggestionReason;
 
   RecommendationResult({
     this.id = 0,
@@ -39,6 +40,7 @@ class RecommendationResult {
     this.isSeasonal,
     this.recipeSummary,
     this.requiredIngredients,
+    this.suggestionReason,
   });
 }
 
@@ -75,6 +77,7 @@ class RecommendationService {
           isSeasonal: result.isSeasonal,
           recipeSummary: result.recipeSummary,
           requiredIngredients: result.requiredIngredients,
+          suggestionReason: result.suggestionReason,
         ));
       } else if (selectedCategory == '쇼핑') {
         final api = ProductApi();
