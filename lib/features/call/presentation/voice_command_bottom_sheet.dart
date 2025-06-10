@@ -158,7 +158,7 @@ class VoiceCommandBottomSheet {
       ) {
     return Row(
       children: [
-        const Text('카테고리:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87)),
+        const Text('카테고리:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87)),
         const SizedBox(width: 8),
         DropdownButton<String>(
           value: selected,
@@ -178,7 +178,7 @@ class VoiceCommandBottomSheet {
           Text(
             '명령권: ${remainingCommands}회',
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
