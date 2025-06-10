@@ -134,7 +134,7 @@ class _CallScreenState extends State<CallScreen> {
       setState(() => _isLoading = false);
 
       if (success) {
-        if (_selectedCategory == '쇼핑') {
+        if (_selectedCategory == '쇼핑' || _selectedCategory == '음식/식자재') {
           Flushbar(
             message: '현재 결과는 일부입니다. 히스토리에서 모두 확인하세요 🛍️',
             duration: const Duration(seconds: 3),
