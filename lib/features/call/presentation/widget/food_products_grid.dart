@@ -153,7 +153,7 @@ class FoodProductsGrid extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: Colors.deepPurple,
                   ),
@@ -190,18 +190,18 @@ class FoodProductsGrid extends StatelessWidget {
                               '${entry.key + 1}',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 12,
+                                fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 9),
                         Expanded(
                           child: Text(
                             entry.value,
                             style: const TextStyle(
-                              fontSize: 14,
+                              fontSize: 9,
                               height: 1.5,
                               color: Color(0xFF1A1A1A),
                             ),
@@ -230,7 +230,7 @@ class FoodProductsGrid extends StatelessWidget {
                           child: Text(
                             item.trim(),
                             style: const TextStyle(
-                              fontSize: 14,
+                              fontSize: 10,
                               color: Colors.deepPurple,
                             ),
                           ),

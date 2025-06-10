@@ -38,12 +38,12 @@ class FoodProductCard extends StatelessWidget {
       child: InkWell(
         onTap: _launchUrl,
         child: SizedBox(
-          height: 238.2,
+          height: 280,
           child: Column(
             children: [
-              // 이미지 영역 (flex: 7)
+              // 이미지 영역 (flex: 6)
               Flexible(
-                flex: 7,
+                flex: 6,
                 child: AspectRatio(
                   aspectRatio: 1,
                   child: Stack(
@@ -85,27 +85,27 @@ class FoodProductCard extends StatelessWidget {
                 ),
               ),
 
-              // 정보 영역 (flex: 3)
+              // 정보 영역 (flex: 4)
               Flexible(
-                flex: 3,
+                flex: 4,
                 child: Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
                   ),
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 상품명 (최대 2줄)
-                      Flexible(
+                      Expanded(
                         child: Text(
                           product.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 11,
+                            fontSize: 13,
                             height: 1.3,
                             fontWeight: FontWeight.w500,
                             color: Color(0xFF1A1A1A),
@@ -113,26 +113,32 @@ class FoodProductCard extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 8),
 
                       // 가격과 후기 (한 줄에 배치)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
-                            priceText,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.deepPurple,
+                          Expanded(
+                            child: Text(
+                              priceText,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.deepPurple,
+                              ),
                             ),
                           ),
                           if (product.reviewCount != null)
-                            Text(
-                              '후기 ${product.reviewCount}',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey[600],
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: Text(
+                                '후기 ${product.reviewCount}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                             ),
                         ],
