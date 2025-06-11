@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:alfred_clean/features/history/data/history_repository.dart';
 import 'package:alfred_clean/features/history/model/recommendation_history.dart';
 import 'package:alfred_clean/features/history/model/beauty_history.dart';
+import 'package:alfred_clean/features/history/model/foods_history.dart';
 import 'package:alfred_clean/features/history/presentation/widget/history_card.dart';
 import 'package:alfred_clean/features/history/presentation/widget/beauty_history_card.dart';
+import 'package:alfred_clean/features/history/presentation/widget/foods_history_card.dart';
 import 'package:alfred_clean/features/history/presentation/history_detail_screen.dart';
 import 'beauty_history_detail_screen.dart';
+import 'foods_history_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -37,6 +40,13 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   bool _hasMoreBeauty = true;
   bool _isBeautyInitialLoading = true;
 
+  // 음식/식자재 탭 상태
+  List<FoodsHistory> _foodsHistories = [];
+  String? _foodsNextPageKey;
+  bool _isFoodsLoadingMore = false;
+  bool _hasMoreFoods = true;
+  bool _isFoodsInitialLoading = true;
+
   final int _limit = 10;
 
   @override
@@ -64,6 +74,15 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
       }
     });
 
+    // 음식/식자재 탭 스크롤 리스너
+    _foodController.addListener(() {
+      if (_isFoodsInitialLoading || _isFoodsLoadingMore) return;
+      if (_foodController.position.pixels >=
+          _foodController.position.maxScrollExtent - 200) {
+        _loadMoreFoods();
+      }
+    });
+
     // 첫 번째 탭 초기 로딩
     _loadInitialHistories();
   }
@@ -76,6 +95,9 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
     } else if (_tabController.index == 1) {
       setState(() => _isBeautyInitialLoading = true);
       _loadInitialBeautyHistories();
+    } else if (_tabController.index == 2) {
+      setState(() => _isFoodsInitialLoading = true);
+      _loadInitialFoodsHistories();
     }
   }
 
@@ -162,6 +184,47 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
     }
   }
 
+  Future<void> _loadInitialFoodsHistories() async {
+    setState(() => _isFoodsInitialLoading = true);
+    try {
+      final response = await repository.fetchFoodsHistories(limit: _limit);
+      setState(() {
+        _foodsHistories = response.histories;
+        _foodsNextPageKey = response.nextPageKey;
+        _hasMoreFoods = (_foodsNextPageKey?.isNotEmpty ?? false);
+      });
+    } catch (e) {
+      debugPrint('Error loading foods histories: $e');
+    } finally {
+      setState(() => _isFoodsInitialLoading = false);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_foodController.hasClients) {
+          _foodController.jumpTo(0);
+        }
+      });
+    }
+  }
+
+  Future<void> _loadMoreFoods() async {
+    if (_isFoodsLoadingMore || !_hasMoreFoods) return;
+    setState(() => _isFoodsLoadingMore = true);
+    try {
+      final response = await repository.fetchFoodsHistories(
+        limit: _limit,
+        nextPageKey: _foodsNextPageKey,
+      );
+      setState(() {
+        _foodsHistories.addAll(response.histories);
+        _foodsNextPageKey = response.nextPageKey;
+        _hasMoreFoods = (_foodsNextPageKey?.isNotEmpty ?? false);
+      });
+    } catch (e) {
+      debugPrint('Error loading more foods histories: $e');
+    } finally {
+      setState(() => _isFoodsLoadingMore = false);
+    }
+  }
+
   Widget _buildSkeleton() {
     return ListView.builder(
       itemCount: 5,
@@ -244,7 +307,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
         children: [
           _buildShoppingTab(),
           _buildCommunityTab(),
-          _buildUnderConstructionTab(),
+          _buildFoodsTab(),
         ],
       ),
     );
@@ -335,34 +398,46 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildUnderConstructionTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.construction,
-            size: 64,
-            color: Colors.grey[600],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '준비중입니다',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '더 나은 서비스로 찾아뵙겠습니다',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[500],
-            ),
-          ),
-        ],
+  Widget _buildFoodsTab() {
+    return RefreshIndicator(
+      onRefresh: _loadInitialFoodsHistories,
+      child: _isFoodsInitialLoading
+          ? _buildSkeleton()
+          : _foodsHistories.isEmpty
+          ? const Center(
+        child: Text('음식/식자재 히스토리가 없습니다.',
+            style: TextStyle(fontSize: 16, color: Colors.grey)),
+      )
+          : ListView.builder(
+        controller: _foodController,
+        itemCount: _foodsHistories.length + (_isFoodsLoadingMore ? 1 : 0),
+        itemBuilder: (context, idx) {
+          if (idx == _foodsHistories.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final history = _foodsHistories[idx];
+          return FoodsHistoryCard(
+            history: history,
+            onTap: () async {
+              final updated = await Navigator.push<FoodsHistory>(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FoodsHistoryDetailScreen(history: history),
+                ),
+              );
+              if (updated != null) {
+                setState(() {
+                  final idx = _foodsHistories.indexWhere((h) => h.createdAt == updated.createdAt);
+                  if (idx != -1) _foodsHistories[idx] = updated;
+                });
+              }
+            },
+          );
+        },
       ),
     );
   }
