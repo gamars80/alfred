@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import '../../auth/common/dio/dio_client.dart';
 import '../model/history_response.dart';
 import '../model/beauty_history.dart';
+import '../model/foods_history_response.dart';
 
 class HistoryRepository {
   final Dio _dio = DioClient.dio;
@@ -101,5 +102,43 @@ class HistoryRepository {
       queryParameters: queryParams, // Dio가 자동으로 한 번만 인코딩해 줌
     );
     return BeautyHistoryResponse.fromJson(response.data);
+  }
+
+  Future<FoodsHistoryResponse> fetchFoodsHistories({
+    int limit = 10,
+    String? nextPageKey,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'limit': limit,
+      if (nextPageKey != null)
+        'nextPageKey': nextPageKey,
+    };
+
+    debugPrint('▶️ fetchFoodsHistories 요청 시작 → endpoint=/api/recomendation-history/foods-history, params=$queryParams');
+
+    try {
+      final response = await _dio.get(
+        '/api/recomendation-history/foods-history',
+        queryParameters: queryParams,
+      );
+
+      debugPrint(
+        '✅ fetchFoodsHistories 응답 [${response.statusCode}]\n'
+        'data=${response.data}',
+      );
+
+      return FoodsHistoryResponse.fromJson(response.data);
+    } on DioException catch (e, stack) {
+      debugPrint('❌ fetchFoodsHistories DioError 발생 → type=${e.type}, message=${e.message}');
+      if (e.response != null) {
+        debugPrint('  Response [${e.response?.statusCode}]: ${e.response?.data}');
+      }
+      debugPrint('  StackTrace:\n$stack');
+      rethrow;
+    } catch (e, stack) {
+      debugPrint('❌ fetchFoodsHistories 알 수 없는 에러 발생 → $e');
+      debugPrint('  StackTrace:\n$stack');
+      rethrow;
+    }
   }
 }
