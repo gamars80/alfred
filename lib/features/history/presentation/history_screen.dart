@@ -21,6 +21,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   final HistoryRepository repository = HistoryRepository();
   final ScrollController _shoppingController = ScrollController();
   final ScrollController _communityController = ScrollController();
+  final ScrollController _foodController = ScrollController();
 
   // 쇼핑 탭 상태
   List<RecommendationHistory> _histories = [];
@@ -41,7 +42,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this)
+    _tabController = TabController(length: 3, vsync: this)
       ..addListener(_handleTabSelection);
 
     // 쇼핑 탭 스크롤 리스너
@@ -182,6 +183,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
     _tabController.dispose();
     _shoppingController.dispose();
     _communityController.dispose();
+    _foodController.dispose();
     super.dispose();
   }
 
@@ -210,6 +212,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
             ),
             child: TabBar(
               controller: _tabController,
+              isScrollable: true,
               indicator: BoxDecoration(
                 color: Theme.of(context).primaryColor,
                 borderRadius: BorderRadius.circular(30),
@@ -226,7 +229,11 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
               unselectedLabelColor: Colors.grey,
               labelStyle: const TextStyle(
                   fontSize: 14, fontWeight: FontWeight.w600),
-              tabs: const [Tab(text: '패션쇼핑'), Tab(text: '시술/성형')],
+              tabs: const [
+                Tab(text: '패션쇼핑'), 
+                Tab(text: '시술/성형'),
+                Tab(text: '음식/식자재'),
+              ],
             ),
           ),
         ),
@@ -237,6 +244,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
         children: [
           _buildShoppingTab(),
           _buildCommunityTab(),
+          _buildUnderConstructionTab(),
         ],
       ),
     );
@@ -323,6 +331,38 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildUnderConstructionTab() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.construction,
+            size: 64,
+            color: Colors.grey[600],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '준비중입니다',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '더 나은 서비스로 찾아뵙겠습니다',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
       ),
     );
   }
