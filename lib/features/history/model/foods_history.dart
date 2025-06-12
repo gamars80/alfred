@@ -83,6 +83,7 @@ class FoodsProduct {
   final int productPrice;
   final String productLink;
   final String? productImage;
+  final String? productDescription;
   final String source;
   final String mallName;
   final String category;
@@ -96,6 +97,7 @@ class FoodsProduct {
     required this.productPrice,
     required this.productLink,
     this.productImage,
+    this.productDescription,
     required this.source,
     required this.mallName,
     required this.category,
@@ -111,6 +113,7 @@ class FoodsProduct {
       productPrice: json['productPrice'],
       productLink: json['productLink'],
       productImage: json['productImage'],
+      productDescription: json['productDescription'],
       source: json['source'],
       mallName: json['mallName'],
       category: json['category'],
