@@ -97,7 +97,7 @@ class FoodProductCard extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 2),
 
                     // 가격 (한 줄)
                     Text(
@@ -134,3 +134,4 @@ class FoodProductCard extends StatelessWidget {
     );
   }
 }
+
