@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../../auth/common/dio/dio_client.dart';
 import '../model/food_recommendation.dart';
 import '../data/product_api.dart';  // Import ChoiceTypeException
+import '../model/recent_foods_command.dart';
 
 class FoodApi {
   final Dio _dio = DioClient.dio;
@@ -54,6 +55,21 @@ class FoodApi {
     } catch (e, stack) {
       debugPrint('❌ [UnknownError] $e\n$stack');
       throw Exception('알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    }
+  }
+
+  /// 최근 음식 명령 조회 API
+  Future<List<RecentFoodsCommand>> fetchRecentFoodsCommands() async {
+    try {
+      final response = await _dio.get(
+        '/api/recomendation-history/recently-recommend-foods-history',
+      );
+
+      final List<dynamic> data = response.data as List<dynamic>;
+      return data.map((item) => RecentFoodsCommand.fromJson(item)).toList();
+    } catch (e) {
+      debugPrint('❌ [fetchRecentFoodsCommands] Error: $e');
+      rethrow;
     }
   }
 } 
