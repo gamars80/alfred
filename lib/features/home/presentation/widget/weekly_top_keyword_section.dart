@@ -50,8 +50,8 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
               unselectedLabelColor: Colors.grey,
               indicatorColor: Colors.black,
               tabs: const [
-                Tab(text: '카테고리 랭킹'),
-                Tab(text: '쇼핑몰 랭킹'),
+                Tab(text: '카테고리'),
+                Tab(text: '쇼핑몰'),
               ],
             ),
             const SizedBox(height: 12),
