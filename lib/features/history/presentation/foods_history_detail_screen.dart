@@ -412,112 +412,45 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 쿼리 및 태그 섹션
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _history.query ?? '음식 추천',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  if (tag != null) Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade50,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '#$tag',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.orange.shade700,
+            // 추천이유, 간단 조리법, 식재료 추천 섹션
+            if (_history.suggestionReason != null || _history.recipeSummary != null || _history.requiredIngredients.isNotEmpty)
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    if (_history.suggestionReason != null)
+                      _buildExpandableSection(
+                        title: '알프레드의 추천이유',
+                        content: _history.suggestionReason!,
+                        icon: Icons.lightbulb_outline,
+                        isExpanded: false,
+                        onExpansionChanged: (_) {},
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        DateFormat('yyyy-MM-dd HH:mm').format(
-                          DateTime.fromMillisecondsSinceEpoch(_history.createdAt),
-                        ),
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    if (_history.suggestionReason != null && (_history.recipeSummary != null || _history.requiredIngredients.isNotEmpty))
+                      const SizedBox(height: 16),
+                    if (_history.recipeSummary != null)
+                      _buildExpandableSection(
+                        title: '알프레드의 간단 조리법',
+                        content: _history.recipeSummary!,
+                        icon: Icons.restaurant_menu,
+                        isRecipe: true,
+                        isExpanded: false,
+                        onExpansionChanged: (_) {},
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: _history.status == 'WAITING' ? Colors.orange.shade50 : Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          _history.status == 'WAITING' ? '처리대기중' : '완료',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: _history.status == 'WAITING' ? Colors.orange : Colors.green,
-                          ),
-                        ),
+                    if (_history.recipeSummary != null && _history.requiredIngredients.isNotEmpty)
+                      const SizedBox(height: 16),
+                    if (_history.requiredIngredients.isNotEmpty)
+                      _buildExpandableSection(
+                        title: '알프레드의 식재료 추천',
+                        content: _history.requiredIngredients.join(', '),
+                        icon: Icons.shopping_basket,
+                        isExpanded: false,
+                        onExpansionChanged: (_) {},
                       ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // 평점 섹션
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.star_outline, size: 20),
-                      const SizedBox(width: 8),
-                      const Text(
-                        '추천 평가하기',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: List.generate(5, (index) {
-                      return GestureDetector(
-                        onTap: _isRating ? null : () => _submitRating(index + 1),
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 4),
-                          child: Icon(
-                            (_history.hasRating && _history.myRating != null && index < _history.myRating!)
-                                ? Icons.star
-                                : Icons.star_border,
-                            size: 32,
-                            color: Colors.amber,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ],
-              ),
-            ),
 
             const SizedBox(height: 8),
 
@@ -608,6 +541,126 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
             ),
 
             const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExpandableSection({
+    required String title,
+    required String content,
+    required IconData icon,
+    bool isRecipe = false,
+    required bool isExpanded,
+    required Function(bool) onExpansionChanged,
+  }) {
+    return Card(
+      elevation: 2,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          title: Row(
+            children: [
+              Icon(icon, color: Colors.deepPurple, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
+              ),
+            ],
+          ),
+          initiallyExpanded: isExpanded,
+          onExpansionChanged: onExpansionChanged,
+          tilePadding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          children: [
+            const Divider(height: 24, thickness: 1),
+            if (isRecipe)
+              Column(
+                children: content
+                    .replaceAll('[', '')
+                    .replaceAll(']', '')
+                    .split(RegExp(r'\s*\d+\.\s*'))
+                    .where((step) => step.isNotEmpty)
+                    .map((step) => step.trim())
+                    .toList()
+                    .asMap()
+                    .entries
+                    .map((entry) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: const BoxDecoration(
+                            color: Colors.deepPurple,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${entry.key + 1}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 9),
+                        Expanded(
+                          child: Text(
+                            entry.value,
+                            style: const TextStyle(
+                              fontSize: 9,
+                              height: 1.5,
+                              color: Color(0xFF1A1A1A),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: content
+                    .split(',')
+                    .map((item) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.deepPurple.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            item.trim(),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                        ))
+                    .toList(),
+              ),
           ],
         ),
       ),
