@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../model/foods_history.dart';
 import '../data/history_repository.dart';
 import '../../like/data/like_repository.dart';
+import '../../../../common/presentation/web_view_screen.dart';
 
 class FoodsHistoryDetailScreen extends StatefulWidget {
   final FoodsHistory history;
@@ -187,6 +189,7 @@ class _RecipeGridItem extends StatelessWidget {
   final String name;
   final double rating;
   final int viewCount;
+  final String detailLink;
   final VoidCallback? onTap;
 
   const _RecipeGridItem({
@@ -195,13 +198,25 @@ class _RecipeGridItem extends StatelessWidget {
     required this.name,
     required this.rating,
     required this.viewCount,
+    required this.detailLink,
     this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () async {
+        final Uri url = Uri.parse(detailLink);
+        if (await canLaunchUrl(url)) {
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('링크를 열 수 없습니다.')),
+            );
+          }
+        }
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -630,8 +645,18 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                                 name: recipe.recipeName,
                                 rating: recipe.averageRating.toDouble(),
                                 viewCount: recipe.viewCount,
-                                onTap: () {
-                                  // TODO: 레시피 상세 페이지로 이동
+                                detailLink: recipe.detailLink,
+                                onTap: () async {
+                                  final Uri url = Uri.parse(recipe.detailLink);
+                                  if (await canLaunchUrl(url)) {
+                                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                                  } else {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('링크를 열 수 없습니다.')),
+                                      );
+                                    }
+                                  }
                                 },
                               );
                             },
