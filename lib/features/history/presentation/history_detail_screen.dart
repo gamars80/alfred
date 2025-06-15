@@ -252,7 +252,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 24), decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-                      const Text("주인님 저희 추천에 평가를 내려주세요", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
+                      const Text("주인님 저의 추천에 평가를 내려주세요", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
                       const SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
