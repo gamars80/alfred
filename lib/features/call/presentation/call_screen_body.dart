@@ -5,13 +5,16 @@ import 'package:alfred_clean/features/call/presentation/widget/hospital_card.dar
 import 'package:alfred_clean/features/call/presentation/widget/youtube_list.dart';
 import 'package:alfred_clean/features/call/presentation/widget/product_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/fashion_command_card.dart';
+import 'package:alfred_clean/features/call/presentation/widget/foods_command_card.dart';
 import 'package:flutter/material.dart';
 import '../data/beauty_api.dart';
+import '../data/food_api.dart';
 import '../model/community_post.dart';
 import '../model/event.dart';
 import '../model/hostpital.dart';
 import '../model/product.dart';
 import '../model/recent_beauty_command.dart';
+import '../model/recent_foods_command.dart';
 import '../model/youtube_video.dart';
 import '../data/product_api.dart';
 import 'widget/food_products_grid.dart';
@@ -70,11 +73,15 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   List<RecentFashionCommand> _recentCommands = [];
   bool _isLoadingCommands = false;
 
+  // ===== 음식 명령 관련 상태 추가 =====
+  List<RecentFoodsCommand> _recentFoodsCommands = [];
+  bool _isLoadingFoodsCommands = false;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _fashionTabController = TabController(length: 2, vsync: this);
+    _fashionTabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {
@@ -91,6 +98,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
     });
     _loadRecentCommands();
     _loadRecentBeautyCommands();
+    _loadRecentFoodsCommands();
   }
 
   @override
@@ -138,6 +146,19 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
     }
   }
 
+  Future<void> _loadRecentFoodsCommands() async {
+    if (_isLoadingFoodsCommands) return;
+    setState(() => _isLoadingFoodsCommands = true);
+    try {
+      final commands = await FoodApi().fetchRecentFoodsCommands();
+      setState(() => _recentFoodsCommands = commands);
+    } catch (e) {
+      debugPrint('❌ Failed to load recent foods commands: $e');
+    } finally {
+      setState(() => _isLoadingFoodsCommands = false);
+    }
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -170,6 +191,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
     debugPrint('Hospitals: ${widget.hospitals.length}');
     debugPrint('Recent fashion commands: ${_recentCommands.length}');
     debugPrint('Recent beauty commands: ${_recentBeautyCommands.length}');
+    debugPrint('Recent foods commands: ${_recentFoodsCommands.length}');
     debugPrint('Selected category: ${widget.selectedCategory}');
     debugPrint('Categorized products: ${widget.categorizedProducts}');
     debugPrint('Selected source: $selectedSource');
@@ -186,12 +208,12 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
             widget.youtubeVideos.isNotEmpty ||
             widget.categorizedProducts.isNotEmpty;
 
-    // 다른 추천 컨텐츠가 없을 때만 "최신 패션/뷰티 명령" 섹션 표시
-    if (!hasRecommendedContent && (_recentCommands.isNotEmpty || _recentBeautyCommands.isNotEmpty)) {
+    // 다른 추천 컨텐츠가 없을 때만 "최신 패션/뷰티/음식 명령" 섹션 표시
+    if (!hasRecommendedContent && (_recentCommands.isNotEmpty || _recentBeautyCommands.isNotEmpty || _recentFoodsCommands.isNotEmpty)) {
       sections.add(
         Column(
           children: [
-            // 패션 / 시술성형 탭바
+            // 패션 / 시술성형 / 음식 탭바
             _buildFashionTabBar(),
             const SizedBox(height: kSpacing),
 
@@ -210,6 +232,15 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
                 title: '최신 뷰티 명령',
                 children: _recentBeautyCommands
                     .map((command) => BeautyCommandCard(command: command))
+                    .toList(),
+              ),
+
+            // ====== 음식/식자재 탭 ======
+            if (selectedFashionTab == 2 && _recentFoodsCommands.isNotEmpty)
+              _buildSection(
+                title: '최신 음식 명령',
+                children: _recentFoodsCommands
+                    .map((command) => FoodsCommandCard(command: command))
                     .toList(),
               ),
           ],
@@ -597,6 +628,12 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
           Tab(
             child: Text(
               '시술성형',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Tab(
+            child: Text(
+              '음식/식자재',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
