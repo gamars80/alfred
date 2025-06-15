@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../model/foods_history.dart';
 import '../data/history_repository.dart';
+import '../../like/data/like_repository.dart';
 
 class FoodsHistoryDetailScreen extends StatefulWidget {
   final FoodsHistory history;
@@ -24,6 +25,8 @@ class _ProductGridItem extends StatelessWidget {
   final double? rating;
   final String? description;
   final VoidCallback? onTap;
+  final bool isLiked;
+  final VoidCallback? onLikeTap;
 
   const _ProductGridItem({
     super.key,
@@ -35,6 +38,8 @@ class _ProductGridItem extends StatelessWidget {
     this.rating,
     this.description,
     this.onTap,
+    this.isLiked = false,
+    this.onLikeTap,
   });
 
   @override
@@ -58,7 +63,7 @@ class _ProductGridItem extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1) 이미지 + 몰 이름 (Stack으로 겹침)
+            // 1) 이미지 + 몰 이름 + 좋아요 버튼 (Stack으로 겹침)
             Stack(
               children: [
                 AspectRatio(
@@ -82,6 +87,32 @@ class _ProductGridItem extends StatelessWidget {
                         fontSize: 11,
                         color: Colors.white,
                         fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: GestureDetector(
+                    onTap: onLikeTap,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        size: 20,
+                        color: isLiked ? Colors.red : Colors.grey.shade600,
                       ),
                     ),
                   ),
@@ -252,8 +283,10 @@ class _RecipeGridItem extends StatelessWidget {
 class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
   late FoodsHistory _history;
   final HistoryRepository _repository = HistoryRepository();
+  final LikeRepository _likeRepository = LikeRepository();
   bool _isRating = false;
   String? _selectedMall;
+  bool _isLikeLoading = false;
 
   @override
   void initState() {
@@ -389,6 +422,61 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
     }
   }
 
+  Future<void> _handleLike(FoodsProduct product) async {
+    if (_isLikeLoading) return;
+    setState(() => _isLikeLoading = true);
+
+    try {
+      if (product.liked) {
+        await _likeRepository.deleteLikeFood(
+          historyId: _history.id,
+          recommendationId: product.id.toString(),
+          productId: product.productId,
+          mallName: product.mallName,
+        );
+      } else {
+        await _likeRepository.postLikeFood(
+          historyId: _history.id,
+          recommendationId: product.id.toString(),
+          productId: product.productId,
+          mallName: product.mallName,
+        );
+      }
+
+      setState(() {
+        _history = _history.copyWith(
+          recommendations: _history.recommendations.map((p) {
+            if (p.id == product.id) {
+              return FoodsProduct(
+                id: p.id,
+                productId: p.productId,
+                productName: p.productName,
+                productPrice: p.productPrice,
+                productLink: p.productLink,
+                productImage: p.productImage,
+                productDescription: p.productDescription,
+                source: p.source,
+                mallName: p.mallName,
+                category: p.category,
+                reviewCount: p.reviewCount,
+                liked: !p.liked,
+              );
+            }
+            return p;
+          }).toList(),
+        );
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('좋아요 처리 중 오류가 발생했습니다.')),
+        );
+      }
+    } finally {
+      setState(() => _isLikeLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final hasRecommendations = _history.recommendations.isNotEmpty;
@@ -499,6 +587,8 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                                 reviewCount: product.reviewCount,
                                 description: product.productDescription,
                                 onTap: () { /* 상세 이동 */ },
+                                isLiked: product.liked,
+                                onLikeTap: () => _handleLike(product),
                               );
                             },
                           ),
