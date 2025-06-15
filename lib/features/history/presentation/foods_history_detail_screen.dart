@@ -367,7 +367,7 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
     setState(() => _isRating = true);
 
     try {
-      await _repository.postRating(
+      await _repository.postFoodRating(
         historyId: _history.id,
         rating: rating,
       );
@@ -395,152 +395,224 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
     final hasRecipes = _history.recipes.isNotEmpty;
     final tag = _extractTag();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        centerTitle: true,
-        title: const Text('상세 히스토리',
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 17,
-                fontWeight: FontWeight.bold)),
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, _history);
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF9F9F9),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0.5,
+          centerTitle: true,
+          title: const Text('상세 히스토리',
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold)),
+          iconTheme: const IconThemeData(color: Colors.black),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 22),
+            onPressed: () => Navigator.pop(context, _history),
+          ),
+        ),
+        body: Stack(
           children: [
-            // 추천이유, 간단 조리법, 식재료 추천 섹션
-            if (_history.suggestionReason != null || _history.recipeSummary != null || _history.requiredIngredients.isNotEmpty)
-              Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    if (_history.suggestionReason != null)
-                      _buildExpandableSection(
-                        title: '알프레드의 추천이유',
-                        content: _history.suggestionReason!,
-                        icon: Icons.lightbulb_outline,
-                        isExpanded: false,
-                        onExpansionChanged: (_) {},
+            SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 추천이유, 간단 조리법, 식재료 추천 섹션
+                  if (_history.suggestionReason != null || _history.recipeSummary != null || _history.requiredIngredients.isNotEmpty)
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          if (_history.suggestionReason != null)
+                            _buildExpandableSection(
+                              title: '알프레드의 추천이유',
+                              content: _history.suggestionReason!,
+                              icon: Icons.lightbulb_outline,
+                              isExpanded: false,
+                              onExpansionChanged: (_) {},
+                            ),
+                          if (_history.suggestionReason != null && (_history.recipeSummary != null || _history.requiredIngredients.isNotEmpty))
+                            const SizedBox(height: 16),
+                          if (_history.recipeSummary != null)
+                            _buildExpandableSection(
+                              title: '알프레드의 간단 조리법',
+                              content: _history.recipeSummary!,
+                              icon: Icons.restaurant_menu,
+                              isRecipe: true,
+                              isExpanded: false,
+                              onExpansionChanged: (_) {},
+                            ),
+                          if (_history.recipeSummary != null && _history.requiredIngredients.isNotEmpty)
+                            const SizedBox(height: 16),
+                          if (_history.requiredIngredients.isNotEmpty)
+                            _buildExpandableSection(
+                              title: '알프레드의 식재료 추천',
+                              content: _history.requiredIngredients.join(', '),
+                              icon: Icons.shopping_basket,
+                              isExpanded: false,
+                              onExpansionChanged: (_) {},
+                            ),
+                        ],
                       ),
-                    if (_history.suggestionReason != null && (_history.recipeSummary != null || _history.requiredIngredients.isNotEmpty))
-                      const SizedBox(height: 16),
-                    if (_history.recipeSummary != null)
-                      _buildExpandableSection(
-                        title: '알프레드의 간단 조리법',
-                        content: _history.recipeSummary!,
-                        icon: Icons.restaurant_menu,
-                        isRecipe: true,
-                        isExpanded: false,
-                        onExpansionChanged: (_) {},
+                    ),
+
+                  const SizedBox(height: 8),
+
+                  // 추천 상품 섹션
+                  if (hasRecommendations) Container(
+                    color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionTitle(
+                          title: '추천 상품',
+                          icon: Icons.shopping_cart_outlined,
+                          count: _filteredProducts.length,
+                          trailing: const [],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _filteredProducts.length,
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 16,
+                              crossAxisSpacing: 12,
+                              mainAxisExtent: 280,
+                            ),
+                            itemBuilder: (context, index) {
+                              final product = _filteredProducts[index];
+                              return _ProductGridItem(
+                                imageUrl: product.productImage,
+                                name: product.productName,
+                                price: product.productPrice,
+                                mallName: product.mallName,
+                                reviewCount: product.reviewCount,
+                                description: product.productDescription,
+                                onTap: () { /* 상세 이동 */ },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // 추천 레시피 섹션
+                  if (hasRecipes) Container(
+                    color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionTitle(
+                          title: '추천 레시피',
+                          icon: Icons.restaurant_menu,
+                          count: _history.recipes.length,
+                          trailing: null,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 16,
+                              crossAxisSpacing: 12,
+                              mainAxisExtent: 240,
+                            ),
+                            itemCount: _history.recipes.length,
+                            itemBuilder: (context, index) {
+                              final recipe = _history.recipes[index];
+                              return _RecipeGridItem(
+                                imageUrl: recipe.recipeImage,
+                                name: recipe.recipeName,
+                                rating: recipe.averageRating.toDouble(),
+                                viewCount: recipe.viewCount,
+                                onTap: () {
+                                  // TODO: 레시피 상세 페이지로 이동
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+            if (!_history.hasRating)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 8, offset: Offset(0, -4))],
+                  ),
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 24),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
-                    if (_history.recipeSummary != null && _history.requiredIngredients.isNotEmpty)
-                      const SizedBox(height: 16),
-                    if (_history.requiredIngredients.isNotEmpty)
-                      _buildExpandableSection(
-                        title: '알프레드의 식재료 추천',
-                        content: _history.requiredIngredients.join(', '),
-                        icon: Icons.shopping_basket,
-                        isExpanded: false,
-                        onExpansionChanged: (_) {},
+                      const Text(
+                        "주인님 저의 추천에 평가를 내려주세요",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A),
+                        ),
                       ),
-                  ],
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(5, (index) {
+                          return GestureDetector(
+                            onTap: _isRating ? null : () async {
+                              final newRating = index + 1;
+                              await _submitRating(newRating);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: Icon(
+                                index < (_history.myRating ?? 0) ? Icons.star : Icons.star_border,
+                                size: 40,
+                                color: _isRating ? Colors.grey : Colors.amber,
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 32),
+                      if (_isRating) const Center(child: CircularProgressIndicator()),
+                    ],
+                  ),
                 ),
               ),
-
-            const SizedBox(height: 8),
-
-            // 추천 상품 섹션
-            if (hasRecommendations) Container(
-              color: Colors.white,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionTitle(
-                    title: '추천 상품',
-                    icon: Icons.shopping_cart_outlined,
-                    count: _filteredProducts.length,
-                    trailing: const [],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _filteredProducts.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 12,
-                        mainAxisExtent: 280,
-                      ),
-                      itemBuilder: (context, index) {
-                        final product = _filteredProducts[index];
-                        return _ProductGridItem(
-                          imageUrl: product.productImage,
-                          name: product.productName,
-                          price: product.productPrice,
-                          mallName: product.mallName,
-                          reviewCount: product.reviewCount,
-                          description: product.productDescription,
-                          onTap: () { /* 상세 이동 */ },
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // 추천 레시피 섹션
-            if (hasRecipes) Container(
-              color: Colors.white,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionTitle(
-                    title: '추천 레시피',
-                    icon: Icons.restaurant_menu,
-                    count: _history.recipes.length,
-                    trailing: null,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 12,
-                        mainAxisExtent: 240,
-                      ),
-                      itemCount: _history.recipes.length,
-                      itemBuilder: (context, index) {
-                        final recipe = _history.recipes[index];
-                        return _RecipeGridItem(
-                          imageUrl: recipe.recipeImage,
-                          name: recipe.recipeName,
-                          rating: recipe.averageRating.toDouble(),
-                          viewCount: recipe.viewCount,
-                          onTap: () {
-                            // TODO: 레시피 상세 페이지로 이동
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
           ],
         ),
       ),
