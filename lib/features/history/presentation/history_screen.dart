@@ -431,7 +431,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
               );
               if (updated != null) {
                 setState(() {
-                  final idx = _foodsHistories.indexWhere((h) => h.createdAt == updated.createdAt);
+                  final idx = _foodsHistories.indexWhere((h) => h.id == updated.id);
                   if (idx != -1) _foodsHistories[idx] = updated;
                 });
               }

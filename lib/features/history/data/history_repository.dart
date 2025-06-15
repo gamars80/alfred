@@ -84,6 +84,40 @@ class HistoryRepository {
     }
   }
 
+  Future<void> postFoodRating({
+    required int historyId,
+    required int rating,
+  }) async {
+    final endpoint = '/api/ratings/foods';
+    debugPrint('▶️ postFoodRating 요청 시작 → endpoint=$endpoint, historyId=$historyId, rating=$rating');
+
+    try {
+      final response = await _dio.post(
+        endpoint,
+        data: {
+          'historyId': historyId,
+          'rating': rating,
+        },
+      );
+
+      debugPrint(
+        '✅ postFoodRating 응답 [${response.statusCode}]\n'
+        'data=${response.data}',
+      );
+    } on DioException catch (e, stack) {
+      debugPrint('❌ postFoodRating DioError 발생 → type=${e.type}, message=${e.message}');
+      if (e.response != null) {
+        debugPrint('  Response [${e.response?.statusCode}]: ${e.response?.data}');
+      }
+      debugPrint('  StackTrace:\n$stack');
+      rethrow;
+    } catch (e, stack) {
+      debugPrint('❌ postFoodRating 알 수 없는 에러 발생 → $e');
+      debugPrint('  StackTrace:\n$stack');
+      rethrow;
+    }
+  }
+
   Future<BeautyHistoryResponse> fetchBeautyHistories({
     int limit = 10,
     String? nextPageKey,
