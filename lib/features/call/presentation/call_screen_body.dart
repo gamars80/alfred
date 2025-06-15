@@ -600,7 +600,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
 
   Widget _buildFashionTabBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: kSpacing),
+      margin: const EdgeInsets.only(left: kSpacing, right: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(kCardBorderRadius),
@@ -618,23 +618,31 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
         unselectedLabelColor: Colors.grey,
         indicatorColor: kPrimaryColor,
         indicatorSize: TabBarIndicatorSize.label,
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        ),
+        isScrollable: true,
+        padding: EdgeInsets.zero,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 6),
+        tabAlignment: TabAlignment.start,
         tabs: const [
           Tab(
             child: Text(
               '패션',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.left,
             ),
           ),
           Tab(
             child: Text(
               '시술성형',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.left,
             ),
           ),
           Tab(
             child: Text(
               '음식/식자재',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.left,
             ),
           ),
         ],
