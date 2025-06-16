@@ -39,34 +39,45 @@ class _LikedProductScreenState extends State<LikedProductScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
         title: Text(
           '찜한 항목',
           style: GoogleFonts.notoSans(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             fontSize: 18,
-            color: Colors.white,
+            color: const Color(0xFF1A1A1A),
           ),
         ),
-
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
-          child: Align(
-            alignment: Alignment.centerLeft,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.grey.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+            ),
             child: TabBar(
               controller: _tabController,
               isScrollable: true,
               tabs: _tabs,
-              labelStyle: GoogleFonts.notoSans(fontWeight: FontWeight.bold),
-              indicatorColor: Colors.amber,
-              labelColor: Colors.amber,
-              unselectedLabelColor: Colors.white70,
-              labelPadding: const EdgeInsets.only(left: 0, right: 12),
+              labelStyle: GoogleFonts.notoSans(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+              indicatorColor: const Color(0xFF1A1A1A),
+              labelColor: const Color(0xFF1A1A1A),
+              unselectedLabelColor: Colors.grey,
+              indicatorWeight: 2,
+              padding: const EdgeInsets.only(left: 16),
             ),
           ),
         ),
-        backgroundColor: Colors.black,
       ),
       body: TabBarView(
         controller: _tabController,
@@ -75,7 +86,6 @@ class _LikedProductScreenState extends State<LikedProductScreen>
           BeautyCommunityLikedTab(),
           BeautyEventLikedTab(),
           BeautyHospitalLikedTab(),
-
         ],
       ),
     );
