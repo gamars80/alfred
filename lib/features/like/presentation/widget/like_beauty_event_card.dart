@@ -90,11 +90,28 @@ class LikedBeautyEventCard extends StatelessWidget {
     final formatter = NumberFormat('#,###', 'ko_KR');
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: const Color(0xFFE0E0E0),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+            spreadRadius: 0,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,42 +121,64 @@ class LikedBeautyEventCard extends StatelessWidget {
             child: _buildImageSection(context),
           ),
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Text(
                         event.title,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1A1A1A),
+                          height: 1.1,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => _openDetailImage(context),
-                      style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                      child: const Text('상세보기', style: TextStyle(fontSize: 9, color: Colors.blue)),
-                    )
+                    IconButton(
+                      icon: const Icon(Icons.favorite, color: Color(0xFFFF4B6E), size: 16),
+                      onPressed: onUnlike,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 1),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: Text(
                         '${event.location} · ${event.hospitalName}',
-                        style: const TextStyle(fontSize: 11, color: Colors.white60),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF666666),
+                          height: 1.0,
+                        ),
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.favorite, color: Colors.pinkAccent),
-                      onPressed: onUnlike,
+                    TextButton(
+                      onPressed: () => _openDetailImage(context),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(32, 14),
+                      ),
+                      child: const Text(
+                        '상세보기',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF666666),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -153,7 +192,7 @@ class LikedBeautyEventCard extends StatelessWidget {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -164,24 +203,55 @@ class LikedBeautyEventCard extends StatelessWidget {
         ? event.thumbnailUrls!.first
         : 'https://via.placeholder.com/300x300.png?text=No+Image';
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
-      child: CachedNetworkImage(
-        imageUrl: imageUrl,
-        width: double.infinity,
-        height: 160,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
-          color: Colors.grey[200],
-          height: 160,
-          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(8),
+            topRight: Radius.circular(8),
+          ),
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            width: double.infinity,
+            height: 140,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              color: const Color(0xFFF5F5F5),
+              height: 140,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF666666)),
+                ),
+              ),
+            ),
+            errorWidget: (context, url, error) => Container(
+              color: const Color(0xFFF5F5F5),
+              height: 140,
+              child: const Icon(Icons.broken_image, color: Color(0xFF666666)),
+            ),
+          ),
         ),
-        errorWidget: (context, url, error) => Container(
-          color: Colors.grey,
-          height: 160,
-          child: const Icon(Icons.broken_image, color: Colors.white),
+        Positioned(
+          top: 4,
+          right: 4,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(2),
+            ),
+            child: Text(
+              event.source,
+              style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF666666),
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -189,34 +259,63 @@ class LikedBeautyEventCard extends StatelessWidget {
     return Row(
       children: [
         if (event.discountRate > 0)
-          Text(
-            '${event.discountRate}%',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.orange),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF4B6E).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(2),
+            ),
+            child: Text(
+              '${event.discountRate}%',
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFFF4B6E),
+              ),
+            ),
           ),
-        if (event.discountRate > 0) const SizedBox(width: 4),
+        if (event.discountRate > 0) const SizedBox(width: 2),
         Text(
           '${formatter.format(event.discountedPrice)}원',
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
+          ),
         ),
       ],
     );
   }
 
   Widget _buildRatingSection() {
-    return Row(
-      children: [
-        const Icon(Icons.star, size: 14, color: Colors.amber),
-        const SizedBox(width: 2),
-        Text(
-          event.rating,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          '(${event.ratingCount})',
-          style: const TextStyle(fontSize: 11, color: Colors.white60),
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.star, size: 10, color: Color(0xFFFFB800)),
+          const SizedBox(width: 1),
+          Text(
+            event.rating,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
+          const SizedBox(width: 1),
+          Text(
+            '(${event.ratingCount})',
+            style: const TextStyle(
+              fontSize: 9,
+              color: Color(0xFF666666),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

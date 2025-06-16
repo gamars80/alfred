@@ -127,10 +127,21 @@ class _BeautyEventLikedTabState extends State<BeautyEventLikedTab> {
             children: [
               TextButton.icon(
                 onPressed: _toggleSort,
-                icon: const Icon(Icons.swap_vert, size: 18, color: Colors.white),
+                icon: const Icon(Icons.swap_vert, size: 18, color: Color(0xFF666666)),
                 label: Text(
                   _sortByHighPrice ? '높은 가격순' : '낮은 가격순',
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(
+                    color: Color(0xFF666666),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                  ),
                 ),
               ),
             ],
@@ -151,7 +162,11 @@ class _BeautyEventLikedTabState extends State<BeautyEventLikedTab> {
               } else {
                 return const Padding(
                   padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(child: CircularProgressIndicator()),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF666666)),
+                    ),
+                  ),
                 );
               }
             },

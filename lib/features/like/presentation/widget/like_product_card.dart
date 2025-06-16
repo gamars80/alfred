@@ -23,97 +23,110 @@ class LikedProductCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.06),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-
-          border: Border.all(color: Colors.white10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
           children: [
-            // 이미지 + 찜취소 버튼
-            AspectRatio(
-              aspectRatio: 1,
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
-                    child: Image.network(
-                      _getValidImageUrl(product.productImage),
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey,
-                        child: const Icon(Icons.broken_image, color: Colors.white70),
-                      ),
-                    ),
+            // 이미지
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Image.network(
+                  _getValidImageUrl(product.productImage),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: Colors.grey[100],
+                    child: Icon(Icons.broken_image, color: Colors.grey[400]),
                   ),
-                  // 찜취소 버튼
-                  Positioned(
-                    top: 6,
-                    right: 6,
-                    child: GestureDetector(
-                      onTap: () {
-                        onUnLike();
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black45,
-                          shape: BoxShape.circle,
-                        ),
-                        padding: const EdgeInsets.all(6),
-                        child: const Icon(
-                          Icons.close,
-                          size: 16,
-                          color: Colors.white,
-                        ),
+                ),
+              ),
+            ),
+
+            // 찜취소 버튼
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: onUnLike,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(
+                    Icons.close,
+                    size: 16,
+                    color: Colors.grey[700],
+                  ),
+                ),
               ),
             ),
 
             // 내용
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Flexible(
-                      child: Text(
-                        product.productName,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
+                    Text(
+                      product.productName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.notoSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF1A1A1A),
+                        height: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 2),
                     Text(
                       '₩${formatter.format(product.productPrice)}',
                       style: GoogleFonts.roboto(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.amberAccent,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1A1A1A),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 1),
                     Text(
                       product.mallName,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       style: GoogleFonts.notoSans(
-                        fontSize: 12,
-                        color: Colors.white60,
+                        fontSize: 10,
+                        color: Colors.grey[600],
                       ),
                     ),
                   ],
