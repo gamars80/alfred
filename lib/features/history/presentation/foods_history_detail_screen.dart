@@ -191,6 +191,8 @@ class _RecipeGridItem extends StatelessWidget {
   final int viewCount;
   final String detailLink;
   final VoidCallback? onTap;
+  final bool isLiked;
+  final VoidCallback? onLikeTap;
 
   const _RecipeGridItem({
     Key? key,
@@ -200,6 +202,8 @@ class _RecipeGridItem extends StatelessWidget {
     required this.viewCount,
     required this.detailLink,
     this.onTap,
+    this.isLiked = false,
+    this.onLikeTap,
   }) : super(key: key);
 
   @override
@@ -231,60 +235,90 @@ class _RecipeGridItem extends StatelessWidget {
           ],
         ),
         clipBehavior: Clip.hardEdge,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            AspectRatio(
-              aspectRatio: 1,
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        height: 1.2,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Spacer(),
-                    Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AspectRatio(
+                  aspectRatio: 1,
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.star, size: 12, color: Colors.amber.shade600),
-                        const SizedBox(width: 2),
                         Text(
-                          rating.toStringAsFixed(1),
+                          name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
+                            fontSize: 13,
+                            height: 1.2,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        Icon(Icons.remove_red_eye_outlined, size: 12, color: Colors.grey.shade600),
-                        const SizedBox(width: 2),
-                        Text(
-                          NumberFormat('#,###').format(viewCount),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade600,
-                          ),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            Icon(Icons.star, size: 12, color: Colors.amber.shade600),
+                            const SizedBox(width: 2),
+                            Text(
+                              rating.toStringAsFixed(1),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(Icons.remove_red_eye_outlined, size: 12, color: Colors.grey.shade600),
+                            const SizedBox(width: 2),
+                            Text(
+                              NumberFormat('#,###').format(viewCount),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              top: 8,
+              left: 8,
+              child: GestureDetector(
+                onTap: onLikeTap,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    isLiked ? Icons.favorite : Icons.favorite_border,
+                    size: 20,
+                    color: isLiked ? Colors.red : Colors.grey.shade600,
+                  ),
                 ),
               ),
             ),
@@ -437,50 +471,84 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
     }
   }
 
-  Future<void> _handleLike(FoodsProduct product) async {
+  Future<void> _handleLike(dynamic item) async {
     if (_isLikeLoading) return;
     setState(() => _isLikeLoading = true);
 
     try {
-      if (product.liked) {
-        await _likeRepository.deleteLikeFood(
-          historyId: _history.id,
-          recommendationId: product.id.toString(),
-          productId: product.productId,
-          mallName: product.mallName,
-        );
-      } else {
-        await _likeRepository.postLikeFood(
-          historyId: _history.id,
-          recommendationId: product.id.toString(),
-          productId: product.productId,
-          mallName: product.mallName,
-        );
-      }
+      if (item is FoodsProduct) {
+        if (item.liked) {
+          await _likeRepository.deleteLikeFood(
+            historyId: _history.id,
+            recommendationId: item.id.toString(),
+            productId: item.productId,
+            mallName: item.mallName,
+          );
+        } else {
+          await _likeRepository.postLikeFood(
+            historyId: _history.id,
+            recommendationId: item.id.toString(),
+            productId: item.productId,
+            mallName: item.mallName,
+          );
+        }
 
-      setState(() {
-        _history = _history.copyWith(
-          recommendations: _history.recommendations.map((p) {
-            if (p.id == product.id) {
-              return FoodsProduct(
-                id: p.id,
-                productId: p.productId,
-                productName: p.productName,
-                productPrice: p.productPrice,
-                productLink: p.productLink,
-                productImage: p.productImage,
-                productDescription: p.productDescription,
-                source: p.source,
-                mallName: p.mallName,
-                category: p.category,
-                reviewCount: p.reviewCount,
-                liked: !p.liked,
-              );
-            }
-            return p;
-          }).toList(),
-        );
-      });
+        setState(() {
+          _history = _history.copyWith(
+            recommendations: _history.recommendations.map((p) {
+              if (p.id == item.id) {
+                return FoodsProduct(
+                  id: p.id,
+                  productId: p.productId,
+                  productName: p.productName,
+                  productPrice: p.productPrice,
+                  productLink: p.productLink,
+                  productImage: p.productImage,
+                  productDescription: p.productDescription,
+                  source: p.source,
+                  mallName: p.mallName,
+                  category: p.category,
+                  reviewCount: p.reviewCount,
+                  liked: !p.liked,
+                );
+              }
+              return p;
+            }).toList(),
+          );
+        });
+      } else if (item is FoodsRecipe) {
+        if (item.liked) {
+          await _likeRepository.deleteLikeRecipe(
+            historyId: _history.id,
+            recipeId: item.id.toString(),
+          );
+        } else {
+          await _likeRepository.postLikeRecipe(
+            historyId: _history.id,
+            recipeId: item.id.toString(),
+          );
+        }
+
+        setState(() {
+          _history = _history.copyWith(
+            recipes: _history.recipes.map((r) {
+              if (r.id == item.id) {
+                return FoodsRecipe(
+                  id: r.id,
+                  recipeName: r.recipeName,
+                  detailLink: r.detailLink,
+                  recipeImage: r.recipeImage,
+                  averageRating: r.averageRating,
+                  reviewCount: r.reviewCount,
+                  viewCount: r.viewCount,
+                  liked: !r.liked,
+                );
+              }
+              return r;
+            }).toList(),
+          );
+        });
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -635,7 +703,7 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                               crossAxisCount: 2,
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 12,
-                              mainAxisExtent: 240,
+                              mainAxisExtent: 220,
                             ),
                             itemCount: _history.recipes.length,
                             itemBuilder: (context, index) {
@@ -646,6 +714,8 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                                 rating: recipe.averageRating.toDouble(),
                                 viewCount: recipe.viewCount,
                                 detailLink: recipe.detailLink,
+                                isLiked: recipe.liked,
+                                onLikeTap: () => _handleLike(recipe),
                                 onTap: () async {
                                   final Uri url = Uri.parse(recipe.detailLink);
                                   if (await canLaunchUrl(url)) {

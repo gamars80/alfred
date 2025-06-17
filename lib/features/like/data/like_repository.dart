@@ -374,6 +374,67 @@ class LikeRepository {
     }
   }
 
+  Future<int> postLikeRecipe({
+    required int historyId,
+    required String recipeId,
+  }) async {
+    debugPrint('📡 POST /api/likes/recipes 호출');
+    debugPrint('   요청 데이터: {historyId: $historyId, recipeId: $recipeId}');
+
+    try {
+      final response = await _dio.post(
+        '/api/likes/recipes',
+        data: {
+          'historyId': historyId,
+          'recipeId': recipeId,
+        },
+      );
+      
+      debugPrint('✅ 레시피 좋아요 요청 성공 - 상태 코드: ${response.statusCode}');
+      debugPrint('   응답 데이터: ${response.data}');
+      
+      return response.data['userLikeId'] as int;
+    } on DioException catch (e) {
+      debugPrint('❌ DioException 발생: ${e.message}');
+      debugPrint('   상태 코드: ${e.response?.statusCode}');
+      debugPrint('   응답 데이터: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      debugPrint('❌ 일반 예외 발생: $e');
+      debugPrint('$st');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteLikeRecipe({
+    required int historyId,
+    required String recipeId,
+  }) async {
+    debugPrint('📡 DELETE /api/likes/recipes 호출');
+    debugPrint('   요청 데이터: {historyId: $historyId, recipeId: $recipeId}');
+
+    try {
+      final response = await _dio.delete(
+        '/api/likes/recipes',
+        data: {
+          'historyId': historyId,
+          'recipeId': recipeId,
+        },
+      );
+      
+      debugPrint('✅ 레시피 좋아요 취소 요청 성공 - 상태 코드: ${response.statusCode}');
+      debugPrint('   응답 데이터: ${response.data}');
+    } on DioException catch (e) {
+      debugPrint('❌ DioException 발생: ${e.message}');
+      debugPrint('   상태 코드: ${e.response?.statusCode}');
+      debugPrint('   응답 데이터: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      debugPrint('❌ 일반 예외 발생: $e');
+      debugPrint('$st');
+      rethrow;
+    }
+  }
 }
 
 
