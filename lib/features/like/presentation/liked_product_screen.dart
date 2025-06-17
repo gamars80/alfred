@@ -2,6 +2,7 @@
 import 'package:alfred_clean/features/like/presentation/widget/beauty_community_liked_tab.dart';
 import 'package:alfred_clean/features/like/presentation/widget/beauty_event_liked_tab.dart';
 import 'package:alfred_clean/features/like/presentation/widget/beauty_hospital_liked_tab.dart';
+import 'package:alfred_clean/features/like/presentation/widget/food_liked_tab.dart';
 import 'package:alfred_clean/features/like/presentation/widget/product_liked_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -22,12 +23,13 @@ class _LikedProductScreenState extends State<LikedProductScreen>
     Tab(text: '시술 커뮤니티'),
     Tab(text: '시술 이벤트'),
     Tab(text: '시술 병원'),
+    Tab(text: '음식/식자재'),
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
   }
 
   @override
@@ -81,6 +83,7 @@ class _LikedProductScreenState extends State<LikedProductScreen>
           BeautyCommunityLikedTab(),
           BeautyEventLikedTab(),
           BeautyHospitalLikedTab(),
+          FoodLikedTab(),
         ],
       ),
     );
