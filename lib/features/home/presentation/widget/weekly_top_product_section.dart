@@ -36,7 +36,7 @@ class _WeeklyTopProductSectionState extends State<WeeklyTopProductSection> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: Colors.black87,
                   letterSpacing: -0.2,
                 ),
               ),
@@ -45,7 +45,7 @@ class _WeeklyTopProductSectionState extends State<WeeklyTopProductSection> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 240,
+          height: 260,
           child: FutureBuilder<List<PopularProduct>>(
             future: futureWeeklyTopProducts,
             builder: (context, snapshot) {

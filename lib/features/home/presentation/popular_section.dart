@@ -38,8 +38,8 @@ class _PopularSectionState extends State<PopularSection> with SingleTickerProvid
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,        // ✅ 더 선명하게
-                  letterSpacing: -0.2,           // ✅ 미세 조정
+                  color: Colors.black87,
+                  letterSpacing: -0.2,
                 ),
               ),
             ],

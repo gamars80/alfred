@@ -29,7 +29,7 @@ class _PopularEventSectionCardState extends State<PopularEventSectionCard> {
           padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
           child: Text(
             '시술 이벤트 찜 Top 10',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87),
           ),
         ),
         SizedBox(
