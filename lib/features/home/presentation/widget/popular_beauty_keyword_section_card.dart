@@ -15,7 +15,6 @@ class PopularBeautyKeywordSectionCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 12),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -23,7 +22,7 @@ class PopularBeautyKeywordSectionCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Colors.black87,
             ),
           ),
         ),
@@ -77,25 +76,30 @@ class _KeywordCard extends StatelessWidget {
         width: 110,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.grey[900],
-          border: Border.all(
-            color: Colors.grey[800]!,
-            width: 1,
-          ),
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.shade200),
           borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade100,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
-                color: Colors.grey[800],
+                color: Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.grey.shade200),
               ),
               child: Text(
                 '$rank',
                 style: TextStyle(
-                  color: Colors.grey[400],
+                  color: Colors.black87,
                   fontWeight: FontWeight.bold,
                   fontSize: 11,
                 ),
@@ -106,7 +110,7 @@ class _KeywordCard extends StatelessWidget {
               child: Text(
                 keyword.keyword,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: Colors.black87,
                   fontWeight: FontWeight.w500,
                   fontSize: 12,
                 ),

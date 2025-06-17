@@ -47,7 +47,7 @@ class PopularCommunityCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 10, red: 0, green: 0, blue: 0),
+              color: Colors.grey.shade100,
               blurRadius: 6,
               offset: const Offset(0, 4),
             ),
@@ -59,12 +59,17 @@ class PopularCommunityCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 153, red: 0, green: 0, blue: 0),
+                color: Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.grey.shade200),
               ),
               child: Text(
                 'TOP $rank',
-                style: const TextStyle(fontSize: 11, color: Colors.white),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             const SizedBox(height: 8),

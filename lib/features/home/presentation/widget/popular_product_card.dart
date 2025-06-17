@@ -60,6 +60,14 @@ class PopularProductCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade100,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,13 +104,14 @@ class PopularProductCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: Text(
                     'TOP $rank',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Colors.black87,
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -117,7 +126,7 @@ class PopularProductCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(product.mallName, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+                  Text(product.mallName, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
                   const SizedBox(height: 4),
                   Row(
                     children: [

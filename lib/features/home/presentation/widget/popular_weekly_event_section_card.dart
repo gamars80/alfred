@@ -23,7 +23,7 @@ class PopularWeeklyEventSectionCard extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
           child: Text(
             '이번주 조회 Top10 이벤트',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87),
           ),
         ),
         SizedBox(
@@ -34,7 +34,21 @@ class PopularWeeklyEventSectionCard extends StatelessWidget {
             itemCount: events.length,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (_, index) {
-              return PopularWeeklyEventCard(event: events[index]);
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade100,
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: PopularWeeklyEventCard(event: events[index]),
+              );
             },
           ),
         ),
