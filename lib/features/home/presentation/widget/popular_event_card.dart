@@ -137,12 +137,17 @@ class PopularEventCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.grey.shade50,
                       borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.grey.shade200),
                     ),
                     child: Text(
                       'TOP $rank',
-                      style: const TextStyle(fontSize: 11, color: Colors.white),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),

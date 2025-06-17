@@ -40,6 +40,14 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade100,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,13 +141,13 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
                     vertical: isSmallScreen ? 1 : 2
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black87,
+                    color: Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     'TOP $rank',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black87,
                       fontSize: isSmallScreen ? 8 : 9, // 더 작은 폰트
                       fontWeight: FontWeight.bold,
                     ),

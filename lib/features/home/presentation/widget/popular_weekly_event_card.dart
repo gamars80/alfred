@@ -85,14 +85,15 @@ class PopularWeeklyEventCard extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: Text(
                     event.source,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
-                      color: Colors.white,
+                      color: Colors.black87,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -107,7 +108,11 @@ class PopularWeeklyEventCard extends StatelessWidget {
             event.hospitalName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
 
           // 할인율 + 가격
@@ -116,12 +121,20 @@ class PopularWeeklyEventCard extends StatelessWidget {
               if (event.discountRate > 0)
                 Text(
                   '${event.discountRate.toInt()}%',
-                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               const SizedBox(width: 4),
               Text(
                 _formatPrice(event.discountedPrice),
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -131,7 +144,8 @@ class PopularWeeklyEventCard extends StatelessWidget {
             '⭐ ${event.rating.toStringAsFixed(1)} (${event.ratingCount})',
             style: const TextStyle(
               fontSize: 11,
-              color: Colors.white, // ✅ 다크 배경 대비 강조
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
             ),
           ),
         ],
