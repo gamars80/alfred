@@ -41,6 +41,7 @@ class _LikedProductScreenState extends State<LikedProductScreen>
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         elevation: 0,
         backgroundColor: Colors.white,
         title: Text(
@@ -54,14 +55,7 @@ class _LikedProductScreenState extends State<LikedProductScreen>
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-            ),
+            alignment: Alignment.centerLeft,
             child: TabBar(
               controller: _tabController,
               isScrollable: true,
@@ -74,7 +68,8 @@ class _LikedProductScreenState extends State<LikedProductScreen>
               labelColor: const Color(0xFF1A1A1A),
               unselectedLabelColor: Colors.grey,
               indicatorWeight: 2,
-              padding: const EdgeInsets.only(left: 16),
+              padding: EdgeInsets.zero,
+              labelPadding: const EdgeInsets.symmetric(horizontal: 16),
             ),
           ),
         ),

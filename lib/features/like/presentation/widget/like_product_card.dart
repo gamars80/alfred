@@ -38,11 +38,12 @@ class LikedProductCard extends StatelessWidget {
             // 이미지
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: AspectRatio(
-                aspectRatio: 1,
+              child: Container(
+                height: 250,
+                width: double.infinity,
                 child: Image.network(
                   _getValidImageUrl(product.productImage),
-                  fit: BoxFit.cover,
+                  fit: BoxFit.fitHeight,
                   width: double.infinity,
                   height: double.infinity,
                   errorBuilder: (_, __, ___) => Container(
