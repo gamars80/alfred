@@ -307,68 +307,29 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 50),
                     
                     // App name in Korean with gold gradient - more elegant font
-                    Stack(
-                      children: [
-                        // Shadow layer for depth
-                        Text(
-                          '알프레드',
-                          style: TextStyle(
-                            fontSize: 46,
-                            fontWeight: FontWeight.w300,
-                            letterSpacing: 3,
-                            foreground: Paint()
-                              ..style = PaintingStyle.stroke
-                              ..strokeWidth = 3
-                              ..color = const Color(0xFFD4AF37).withOpacity(0.3),
-                          ),
-                        ),
-                        // Main text with gradient
-                        ShaderMask(
-                          shaderCallback: (bounds) => LinearGradient(
-                            colors: [
-                              const Color(0xFFF4E4C1), // Light gold
-                              const Color(0xFFD4AF37), // Gold
-                              const Color(0xFFF4E4C1), // Light gold
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            stops: const [0.0, 0.5, 1.0],
-                          ).createShader(bounds),
-                          child: const Text(
-                            '알프레드',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 46,
-                              fontWeight: FontWeight.w300,
-                              letterSpacing: 3,
-                              height: 1.2,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Subtitle with custom styling
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: const Color(0xFFD4AF37).withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                      ),
-                      child: Text(
+                    ShaderMask(
+                      shaderCallback: (bounds) => LinearGradient(
+                        colors: [
+                          const Color(0xFFF4E4C1), // Light gold
+                          const Color(0xFFD4AF37), // Gold
+                          const Color(0xFFF4E4C1), // Light gold
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        stops: const [0.0, 0.5, 1.0],
+                      ).createShader(bounds),
+                      child: const Text(
                         'ALFRED',
                         style: TextStyle(
-                          color: const Color(0xFFD4AF37).withOpacity(0.8),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 6,
+                          color: Colors.white,
+                          fontSize: 46,
+                          fontWeight: FontWeight.w300,
+                          letterSpacing: 3,
+                          height: 1.2,
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 12),
                     Text(
                       'Your Personal Style Butler',
@@ -416,7 +377,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           color: const Color(0xFFD4AF37).withOpacity(0.8),
                           fontSize: 14,
-                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
@@ -464,109 +424,72 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// Custom painter for Alfred butler logo - make it more prominent
+// Custom painter for Alfred butler logo
 class ButlerLogoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // Add glow effect
-    final glowPaint = Paint()
-      ..color = const Color(0xFFD4AF37).withOpacity(0.3)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
-    
-    canvas.drawCircle(
-      Offset(size.width * 0.5, size.height * 0.5),
-      size.width * 0.5,
-      glowPaint,
-    );
-    
-    final goldPaint = Paint()
-      ..color = const Color(0xFFD4AF37) // Gold color
+    final paint = Paint()
+      ..color = const Color(0xFFD4AF37)
       ..style = PaintingStyle.fill;
+
+    // Draw bow tie
+    final bowTiePath = Path()
+      ..moveTo(size.width * 0.3, size.height * 0.25)
+      ..lineTo(size.width * 0.5, size.height * 0.35)
+      ..lineTo(size.width * 0.7, size.height * 0.25)
+      ..lineTo(size.width * 0.7, size.height * 0.15)
+      ..lineTo(size.width * 0.5, size.height * 0.25)
+      ..lineTo(size.width * 0.3, size.height * 0.15)
+      ..close();
     
-    final brightGoldPaint = Paint()
-      ..color = const Color(0xFFF4E4C1) // Brighter gold
-      ..style = PaintingStyle.fill;
+    canvas.drawPath(bowTiePath, paint);
     
-    final whitePaint = Paint()
-      ..color = Colors.white.withOpacity(0.95)
-      ..style = PaintingStyle.fill;
-    
-    final outlinePaint = Paint()
-      ..color = const Color(0xFFD4AF37).withOpacity(0.8)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    
-    // Draw bow tie with gradient effect
-    final bowTiePath = Path();
-    bowTiePath.moveTo(size.width * 0.3, size.height * 0.25);
-    bowTiePath.lineTo(size.width * 0.5, size.height * 0.35);
-    bowTiePath.lineTo(size.width * 0.7, size.height * 0.25);
-    bowTiePath.lineTo(size.width * 0.7, size.height * 0.15);
-    bowTiePath.lineTo(size.width * 0.5, size.height * 0.25);
-    bowTiePath.lineTo(size.width * 0.3, size.height * 0.15);
-    bowTiePath.close();
-    
-    // Draw bow tie with gradient
-    canvas.drawPath(bowTiePath, goldPaint);
-    
-    // Add highlight to bow tie
-    final highlightPath = Path();
-    highlightPath.moveTo(size.width * 0.5, size.height * 0.25);
-    highlightPath.lineTo(size.width * 0.7, size.height * 0.15);
-    highlightPath.lineTo(size.width * 0.65, size.height * 0.2);
-    highlightPath.lineTo(size.width * 0.5, size.height * 0.28);
-    highlightPath.close();
-    
-    canvas.drawPath(highlightPath, brightGoldPaint);
-    canvas.drawPath(bowTiePath, outlinePaint);
-    
-    // Draw collar lines with white - thicker
+    // Draw collar with more elegant style
     final collarPaint = Paint()
-      ..color = Colors.white.withOpacity(0.9)
+      ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
+      ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
     
-    // Left collar
-    canvas.drawLine(
-      Offset(size.width * 0.25, size.height * 0.4),
-      Offset(size.width * 0.35, size.height * 0.55),
-      collarPaint,
-    );
+    // Left collar with elegant curve
+    final leftCollarPath = Path()
+      ..moveTo(size.width * 0.25, size.height * 0.4)
+      ..quadraticBezierTo(
+        size.width * 0.3, size.height * 0.5,
+        size.width * 0.35, size.height * 0.55,
+      );
+    canvas.drawPath(leftCollarPath, collarPaint);
     
-    // Right collar
-    canvas.drawLine(
-      Offset(size.width * 0.75, size.height * 0.4),
-      Offset(size.width * 0.65, size.height * 0.55),
-      collarPaint,
-    );
+    // Right collar with elegant curve
+    final rightCollarPath = Path()
+      ..moveTo(size.width * 0.75, size.height * 0.4)
+      ..quadraticBezierTo(
+        size.width * 0.7, size.height * 0.5,
+        size.width * 0.65, size.height * 0.55,
+      );
+    canvas.drawPath(rightCollarPath, collarPaint);
     
-    // Draw refined mustache - thicker and more prominent
-    final mustachePath = Path();
-    mustachePath.moveTo(size.width * 0.5, size.height * 0.65);
-    mustachePath.quadraticBezierTo(
-      size.width * 0.35, size.height * 0.63,
-      size.width * 0.25, size.height * 0.68,
-    );
-    mustachePath.moveTo(size.width * 0.5, size.height * 0.65);
-    mustachePath.quadraticBezierTo(
-      size.width * 0.65, size.height * 0.63,
-      size.width * 0.75, size.height * 0.68,
-    );
+    // Draw refined mustache
+    final mustachePath = Path()
+      ..moveTo(size.width * 0.35, size.height * 0.65)
+      ..quadraticBezierTo(
+        size.width * 0.5, size.height * 0.68,
+        size.width * 0.65, size.height * 0.65,
+      );
     
     final mustachePaint = Paint()
-      ..color = Colors.white.withOpacity(0.95)
+      ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
     
     canvas.drawPath(mustachePath, mustachePaint);
     
-    // Draw monocle with gold - bigger and brighter
+    // Draw monocle with more refined style
     final monoclePaint = Paint()
       ..color = const Color(0xFFD4AF37)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5;
+      ..strokeWidth = 3;
     
     canvas.drawCircle(
       Offset(size.width * 0.7, size.height * 0.5),
@@ -574,44 +497,59 @@ class ButlerLogoPainter extends CustomPainter {
       monoclePaint,
     );
     
-    // Inner monocle circle with shine effect
-    final innerMonoclePaint = Paint()
-      ..color = const Color(0xFFF4E4C1).withOpacity(0.5)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    
-    canvas.drawCircle(
-      Offset(size.width * 0.7, size.height * 0.5),
-      size.width * 0.12,
-      innerMonoclePaint,
-    );
-    
-    // Add lens shine
-    final shinePaint = Paint()
-      ..color = Colors.white.withOpacity(0.4)
-      ..style = PaintingStyle.fill;
-    
-    canvas.drawCircle(
-      Offset(size.width * 0.68, size.height * 0.48),
-      size.width * 0.03,
-      shinePaint,
-    );
-    
-    // Monocle chain - more visible
-    final chainPath = Path();
-    chainPath.moveTo(size.width * 0.85, size.height * 0.5);
-    chainPath.quadraticBezierTo(
-      size.width * 0.92, size.height * 0.6,
-      size.width * 0.88, size.height * 0.75,
-    );
+    // Draw monocle chain with elegant curve
+    final chainPath = Path()
+      ..moveTo(size.width * 0.85, size.height * 0.5)
+      ..quadraticBezierTo(
+        size.width * 0.92, size.height * 0.6,
+        size.width * 0.88, size.height * 0.75,
+      );
     
     final chainPaint = Paint()
-      ..color = const Color(0xFFD4AF37).withOpacity(0.8)
+      ..color = const Color(0xFFD4AF37)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
     
     canvas.drawPath(chainPath, chainPaint);
+
+    // Add subtle details
+    // Eyebrows
+    final eyebrowPaint = Paint()
+      ..color = Colors.white.withOpacity(0.8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+
+    // Left eyebrow
+    canvas.drawLine(
+      Offset(size.width * 0.4, size.height * 0.35),
+      Offset(size.width * 0.5, size.height * 0.33),
+      eyebrowPaint,
+    );
+
+    // Right eyebrow
+    canvas.drawLine(
+      Offset(size.width * 0.6, size.height * 0.35),
+      Offset(size.width * 0.5, size.height * 0.33),
+      eyebrowPaint,
+    );
+
+    // Add subtle smile
+    final smilePath = Path()
+      ..moveTo(size.width * 0.4, size.height * 0.7)
+      ..quadraticBezierTo(
+        size.width * 0.5, size.height * 0.72,
+        size.width * 0.6, size.height * 0.7,
+      );
+
+    final smilePaint = Paint()
+      ..color = Colors.white.withOpacity(0.8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawPath(smilePath, smilePaint);
   }
   
   @override
