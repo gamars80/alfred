@@ -23,7 +23,7 @@ class PopularCommunitySectionCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: Colors.black87,
             ),
           ),
         ),

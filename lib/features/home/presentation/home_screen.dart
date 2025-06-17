@@ -36,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: NestedScrollView(
         headerSliverBuilder: (_, __) {
           return [
@@ -47,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               snap: true,
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
+              elevation: 0.5,
               bottom: TabBar(
                 controller: _tabController,
                 tabs: tabs,

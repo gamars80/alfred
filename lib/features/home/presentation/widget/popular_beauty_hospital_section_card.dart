@@ -29,7 +29,7 @@ class _PopularBeautyHospitalSectionCardState extends State<PopularBeautyHospital
           padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
           child: Text(
             '시술 병원 찜 Top 10',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87),
           ),
         ),
         SizedBox(
