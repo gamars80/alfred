@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../model/age_range.dart';
 import 'package:dio/dio.dart';
 import '../../auth/common/dio/dio_client.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class VoiceCommandBottomSheet {
   static final Dio _dio = DioClient.dio;
@@ -59,9 +60,6 @@ class VoiceCommandBottomSheet {
 
           // ↓ 네이티브 음성인식을 호출하는 부분
           Future<void> handleMic() async {
-            // 이미 MainActivity에서 권한을 요청했기 때문에, 여기서는
-            // 단순히 네이티브 메서드(startListening)만 호출하면 됩니다.
-
             modalIsListening = true;
             setModalState(() {});
 
@@ -72,11 +70,42 @@ class VoiceCommandBottomSheet {
                 controller.text = result;
               }
             } catch (e) {
-              Fluttertoast.showToast(msg: '음성 인식에 실패했습니다.');
-            }
+              if (e.toString().contains('PERMISSION_DENIED')) {
+                final shouldOpenSettings = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text(
+                      '마이크 권한 필요',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    content: const Text(
+                      '음성 인식을 위해\n마이크 권한이 필요합니다.',
+                      style: TextStyle(fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('취소'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('권한 설정하기'),
+                      ),
+                    ],
+                  ),
+                );
 
-            modalIsListening = false;
-            setModalState(() {});
+                if (shouldOpenSettings == true) {
+                  await openAppSettings();
+                }
+              } else {
+                Fluttertoast.showToast(msg: '음성 인식에 실패했습니다.');
+              }
+            } finally {
+              modalIsListening = false;
+              setModalState(() {});
+            }
           }
 
           return Container(
