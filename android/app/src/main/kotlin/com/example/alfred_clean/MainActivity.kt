@@ -48,6 +48,19 @@ class MainActivity : FlutterActivity() {
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         )
         setTheme(R.style.LaunchTheme)
+
+        // 앱 시작 시 마이크 권한 요청
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                REQUEST_RECORD_AUDIO
+            )
+        }
     }
 
     override fun onFlutterUiDisplayed() {
@@ -82,29 +95,12 @@ class MainActivity : FlutterActivity() {
                     )
 
                     if (status != PackageManager.PERMISSION_GRANTED) {
-                        // 2) “영구 거부(PermanentlyDenied)” 상태인지 확인
-                        if (!ActivityCompat.shouldShowRequestPermissionRationale(
-                                this,
-                                Manifest.permission.RECORD_AUDIO
-                            )
-                        ) {
-                            // 사용자가 “Don’t allow” 또는 “다시 묻지 않음”을 선택한 상태
-                            // → 곧장 앱 설정 화면으로 이동 유도
-                            val intent = Intent(
-                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                Uri.fromParts("package", packageName, null)
-                            )
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            startActivity(intent)
-                            // 사용자가 설정에서 직접 권한을 켤 때까지 doStartListening은 호출 안 함
-                        } else {
-                            // 단순 거부(Denied) 상태라면 다시 팝업 띄우기
-                            ActivityCompat.requestPermissions(
-                                this,
-                                arrayOf(Manifest.permission.RECORD_AUDIO),
-                                REQUEST_RECORD_AUDIO
-                            )
-                        }
+                        // 권한이 없는 경우 시스템 권한 요청 다이얼로그 표시
+                        ActivityCompat.requestPermissions(
+                            this,
+                            arrayOf(Manifest.permission.RECORD_AUDIO),
+                            REQUEST_RECORD_AUDIO
+                        )
                     } else {
                         // 이미 허용된 상태
                         doStartListening()
