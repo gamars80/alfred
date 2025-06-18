@@ -2,16 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../model/product.dart';
+import '../../data/food_api.dart';
 
 class FoodProductCard extends StatelessWidget {
   final Product product;
+  final int historyId;
 
   const FoodProductCard({
     super.key,
     required this.product,
+    required this.historyId,
   });
 
+  static final FoodApi _foodApi = FoodApi();
+
   Future<void> _launchUrl() async {
+    _foodApi.openFood(
+      product.productId,
+      historyId.toString(),
+      product.source ?? '',
+    );
+
     final uri = Uri.parse(product.link);
     if (!await launchUrl(uri)) {
       throw Exception('Could not launch $uri');

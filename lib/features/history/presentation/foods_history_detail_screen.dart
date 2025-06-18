@@ -5,6 +5,7 @@ import '../model/foods_history.dart';
 import '../data/history_repository.dart';
 import '../../like/data/like_repository.dart';
 import '../../../../common/presentation/web_view_screen.dart';
+import '../../../../features/call/data/food_api.dart';
 
 class FoodsHistoryDetailScreen extends StatefulWidget {
   final FoodsHistory history;
@@ -26,9 +27,12 @@ class _ProductGridItem extends StatelessWidget {
   final int? reviewCount;
   final double? rating;
   final String? description;
-  final VoidCallback? onTap;
+  final String? productLink;
   final bool isLiked;
   final VoidCallback? onLikeTap;
+  final String productId;
+  final String source;
+  final int historyId;
 
   const _ProductGridItem({
     super.key,
@@ -39,15 +43,35 @@ class _ProductGridItem extends StatelessWidget {
     this.reviewCount,
     this.rating,
     this.description,
-    this.onTap,
+    this.productLink,
     this.isLiked = false,
     this.onLikeTap,
+    required this.productId,
+    required this.source,
+    required this.historyId,
   });
+
+  static final FoodApi _foodApi = FoodApi();
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () async {
+        // openFood API 비동기 호출
+        _foodApi.openFood(productId, historyId.toString(), source);
+        if (productLink != null) {
+          final Uri url = Uri.parse(productLink!);
+          if (await canLaunchUrl(url)) {
+            await launchUrl(url, mode: LaunchMode.externalApplication);
+          } else {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('링크를 열 수 없습니다.')),
+              );
+            }
+          }
+        }
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -669,9 +693,12 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                                 mallName: product.mallName,
                                 reviewCount: product.reviewCount,
                                 description: product.productDescription,
-                                onTap: () { /* 상세 이동 */ },
+                                productLink: product.productLink,
                                 isLiked: product.liked,
                                 onLikeTap: () => _handleLike(product),
+                                productId: product.productId,
+                                source: product.source,
+                                historyId: _history.id,
                               );
                             },
                           ),
@@ -703,7 +730,7 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                               crossAxisCount: 2,
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 12,
-                              mainAxisExtent: 220,
+                              mainAxisExtent: 240,
                             ),
                             itemCount: _history.recipes.length,
                             itemBuilder: (context, index) {
