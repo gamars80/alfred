@@ -1,3 +1,5 @@
+import 'package:alfred_clean/features/call/model/product.dart';
+
 class LikedProduct {
   final int historyId;
   final String recommendId;
@@ -44,6 +46,23 @@ class LikedProduct {
       category:         json['category'] as String,
       historyAddedAt:   json['historyAddedAt'] as String,
       likedAt:          DateTime.parse(json['likedAt'] as String),
+    );
+  }
+
+  Product toProduct() {
+    return Product(
+      recommendationId: recommendId,
+      name: productName,
+      productId: productId,
+      price: productPrice,
+      image: productImage,
+      link: productLink,
+      reason: reason,
+      mallName: mallName,
+      category: category,
+      liked: true,
+      reviewCount: 0,
+      source: source,
     );
   }
 }
