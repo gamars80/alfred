@@ -7,10 +7,12 @@ class FoodProductsGrid extends StatefulWidget {
   final String? recipeSummary;
   final String? requiredIngredients;
   final String? suggestionReason;
+  final int historyId;
 
   const FoodProductsGrid({
     super.key,
     required this.products,
+    required this.historyId,
     this.recipeSummary,
     this.requiredIngredients,
     this.suggestionReason,
@@ -141,7 +143,7 @@ class _FoodProductsGridState extends State<FoodProductsGrid> {
             mainAxisExtent: 265
           ),
           itemCount: allProducts.length,
-          itemBuilder: (context, index) => FoodProductCard(product: allProducts[index]),
+          itemBuilder: (context, index) => FoodProductCard(product: allProducts[index], historyId: widget.historyId),
         ),
         const SizedBox(height: 16),
       ],

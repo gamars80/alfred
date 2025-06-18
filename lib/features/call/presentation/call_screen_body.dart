@@ -345,6 +345,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
         sections.add(
           FoodProductsGrid(
             products: widget.categorizedProducts,
+            historyId: widget.id,
             recipeSummary: widget.recipeSummary,
             requiredIngredients: widget.requiredIngredients,
             suggestionReason: widget.suggestionReason,
