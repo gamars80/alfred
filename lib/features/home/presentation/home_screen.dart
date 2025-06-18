@@ -13,12 +13,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  final List<Tab> tabs = const [
+  static const List<Tab> tabs = [
     Tab(icon: Icon(Icons.shopping_bag_outlined), text: '패션쇼핑'),
     Tab(icon: Icon(Icons.face_retouching_natural), text: '시술성형'),
+    Tab(icon: Icon(Icons.restaurant), text: '음식/식자재'),
   ];
+  
+  late TabController _tabController;
 
   @override
   void initState() {
@@ -56,6 +57,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 labelColor: Colors.black,
                 unselectedLabelColor: Colors.grey,
                 labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                isScrollable: true,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 16),
+                tabAlignment: TabAlignment.start,
               ),
             ),
           ];
@@ -65,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           children: const [
             FashionShoppingTab(),
             SurgeryTab(), // ✅ 연결됨
+            SizedBox(), // 음식/식자재 탭 (개발 예정)
           ],
         ),
       ),
