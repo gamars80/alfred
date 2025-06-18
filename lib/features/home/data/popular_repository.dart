@@ -7,6 +7,7 @@ import '../model/popular_product.dart';
 import '../model/popular_weekly_event.dart';
 import '../model/popular_beauty_keyword.dart';
 import '../model/popular_food_ingredient.dart';
+import '../model/popular_food_product.dart';
 
 class PopularRepository {
   final Dio _dio = DioClient.dio;
@@ -74,6 +75,13 @@ class PopularRepository {
     final response = await _dio.get('/api/products/weekly/top/food/ingredient');
     return (response.data as List)
         .map((e) => PopularFoodIngredient.fromJson(e))
+        .toList();
+  }
+
+  Future<List<PopularFoodProduct>> fetchWeeklyTopFoodProducts() async {
+    final response = await _dio.get('/api/products/weekly/top/food/products');
+    return (response.data as List)
+        .map((e) => PopularFoodProduct.fromJson(e))
         .toList();
   }
 }
