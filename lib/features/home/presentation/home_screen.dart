@@ -4,6 +4,7 @@ import 'package:alfred_clean/features/home/presentation/widget/weekly_top_keywor
 import 'package:alfred_clean/features/home/presentation/widget/weekly_top_product_section.dart';
 import 'package:flutter/material.dart';
 import 'popular_section.dart';
+import 'package:alfred_clean/features/home/presentation/widget/weekly_top_food_command_section.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -69,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           children: const [
             FashionShoppingTab(),
             SurgeryTab(), // ✅ 연결됨
-            SizedBox(), // 음식/식자재 탭 (개발 예정)
+            FoodShoppingTab(), // 음식/식자재 탭
           ],
         ),
       ),
@@ -90,6 +91,22 @@ class FashionShoppingTab extends StatelessWidget {
         WeeklyTopProductSection(),
         PopularSection(),
         // 👉 오늘의 추천, 히스토리 등 추가 가능
+      ],
+    );
+  }
+}
+
+// 🍽️ 음식/식자재 탭 콘텐츠
+class FoodShoppingTab extends StatelessWidget {
+  const FoodShoppingTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: const [
+        WeeklyTopFoodCommandSection(),
+        // 👉 추가 섹션들 구현 예정
       ],
     );
   }
