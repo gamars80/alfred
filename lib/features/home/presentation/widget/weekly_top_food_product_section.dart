@@ -38,7 +38,7 @@ class _WeeklyTopFoodProductSectionState extends State<WeeklyTopFoodProductSectio
           ),
         ),
         SizedBox(
-          height: 260,
+          height: 240,
           child: FutureBuilder<List<PopularFoodProduct>>(
             future: _futureProducts,
             builder: (context, snapshot) {
