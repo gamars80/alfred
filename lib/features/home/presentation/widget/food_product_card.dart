@@ -169,7 +169,7 @@ class FoodProductCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
@@ -180,7 +180,7 @@ class FoodProductCard extends StatelessWidget {
                       Text(
                         _formatPrice(p.productPrice),
                         style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: Colors.deepOrange,
                         ),
