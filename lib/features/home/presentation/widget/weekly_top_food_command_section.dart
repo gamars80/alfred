@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/popular_repository.dart';
 import '../../model/popular_food_ingredient.dart';
+import '../../../search/presentation/food_ingredient_product_screen.dart';
 
 class WeeklyTopFoodCommandSection extends StatefulWidget {
   const WeeklyTopFoodCommandSection({super.key});
@@ -114,8 +115,16 @@ class _WeeklyTopFoodCommandSectionState extends State<WeeklyTopFoodCommandSectio
           height: 30, // 각 항목의 고정 높이
           child: InkWell(
             onTap: () {
-              // TODO: 명령어 실행 로직 구현
-              debugPrint('WeeklyTopFoodCommandSection - Command tapped: ${ingredient.ingredient}');
+              debugPrint('WeeklyTopFoodCommandSection - Navigating to FoodIngredientProductScreen with ingredient: ${ingredient.ingredient}');
+              
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FoodIngredientProductScreen(
+                    ingredient: ingredient.ingredient,
+                  ),
+                ),
+              );
             },
             borderRadius: BorderRadius.circular(6),
             child: Row(

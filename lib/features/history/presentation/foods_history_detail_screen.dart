@@ -282,7 +282,7 @@ class _RecipeGridItem extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 11,
                             height: 1.2,
                             color: Colors.black,
                             fontWeight: FontWeight.w600,
@@ -730,7 +730,7 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                               crossAxisCount: 2,
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 12,
-                              mainAxisExtent: 240,
+                              mainAxisExtent: 220,
                             ),
                             itemCount: _history.recipes.length,
                             itemBuilder: (context, index) {
