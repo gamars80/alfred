@@ -201,7 +201,7 @@ class FoodProductCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     p.productDescription,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 11,
