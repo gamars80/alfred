@@ -13,6 +13,7 @@ class WeeklyTopFoodCommandSection extends StatefulWidget {
 class _WeeklyTopFoodCommandSectionState extends State<WeeklyTopFoodCommandSection> {
   final _repo = PopularRepository();
   late Future<List<PopularFoodIngredient>> _futureIngredients;
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -50,30 +51,111 @@ class _WeeklyTopFoodCommandSectionState extends State<WeeklyTopFoodCommandSectio
               ),
             ),
             const SizedBox(height: 16),
-            FutureBuilder<List<PopularFoodIngredient>>(
-              future: _futureIngredients,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Text('불러오기 실패: ${snapshot.error}', 
-                    style: const TextStyle(color: Colors.black87));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Text('데이터가 없습니다', 
-                    style: const TextStyle(color: Colors.black87));
-                }
+            // 심플한 텍스트 탭
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextTab(
+                    text: '상품',
+                    isSelected: _selectedIndex == 0,
+                    onTap: () => setState(() => _selectedIndex = 0),
+                  ),
+                ),
+                Expanded(
+                  child: _buildTextTab(
+                    text: '레시피',
+                    isSelected: _selectedIndex == 1,
+                    onTap: () => setState(() => _selectedIndex = 1),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // 콘텐츠 영역
+            _selectedIndex == 0 ? _buildProductTab() : _buildRecipeTab(),
+          ],
+        ),
+      ),
+    );
+  }
 
-                final ingredients = snapshot.data!;
-                // 각 항목의 높이 (패딩 포함)
-                const itemHeight = 30.0;
-                // 전체 높이 계산 (데이터 개수에 따라)
-                final totalHeight = (ingredients.length / 2).ceil() * itemHeight;
+  Widget _buildTextTab({
+    required String text,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? Colors.black87 : Colors.grey.shade500,
+              ),
+            ),
+          ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            height: 2,
+            color: isSelected ? Colors.black87 : Colors.transparent,
+          ),
+        ],
+      ),
+    );
+  }
 
-                return SizedBox(
-                  height: totalHeight,
-                  child: _buildCommandList(ingredients),
-                );
-              },
+  Widget _buildProductTab() {
+    return FutureBuilder<List<PopularFoodIngredient>>(
+      future: _futureIngredients,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Text('불러오기 실패: ${snapshot.error}', 
+            style: const TextStyle(color: Colors.black87));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Text('데이터가 없습니다', 
+            style: TextStyle(color: Colors.black87));
+        }
+
+        final ingredients = snapshot.data!;
+        // 각 항목의 높이 (패딩 포함)
+        const itemHeight = 30.0;
+        // 전체 높이 계산 (데이터 개수에 따라)
+        final totalHeight = (ingredients.length / 2).ceil() * itemHeight;
+
+        return SizedBox(
+          height: totalHeight,
+          child: _buildCommandList(ingredients),
+        );
+      },
+    );
+  }
+
+  Widget _buildRecipeTab() {
+    return const SizedBox(
+      height: 120,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.restaurant_menu,
+              size: 48,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 16),
+            Text(
+              '레시피 데이터 준비 중',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+              ),
             ),
           ],
         ),
