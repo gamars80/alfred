@@ -11,6 +11,7 @@ class Product {
   final bool liked;
   final int reviewCount;
   final String? source;
+  final String? productDescription;
 
   Product({
     required this.recommendationId,
@@ -25,6 +26,7 @@ class Product {
     required this.liked,
     required this.reviewCount,
     required this.source,
+    this.productDescription,
   });
 
   Product copyWith({
@@ -43,6 +45,7 @@ class Product {
       reviewCount: reviewCount,
       source: source,
       liked: liked ?? this.liked,
+      productDescription: productDescription,
     );
   }
 
@@ -60,6 +63,7 @@ class Product {
       image: (json['productImage'] ?? json['image'] ?? '').toString(),
       link: (json['productLink'] ?? json['link'] ?? '').toString(),
       source: (json['source'] ?? '').toString(),
+      productDescription: json['productDescription'] ?? '',
     );
   }
 
@@ -77,6 +81,7 @@ class Product {
       category: json['category'] ?? '',
       reviewCount: _parseReviewCount(json['reviewCount']),
       liked: json['liked'] ?? false,
+      productDescription: json['productDescription'] ?? '',
     );
   }
 
