@@ -103,6 +103,13 @@ class SearchRepository {
     try {
       final response = await _dio.get(uri, queryParameters: params);
       debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      
+      // 디버깅: API 응답 전체 출력
+      debugPrint('API 응답 데이터: ${response.data}');
+      if (response.data['items'] != null && response.data['items'].isNotEmpty) {
+        debugPrint('첫 번째 상품 JSON: ${response.data['items'][0]}');
+      }
+      
       return ProductPageResult.fromJson(response.data);
     } on DioException catch (e) {
       debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
@@ -133,6 +140,13 @@ class SearchRepository {
     try {
       final response = await _dio.get(uri, queryParameters: params);
       debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      
+      // 디버깅: API 응답 전체 출력
+      debugPrint('API 응답 데이터: ${response.data}');
+      if (response.data['items'] != null && response.data['items'].isNotEmpty) {
+        debugPrint('첫 번째 상품 JSON: ${response.data['items'][0]}');
+      }
+      
       return ProductPageResult.fromJson(response.data);
     } on DioException catch (e) {
       debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
@@ -205,6 +219,65 @@ class SearchRepository {
       rethrow;
     } catch (e) {
       debugPrint('❌ [Error] $uri\n▶ message: $e');
+      rethrow;
+    }
+  }
+
+  // 음식 재료로 상품 검색
+  Future<ProductPageResult> fetchProductsByIngredient({
+    required String ingredient,
+    String? cursor,
+    String sortBy = 'createdAt',
+    String sortDir = 'desc',
+    String? searchKeyword,
+    String? source,
+  }) async {
+    final uri = '/api/products/ai-foods/search';
+    final params = {
+      'keyword': searchKeyword ?? ingredient,
+      'sortBy': sortBy,
+      'sortDir': sortDir,
+      'limit': pageSize,
+      if (cursor != null) 'cursor': cursor,
+      if (source != null) 'source': source,
+    };
+
+    debugPrint('📡 [GET] $uri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(uri, queryParameters: params);
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      return ProductPageResult.fromJson(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
+      rethrow;
+    }
+  }
+
+  // 음식 재료로 리뷰 검색
+  Future<ReviewPageResult> fetchReviewsByIngredient({
+    required String ingredient,
+    String? cursor,
+    String? searchKeyword,
+  }) async {
+    final uri = '/api/reviews/food/search';
+    final params = {
+      'ingredient': ingredient,
+      'limit': pageSize,
+      if (cursor != null) 'cursor': cursor,
+      if (searchKeyword != null && searchKeyword.isNotEmpty) 'searchKeyword': searchKeyword,
+    };
+
+    debugPrint('📡 [GET] $uri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(uri, queryParameters: params);
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      return ReviewPageResult.fromJson(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
       rethrow;
     }
   }
