@@ -50,15 +50,22 @@ class _FoodProductsGridState extends State<FoodProductsGrid> {
   Widget build(BuildContext context) {
     final allProducts = widget.products.values.expand((products) => products).toList();
 
+    // 디버깅을 위한 로그 추가
+    print('recipeSummary: "${widget.recipeSummary}"');
+    print('requiredIngredients: "${widget.requiredIngredients}"');
+    print('suggestionReason: "${widget.suggestionReason}"');
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (widget.recipeSummary != null || widget.requiredIngredients != null || widget.suggestionReason != null)
+        if ((widget.recipeSummary != null && widget.recipeSummary!.trim().isNotEmpty && widget.recipeSummary!.trim() != '[]') || 
+             (widget.requiredIngredients != null && widget.requiredIngredients!.trim().isNotEmpty && widget.requiredIngredients!.trim() != '[]') || 
+             (widget.suggestionReason != null && widget.suggestionReason!.trim().isNotEmpty && widget.suggestionReason!.trim() != '[]'))
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                if (widget.suggestionReason != null)
+                if (widget.suggestionReason != null && widget.suggestionReason!.trim().isNotEmpty && widget.suggestionReason!.trim() != '[]')
                   _buildExpandableSection(
                     title: '알프레드의 추천이유',
                     content: widget.suggestionReason!,
@@ -66,9 +73,11 @@ class _FoodProductsGridState extends State<FoodProductsGrid> {
                     isExpanded: false,
                     onExpansionChanged: (_) {},
                   ),
-                if (widget.suggestionReason != null && (widget.recipeSummary != null || widget.requiredIngredients != null))
+                if ((widget.suggestionReason != null && widget.suggestionReason!.trim().isNotEmpty && widget.suggestionReason!.trim() != '[]') && 
+                     ((widget.recipeSummary != null && widget.recipeSummary!.trim().isNotEmpty && widget.recipeSummary!.trim() != '[]') || 
+                      (widget.requiredIngredients != null && widget.requiredIngredients!.trim().isNotEmpty && widget.requiredIngredients!.trim() != '[]')))
                   const SizedBox(height: 16),
-                if (widget.recipeSummary != null)
+                if (widget.recipeSummary != null && widget.recipeSummary!.trim().isNotEmpty && widget.recipeSummary!.trim() != '[]')
                   _buildExpandableSection(
                     title: '알프레드의 간단 조리법',
                     content: widget.recipeSummary!,
@@ -77,9 +86,10 @@ class _FoodProductsGridState extends State<FoodProductsGrid> {
                     isExpanded: _isRecipeExpanded,
                     onExpansionChanged: (value) => setState(() => _isRecipeExpanded = value),
                   ),
-                if (widget.recipeSummary != null && widget.requiredIngredients != null)
+                if ((widget.recipeSummary != null && widget.recipeSummary!.trim().isNotEmpty && widget.recipeSummary!.trim() != '[]') && 
+                     (widget.requiredIngredients != null && widget.requiredIngredients!.trim().isNotEmpty && widget.requiredIngredients!.trim() != '[]'))
                   const SizedBox(height: 16),
-                if (widget.requiredIngredients != null)
+                if (widget.requiredIngredients != null && widget.requiredIngredients!.trim().isNotEmpty && widget.requiredIngredients!.trim() != '[]')
                   _buildExpandableSection(
                     title: '알프레드의 식재료 추천',
                     content: widget.requiredIngredients!,

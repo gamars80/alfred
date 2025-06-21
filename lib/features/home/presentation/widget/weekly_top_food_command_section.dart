@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/popular_repository.dart';
 import '../../model/popular_food_ingredient.dart';
 import '../../../search/presentation/food_ingredient_product_screen.dart';
+import '../../../search/presentation/food_ingredient_recipe_screen.dart';
 
 class WeeklyTopFoodCommandSection extends StatefulWidget {
   const WeeklyTopFoodCommandSection({super.key});
@@ -13,12 +14,14 @@ class WeeklyTopFoodCommandSection extends StatefulWidget {
 class _WeeklyTopFoodCommandSectionState extends State<WeeklyTopFoodCommandSection> {
   final _repo = PopularRepository();
   late Future<List<PopularFoodIngredient>> _futureIngredients;
+  late Future<List<PopularFoodIngredient>> _futureRecipeIngredients;
   int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _futureIngredients = _repo.fetchWeeklyTopFoodIngredients();
+    _futureRecipeIngredients = _repo.fetchWeeklyTopFoodRecipeIngredients();
   }
 
   @override
@@ -138,28 +141,30 @@ class _WeeklyTopFoodCommandSectionState extends State<WeeklyTopFoodCommandSectio
   }
 
   Widget _buildRecipeTab() {
-    return const SizedBox(
-      height: 120,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.restaurant_menu,
-              size: 48,
-              color: Colors.grey,
-            ),
-            SizedBox(height: 16),
-            Text(
-              '레시피 데이터 준비 중',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return FutureBuilder<List<PopularFoodIngredient>>(
+      future: _futureRecipeIngredients,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Text('불러오기 실패: ${snapshot.error}', 
+            style: const TextStyle(color: Colors.black87));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Text('데이터가 없습니다', 
+            style: TextStyle(color: Colors.black87));
+        }
+
+        final ingredients = snapshot.data!;
+        // 각 항목의 높이 (패딩 포함)
+        const itemHeight = 30.0;
+        // 전체 높이 계산 (데이터 개수에 따라)
+        final totalHeight = (ingredients.length / 2).ceil() * itemHeight;
+
+        return SizedBox(
+          height: totalHeight,
+          child: _buildCommandList(ingredients),
+        );
+      },
     );
   }
 
@@ -197,16 +202,31 @@ class _WeeklyTopFoodCommandSectionState extends State<WeeklyTopFoodCommandSectio
           height: 30, // 각 항목의 고정 높이
           child: InkWell(
             onTap: () {
-              debugPrint('WeeklyTopFoodCommandSection - Navigating to FoodIngredientProductScreen with ingredient: ${ingredient.ingredient}');
-              
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => FoodIngredientProductScreen(
-                    ingredient: ingredient.ingredient,
+              if (_selectedIndex == 0) {
+                // 상품 탭
+                debugPrint('WeeklyTopFoodCommandSection - Navigating to FoodIngredientProductScreen with ingredient: ${ingredient.ingredient}');
+                
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FoodIngredientProductScreen(
+                      ingredient: ingredient.ingredient,
+                    ),
                   ),
-                ),
-              );
+                );
+              } else {
+                // 레시피 탭
+                debugPrint('WeeklyTopFoodCommandSection - Navigating to FoodIngredientRecipeScreen with ingredient: ${ingredient.ingredient}');
+                
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FoodIngredientRecipeScreen(
+                      ingredient: ingredient.ingredient,
+                    ),
+                  ),
+                );
+              }
             },
             borderRadius: BorderRadius.circular(6),
             child: Row(
