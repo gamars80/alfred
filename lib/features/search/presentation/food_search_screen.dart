@@ -104,8 +104,12 @@ class _FoodSearchScreenState extends State<FoodSearchScreen> {
                   child: TextField(
                     controller: _textController,
                     autofocus: true,
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 14,
+                    ),
                     decoration: InputDecoration(
-                      hintText: '음식 재료를 검색해보세요 (예: 돼지고기, 양파, 당근...)',
+                      hintText: '검색어를 입력해주세요',
                       hintStyle: TextStyle(
                         color: Colors.grey[400],
                         fontSize: 14,
@@ -133,66 +137,6 @@ class _FoodSearchScreenState extends State<FoodSearchScreen> {
               ],
             ),
           ),
-
-          // 인기 검색어
-          if (_recentSearches.isEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '인기 검색어',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  '돼지고기',
-                  '양파',
-                  '당근',
-                  '감자',
-                  '고구마',
-                  '닭고기',
-                  '소고기',
-                  '김치',
-                  '된장',
-                  '고추장',
-                ].map((keyword) => GestureDetector(
-                  onTap: () => _performSearch(keyword),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.deepOrange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.deepOrange.withOpacity(0.3),
-                      ),
-                    ),
-                    child: Text(
-                      keyword,
-                      style: const TextStyle(
-                        color: Colors.deepOrange,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                )).toList(),
-              ),
-            ),
-          ],
 
           // 최근 검색어
           if (_recentSearches.isNotEmpty) ...[

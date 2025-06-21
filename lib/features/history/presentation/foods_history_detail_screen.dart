@@ -217,6 +217,8 @@ class _RecipeGridItem extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isLiked;
   final VoidCallback? onLikeTap;
+  final int historyId;
+  final int recipeId;
 
   const _RecipeGridItem({
     Key? key,
@@ -228,12 +230,20 @@ class _RecipeGridItem extends StatelessWidget {
     this.onTap,
     this.isLiked = false,
     this.onLikeTap,
+    required this.historyId,
+    required this.recipeId,
   }) : super(key: key);
+
+  static final FoodApi _foodApi = FoodApi();
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
+        // openRecipe API 비동기 호출 (recipeId가 0이 아닌 경우에만)
+        if (recipeId != 0) {
+          _foodApi.openRecipe(historyId.toString(), recipeId.toString());
+        }
         final Uri url = Uri.parse(detailLink);
         if (await canLaunchUrl(url)) {
           await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -619,13 +629,15 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 추천이유, 간단 조리법, 식재료 추천 섹션
-                  if (_history.suggestionReason != null || _history.recipeSummary != null || _history.requiredIngredients.isNotEmpty)
+                  if ((_history.suggestionReason != null && _history.suggestionReason!.trim().isNotEmpty && _history.suggestionReason!.trim() != '[]') || 
+                       (_history.recipeSummary != null && _history.recipeSummary!.trim().isNotEmpty && _history.recipeSummary!.trim() != '[]') || 
+                       (_history.requiredIngredients.isNotEmpty && _history.requiredIngredients.join(', ').trim().isNotEmpty && _history.requiredIngredients.join(', ').trim() != '[]'))
                     Container(
                       color: Colors.white,
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          if (_history.suggestionReason != null)
+                          if (_history.suggestionReason != null && _history.suggestionReason!.trim().isNotEmpty && _history.suggestionReason!.trim() != '[]')
                             _buildExpandableSection(
                               title: '알프레드의 추천이유',
                               content: _history.suggestionReason!,
@@ -633,9 +645,11 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                               isExpanded: false,
                               onExpansionChanged: (_) {},
                             ),
-                          if (_history.suggestionReason != null && (_history.recipeSummary != null || _history.requiredIngredients.isNotEmpty))
+                          if ((_history.suggestionReason != null && _history.suggestionReason!.trim().isNotEmpty && _history.suggestionReason!.trim() != '[]') && 
+                               ((_history.recipeSummary != null && _history.recipeSummary!.trim().isNotEmpty && _history.recipeSummary!.trim() != '[]') || 
+                                (_history.requiredIngredients.isNotEmpty && _history.requiredIngredients.join(', ').trim().isNotEmpty && _history.requiredIngredients.join(', ').trim() != '[]')))
                             const SizedBox(height: 16),
-                          if (_history.recipeSummary != null)
+                          if (_history.recipeSummary != null && _history.recipeSummary!.trim().isNotEmpty && _history.recipeSummary!.trim() != '[]')
                             _buildExpandableSection(
                               title: '알프레드의 간단 조리법',
                               content: _history.recipeSummary!,
@@ -644,9 +658,10 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                               isExpanded: false,
                               onExpansionChanged: (_) {},
                             ),
-                          if (_history.recipeSummary != null && _history.requiredIngredients.isNotEmpty)
+                          if ((_history.recipeSummary != null && _history.recipeSummary!.trim().isNotEmpty && _history.recipeSummary!.trim() != '[]') && 
+                               (_history.requiredIngredients.isNotEmpty && _history.requiredIngredients.join(', ').trim().isNotEmpty && _history.requiredIngredients.join(', ').trim() != '[]'))
                             const SizedBox(height: 16),
-                          if (_history.requiredIngredients.isNotEmpty)
+                          if (_history.requiredIngredients.isNotEmpty && _history.requiredIngredients.join(', ').trim().isNotEmpty && _history.requiredIngredients.join(', ').trim() != '[]')
                             _buildExpandableSection(
                               title: '알프레드의 식재료 추천',
                               content: _history.requiredIngredients.join(', '),
@@ -743,18 +758,8 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                                 detailLink: recipe.detailLink,
                                 isLiked: recipe.liked,
                                 onLikeTap: () => _handleLike(recipe),
-                                onTap: () async {
-                                  final Uri url = Uri.parse(recipe.detailLink);
-                                  if (await canLaunchUrl(url)) {
-                                    await launchUrl(url, mode: LaunchMode.externalApplication);
-                                  } else {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('링크를 열 수 없습니다.')),
-                                      );
-                                    }
-                                  }
-                                },
+                                historyId: _history.id,
+                                recipeId: recipe.id ?? 0,
                               );
                             },
                           ),
