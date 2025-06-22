@@ -146,27 +146,25 @@ class FoodProductCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          // kurly 상품에만 리뷰보기 버튼 표시
-                          if (product.source == 'kurly') ...[
-                            GestureDetector(
-                              onTap: () => _openReviews(context),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.deepPurple.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  '리뷰보기',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    color: Colors.deepPurple[700],
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                          // 모든 상품에 리뷰보기 버튼 표시
+                          GestureDetector(
+                            onTap: () => _openReviews(context),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.deepPurple.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '리뷰보기',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: Colors.deepPurple[700],
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
-                          ],
+                          ),
                         ],
                       ),
                     ],

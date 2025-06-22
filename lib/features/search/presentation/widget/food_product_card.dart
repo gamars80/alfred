@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../call/model/product.dart';
+import '../../../review/presentation/food_review_overlay_screen.dart';
 
 class FoodProductCard extends StatelessWidget {
   final Product product;
@@ -17,6 +18,13 @@ class FoodProductCard extends StatelessWidget {
         const SnackBar(content: Text('링크를 열 수 없습니다.')),
       );
     }
+  }
+
+  void _openReviews(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => FoodReviewOverlayScreen(product: product)),
+    );
   }
 
   @override
@@ -138,12 +146,32 @@ class FoodProductCard extends StatelessWidget {
                           color: Colors.amber[600],
                         ),
                         const SizedBox(width: 2),
-                        Text(
-                          '리뷰 ${product.reviewCount}',
-                          style: const TextStyle(
-                            fontSize: 9,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w500,
+                        Expanded(
+                          child: Text(
+                            '리뷰 ${product.reviewCount}',
+                            style: const TextStyle(
+                              fontSize: 9,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => _openReviews(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: Colors.deepOrange.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Text(
+                              '리뷰보기',
+                              style: TextStyle(
+                                fontSize: 8,
+                                color: Colors.deepOrange[700],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
                         ),
                       ],
