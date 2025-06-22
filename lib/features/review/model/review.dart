@@ -13,10 +13,14 @@ class Review {
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
-      rating: json['rating'],
-      selectedOptions: List<String>.from(json['selectedOptions']),
-      content: json['content'],
-      imageUrls: List<String>.from(json['imageUrls']),
+      rating: json['rating'] ?? 0,
+      selectedOptions: json['selectedOptions'] != null 
+          ? List<String>.from(json['selectedOptions'])
+          : <String>[],
+      content: json['content'] ?? '',
+      imageUrls: json['imageUrls'] != null 
+          ? List<String>.from(json['imageUrls'])
+          : <String>[],
     );
   }
 }
