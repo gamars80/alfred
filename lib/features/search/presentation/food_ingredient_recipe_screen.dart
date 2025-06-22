@@ -62,22 +62,18 @@ class _FoodIngredientRecipeScreenState extends State<FoodIngredientRecipeScreen>
     }
 
     try {
-      final result = await _repo.fetchRecipesByIngredient(
-        ingredient: widget.ingredient,
-        cursor: _cursor,
-        sortBy: _sortBy,
-        sortDir: _sortDir,
-        searchKeyword: _searchKeyword,
+      final result = await _repo.fetchRecipes(
+        keyword: widget.ingredient,
+        limit: 20,
       );
 
       setState(() {
         if (refresh) {
           _recipes.clear();
         }
-        _recipes.addAll(result.items);
-        _cursor = result.nextCursor;
-        _hasMore = result.nextCursor != null;
-        _totalCount = result.totalCount;
+        _recipes.addAll(result);
+        _hasMore = false; // fetchRecipes doesn't support pagination
+        _totalCount = result.length;
         _isLoading = false;
       });
     } catch (e) {
