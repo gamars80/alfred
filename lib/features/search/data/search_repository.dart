@@ -4,6 +4,7 @@ import '../../auth/common/dio/dio_client.dart';
 import '../../call/model/product.dart';
 import '../model/review.dart';
 import '../model/keyword_review.dart';
+import '../model/food_review.dart';
 import '../../home/model/popular_recipe.dart';
 
 class ProductPageResult {
@@ -68,6 +69,29 @@ class KeywordReviewPageResult {
         .map((item) => KeywordReview.fromJson(item))
         .toList();
     return KeywordReviewPageResult(
+      items: items,
+      nextCursor: json['nextCursor'],
+      totalCount: (json['totalCount'] as num).toInt(),
+    );
+  }
+}
+
+class FoodReviewPageResult {
+  final List<FoodReview> items;
+  final String? nextCursor;
+  final int totalCount;
+
+  FoodReviewPageResult({
+    required this.items,
+    this.nextCursor,
+    required this.totalCount,
+  });
+
+  factory FoodReviewPageResult.fromJson(Map<String, dynamic> json) {
+    final items = (json['items'] as List<dynamic>)
+        .map((item) => FoodReview.fromJson(item))
+        .toList();
+    return FoodReviewPageResult(
       items: items,
       nextCursor: json['nextCursor'],
       totalCount: (json['totalCount'] as num).toInt(),
@@ -284,23 +308,26 @@ class SearchRepository {
     }
   }
 
-  // 레시피 검색
-  Future<RecipePageResult> fetchRecipesByIngredient({
-    required String ingredient,
+  // 음식 리뷰 검색 (새로운 API)
+  Future<FoodReviewPageResult> fetchFoodReviews({
+    String? keyword,
+    String? source,
     String? cursor,
+    String? mallName,
+    String? searchKeyword,
     String sortBy = 'createdAt',
     String sortDir = 'desc',
-    String? searchKeyword,
-    String? source,
   }) async {
-    final uri = '/api/products/ai-recipes/search';
+    final uri = '/api/reviews/foods/search';
     final params = {
-      'keyword': searchKeyword ?? ingredient,
+      'limit': pageSize,
       'sortBy': sortBy,
       'sortDir': sortDir,
-      'limit': pageSize,
-      if (cursor != null) 'cursor': cursor,
+      if (keyword != null) 'keyword': keyword,
       if (source != null) 'source': source,
+      if (cursor != null) 'cursor': cursor,
+      if (mallName != null) 'mallName': mallName,
+      if (searchKeyword != null && searchKeyword.isNotEmpty) 'searchKeyword': searchKeyword,
     };
 
     debugPrint('📡 [GET] $uri');
@@ -309,7 +336,33 @@ class SearchRepository {
     try {
       final response = await _dio.get(uri, queryParameters: params);
       debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
-      return RecipePageResult.fromJson(response.data);
+      return FoodReviewPageResult.fromJson(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
+      rethrow;
+    }
+  }
+
+  // 레시피 검색
+  Future<List<PopularRecipe>> fetchRecipes({
+    required String keyword,
+    int limit = 10,
+  }) async {
+    final uri = '/api/recipes/search';
+    final params = {
+      'keyword': keyword,
+      'limit': limit,
+    };
+
+    debugPrint('📡 [GET] $uri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(uri, queryParameters: params);
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      return (response.data as List)
+          .map((item) => PopularRecipe.fromJson(item))
+          .toList();
     } on DioException catch (e) {
       debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
       rethrow;

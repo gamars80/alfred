@@ -66,92 +66,103 @@ class _FoodSearchScreenState extends State<FoodSearchScreen> {
     });
   }
 
-  void _performSearch(String keyword) async {
-    if (keyword.trim().isEmpty) return;
+  Future<void> _clearRecentSearches() async {
+    if (_prefs == null) return;
     
-    await _saveRecentSearch(keyword.trim());
-    if (mounted) {
-      Navigator.pop(context, keyword.trim());
-    }
+    await _prefs!.remove(_prefsKey);
+    setState(() {
+      _recentSearches = [];
+    });
+  }
+
+  void _onSearch(String keyword) {
+    if (keyword.trim().isEmpty) return;
+    _saveRecentSearch(keyword);
+    Navigator.pop(context, keyword);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
-          '음식 재료 검색',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+        titleSpacing: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
-      ),
-      body: Column(
-        children: [
-          // 검색 입력 필드
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _textController,
-                    autofocus: true,
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontSize: 14,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: '검색어를 입력해주세요',
-                      hintStyle: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 14,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Colors.deepOrange),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.search, color: Colors.deepOrange),
-                        onPressed: () => _performSearch(_textController.text),
-                      ),
-                    ),
-                    onSubmitted: _performSearch,
-                  ),
-                ),
-              ],
+        title: TextField(
+          controller: _textController,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: '음식 검색',
+            hintStyle: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 16,
+            ),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
             ),
           ),
-
-          // 최근 검색어
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.black87,
+          ),
+          textInputAction: TextInputAction.search,
+          onSubmitted: _onSearch,
+        ),
+        actions: [
+          if (_textController.text.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.black54),
+              onPressed: () {
+                _textController.clear();
+                setState(() {});
+              },
+            ),
+          TextButton(
+            onPressed: () => _onSearch(_textController.text),
+            child: const Text(
+              '검색',
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           if (_recentSearches.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '최근 검색어',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    '최근 검색어',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
+                  TextButton(
+                    onPressed: _clearRecentSearches,
+                    child: const Text(
+                      '전체 삭제',
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -162,25 +173,25 @@ class _FoodSearchScreenState extends State<FoodSearchScreen> {
                   return ListTile(
                     leading: const Icon(
                       Icons.history,
-                      color: Colors.grey,
+                      color: Colors.black54,
                       size: 20,
                     ),
                     title: Text(
                       keyword,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 15,
                         color: Colors.black87,
                       ),
                     ),
                     trailing: IconButton(
                       icon: const Icon(
                         Icons.close,
-                        color: Colors.grey,
+                        color: Colors.black45,
                         size: 18,
                       ),
                       onPressed: () => _removeRecentSearch(keyword),
                     ),
-                    onTap: () => _performSearch(keyword),
+                    onTap: () => _onSearch(keyword),
                   );
                 },
               ),
