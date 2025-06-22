@@ -66,25 +66,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _loginWithKakao(BuildContext context) async {
     try {
-      if (await isKakaoTalkInstalled()) {
-        try {
-          // 1. 카카오톡 앱 로그인 시도
-          final token = await UserApi.instance.loginWithKakaoTalk();
-          await _afterLogin(context, token);
-          return;
-        } catch (e) {
-          // 카카오톡 로그인 실패 → fallback 로그
-          debugPrint("카카오톡 로그인 실패, fallback으로 전환: $e");
-          // e.code == NotSupportError 등일 수 있음
-        }
+      final isKakaoInstalled = await isKakaoTalkInstalled();
+
+      if (!isKakaoInstalled) {
+        // fallback 방지: 설치 안 된 경우 사용자에게 안내
+        _showError(context, '카카오톡이 설치되어 있어야 로그인할 수 있습니다.');
+        return;
       }
 
-      // 2. fallback: 카카오 계정 로그인 (웹뷰)
-      final token = await UserApi.instance.loginWithKakaoAccount();
+      // 1. 카카오톡 앱 로그인 시도
+      final token = await UserApi.instance.loginWithKakaoTalk();
       await _afterLogin(context, token);
     } catch (e) {
       debugPrint("카카오 로그인 실패: $e");
-      _showError(context, '카카오 로그인에 실패했습니다');
+      _showError(context, '카카오 로그인에 실패했습니다. $e');
     }
   }
 
@@ -205,11 +200,11 @@ class _LoginScreenState extends State<LoginScreen> {
           }
 
           debugPrint('Using code verifier: $codeVerifier');
-          
+
           final token = await AuthApi.instance.issueAccessToken(
             authCode: code,
             codeVerifier: codeVerifier,
-            redirectUri: KakaoSdk.redirectUri,
+            redirectUri: 'kakao22e6b88148da0c4cb1293cbe664cecc4://oauth', // 직접 명시!
           );
           
           debugPrint('Got kakao token: ${token.accessToken}');
