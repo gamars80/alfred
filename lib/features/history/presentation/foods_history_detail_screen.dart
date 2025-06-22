@@ -6,6 +6,8 @@ import '../data/history_repository.dart';
 import '../../like/data/like_repository.dart';
 import '../../../../common/presentation/web_view_screen.dart';
 import '../../../../features/call/data/food_api.dart';
+import '../../review/presentation/food_review_overlay_screen.dart';
+import '../../call/model/product.dart';
 
 class FoodsHistoryDetailScreen extends StatefulWidget {
   final FoodsHistory history;
@@ -53,25 +55,50 @@ class _ProductGridItem extends StatelessWidget {
 
   static final FoodApi _foodApi = FoodApi();
 
+  Future<void> _launchUrl(BuildContext context) async {
+    // openFood API 비동기 호출
+    _foodApi.openFood(productId, historyId.toString(), source);
+    if (productLink != null) {
+      final Uri url = Uri.parse(productLink!);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('링크를 열 수 없습니다.')),
+          );
+        }
+      }
+    }
+  }
+
+  void _openReviews(BuildContext context) {
+    // FoodsProduct를 Product로 변환
+    final product = Product(
+      recommendationId: productId,
+      productId: productId,
+      name: name,
+      price: price,
+      image: imageUrl ?? '',
+      link: productLink ?? '',
+      mallName: mallName,
+      source: source,
+      reviewCount: reviewCount ?? 0,
+      reason: '',
+      category: '',
+      liked: isLiked,
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => FoodReviewOverlayScreen(product: product)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () async {
-        // openFood API 비동기 호출
-        _foodApi.openFood(productId, historyId.toString(), source);
-        if (productLink != null) {
-          final Uri url = Uri.parse(productLink!);
-          if (await canLaunchUrl(url)) {
-            await launchUrl(url, mode: LaunchMode.externalApplication);
-          } else {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('링크를 열 수 없습니다.')),
-              );
-            }
-          }
-        }
-      },
+      onTap: () => _launchUrl(context),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -188,15 +215,44 @@ class _ProductGridItem extends StatelessWidget {
                         color: Colors.black,
                       ),
                     ),
-                    if (reviewCount != null && reviewCount! > 0)
-                      Text(
-                        '후기 $reviewCount',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    if (reviewCount != null && reviewCount! > 0) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '후기 $reviewCount',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          // kurly 상품에만 리뷰보기 버튼 표시
+                          if (source == 'kurly') ...[
+                            GestureDetector(
+                              onTap: () => _openReviews(context),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.deepPurple.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '리뷰보기',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: Colors.deepPurple[700],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
+                    ],
                   ],
                 ),
               ),

@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../model/product.dart';
 import '../../data/food_api.dart';
+import '../../../review/presentation/food_review_overlay_screen.dart';
 
 class FoodProductCard extends StatelessWidget {
   final Product product;
@@ -27,6 +28,13 @@ class FoodProductCard extends StatelessWidget {
     if (!await launchUrl(uri)) {
       throw Exception('Could not launch $uri');
     }
+  }
+
+  void _openReviews(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => FoodReviewOverlayScreen(product: product)),
+    );
   }
 
   @override
@@ -125,14 +133,41 @@ class FoodProductCard extends StatelessWidget {
                     // 후기 (가격 아래)
                     if (product.reviewCount != null) ...[
                       const SizedBox(height: 4),
-                      Text(
-                        '후기 ${product.reviewCount}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '후기 ${product.reviewCount}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                          // kurly 상품에만 리뷰보기 버튼 표시
+                          if (product.source == 'kurly') ...[
+                            GestureDetector(
+                              onTap: () => _openReviews(context),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.deepPurple.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '리뷰보기',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: Colors.deepPurple[700],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ],
