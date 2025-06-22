@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'popular_section.dart';
 import 'package:alfred_clean/features/home/presentation/widget/weekly_top_food_command_section.dart';
 import 'package:alfred_clean/features/home/presentation/widget/weekly_top_food_product_section.dart';
+import 'package:alfred_clean/features/home/presentation/widget/weekly_top_recipe_section.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -108,6 +109,7 @@ class FoodShoppingTab extends StatelessWidget {
       children: const [
         WeeklyTopFoodCommandSection(),
         WeeklyTopFoodProductSection(),
+        WeeklyTopRecipeSection(),
         // 👉 추가 섹션들 구현 예정
       ],
     );

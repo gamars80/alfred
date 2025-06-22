@@ -87,4 +87,16 @@ class FoodApi {
       // 실패해도 예외를 던지지 않음
     }
   }
+
+  /// 레시피 오픈 기록 API
+  Future<void> openRecipe(String historyId, String recipeId) async {
+    try {
+      await _dio.post(
+        '/api/products/$historyId/$recipeId/openRecipe',
+      );
+    } catch (e) {
+      debugPrint('❌ [openRecipe] Error: $e');
+      // 실패해도 예외를 던지지 않음
+    }
+  }
 } 
