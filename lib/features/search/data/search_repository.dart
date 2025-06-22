@@ -4,6 +4,7 @@ import '../../auth/common/dio/dio_client.dart';
 import '../../call/model/product.dart';
 import '../model/review.dart';
 import '../model/keyword_review.dart';
+import '../../home/model/popular_recipe.dart';
 
 class ProductPageResult {
   final List<Product> items;
@@ -234,12 +235,13 @@ class SearchRepository {
   }) async {
     final uri = '/api/products/ai-foods/search';
     final params = {
-      'keyword': searchKeyword ?? ingredient,
+      'keyword': ingredient,
       'sortBy': sortBy,
       'sortDir': sortDir,
       'limit': pageSize,
       if (cursor != null) 'cursor': cursor,
       if (source != null) 'source': source,
+      if (searchKeyword != null && searchKeyword.isNotEmpty) 'searchKeyword': searchKeyword,
     };
 
     debugPrint('📡 [GET] $uri');
@@ -281,4 +283,37 @@ class SearchRepository {
       rethrow;
     }
   }
+
+  // 레시피 검색
+  Future<RecipePageResult> fetchRecipesByIngredient({
+    required String ingredient,
+    String? cursor,
+    String sortBy = 'createdAt',
+    String sortDir = 'desc',
+    String? searchKeyword,
+    String? source,
+  }) async {
+    final uri = '/api/products/ai-recipes/search';
+    final params = {
+      'keyword': searchKeyword ?? ingredient,
+      'sortBy': sortBy,
+      'sortDir': sortDir,
+      'limit': pageSize,
+      if (cursor != null) 'cursor': cursor,
+      if (source != null) 'source': source,
+    };
+
+    debugPrint('📡 [GET] $uri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(uri, queryParameters: params);
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      return RecipePageResult.fromJson(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
+      rethrow;
+    }
+  }
 }
+
