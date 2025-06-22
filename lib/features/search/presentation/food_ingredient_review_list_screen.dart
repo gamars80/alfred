@@ -4,9 +4,9 @@ import 'package:dio/dio.dart';
 
 import '../../../common/widget/ad_banner_widget.dart';
 import '../data/search_repository.dart';
-import '../model/review.dart';
+import '../model/food_review.dart';
 import 'review_search_screen.dart';
-import 'review_detail_screen.dart';
+import 'food_review_detail_screen.dart';
 
 class FoodIngredientReviewListScreen extends StatefulWidget {
   final String ingredient;
@@ -25,7 +25,7 @@ class _FoodIngredientReviewListScreenState extends State<FoodIngredientReviewLis
   final _scrollController = ScrollController();
 
   int? _totalCount;
-  final List<Review> _reviews = [];
+  final List<FoodReview> _reviews = [];
   String? _cursor;
   bool _isLoading = false;
   bool _hasMore = true;
@@ -74,21 +74,17 @@ class _FoodIngredientReviewListScreenState extends State<FoodIngredientReviewLis
     }
 
     try {
-      // TODO: 리뷰 API가 준비되면 실제 API 호출로 변경
-      // final response = await _repo.fetchReviewsByIngredient(
-      //   ingredient: widget.ingredient,
-      //   cursor: _cursor,
-      //   searchKeyword: _searchKeyword,
-      // );
+      final response = await _repo.fetchFoodReviews(
+        keyword: widget.ingredient,
+        cursor: _cursor,
+        searchKeyword: _searchKeyword,
+      );
 
-      // 임시로 빈 데이터 반환 (API 준비 전까지)
-      await Future.delayed(const Duration(milliseconds: 500)); // 로딩 시뮬레이션
-      
       setState(() {
-        _totalCount = 0;
-        _reviews.addAll([]);
-        _cursor = null;
-        _hasMore = false;
+        _totalCount = response.totalCount;
+        _reviews.addAll(response.items.reversed);
+        _cursor = response.nextCursor;
+        _hasMore = response.nextCursor != null;
       });
     } on DioException catch (e) {
       debugPrint('음식 리뷰 조회 중 에러: ${e.message}');
@@ -153,26 +149,13 @@ class _FoodIngredientReviewListScreenState extends State<FoodIngredientReviewLis
         surfaceTintColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black87),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.ingredient,
-              style: const TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-              ),
-            ),
-            const Text(
-              '관련 리뷰',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 12,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
+        title: Text(
+          widget.ingredient,
+          style: const TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
         ),
         actions: [
           IconButton(
@@ -327,8 +310,27 @@ class _FoodIngredientReviewListScreenState extends State<FoodIngredientReviewLis
     );
   }
 
+  /// 주어진 "리뷰 인덱스"에 해당하는 카드 위젯
   Widget _buildReviewCard(int reviewIdx) {
     final review = _reviews[reviewIdx];
+    return _FoodReviewCard(review: review);
+  }
+}
+
+/// ───────────────────────────────────────────────────────
+/// 음식 리뷰 하나를 보여주는 카드 위젯
+/// ───────────────────────────────────────────────────────
+class _FoodReviewCard extends StatelessWidget {
+  final FoodReview review;
+
+  const _FoodReviewCard({
+    super.key,
+    required this.review,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (review.imageUrls.isEmpty) return const SizedBox.shrink();
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -336,7 +338,7 @@ class _FoodIngredientReviewListScreenState extends State<FoodIngredientReviewLis
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => ReviewDetailScreen(review: review),
+              builder: (_) => FoodReviewDetailScreen(review: review),
             ),
           );
         },
@@ -378,7 +380,7 @@ class _FoodIngredientReviewListScreenState extends State<FoodIngredientReviewLis
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    review.mallName ?? '',
+                    review.mallName,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -426,6 +428,9 @@ class _FoodIngredientReviewListScreenState extends State<FoodIngredientReviewLis
   }
 }
 
+/// ───────────────────────────────────────────────────────
+/// 여러 이미지를 좌우 스와이프하여 볼 수 있게 해주는 위젯
+/// ───────────────────────────────────────────────────────
 class _SwipeableImages extends StatefulWidget {
   final List<String> imageUrls;
 
@@ -492,7 +497,7 @@ class _SwipeableImagesState extends State<_SwipeableImages> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 widget.imageUrls.length,
-                (index) => Container(
+                    (index) => Container(
                   width: 6,
                   height: 6,
                   margin: const EdgeInsets.symmetric(horizontal: 2),
