@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../common/dio/dio_client.dart';
 import '../model/login_response.dart';
 import '../model/signup_response.dart';
+import 'device_info_service.dart';
 
 
 class AuthApi {
@@ -40,6 +41,14 @@ class AuthApi {
       'phoneNumber': phoneNumber,
       'joinType': 'KAKAO',
     });
+
+    // 회원가입 성공 후 디바이스 등록 비동기 호출
+    DeviceInfoService.getAllDeviceInfo().then((deviceInfo) {
+      _dio.post('/api/user/device', data: deviceInfo).catchError((e) {
+        // 에러 무시
+      });
+    });
+
     return SignupResponse.fromJson(response.data);
   }
 
@@ -55,6 +64,14 @@ class AuthApi {
       'phoneNumber': '',
       'joinType': 'NORMAL',
     });
+
+    // 회원가입 성공 후 디바이스 등록 비동기 호출
+    DeviceInfoService.getAllDeviceInfo().then((deviceInfo) {
+      _dio.post('/api/user/device', data: deviceInfo).catchError((e) {
+        // 에러 무시
+      });
+    });
+
     return SignupResponse.fromJson(response.data);
   }
 }
