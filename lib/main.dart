@@ -16,7 +16,6 @@ void main() async {
   // ✅ Kakao SDK 초기화
   KakaoSdk.init(
     nativeAppKey: '22e6b88148da0c4cb1293cbe664cecc4',
-    // javaScriptAppKey: '...사용 중이면 설정...',
     loggingEnabled: true,
   );
   // ✅ .env 환경변수 로드

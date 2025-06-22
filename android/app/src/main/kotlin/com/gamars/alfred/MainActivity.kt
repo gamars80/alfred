@@ -1,4 +1,4 @@
-package com.example.alfred_clean
+package com.gamars.alfred
 
 import android.Manifest
 import android.content.Intent
@@ -19,6 +19,11 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.util.Locale
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager.NameNotFoundException
+import android.util.Base64
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.alfred/voice"
@@ -42,6 +47,9 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // 키 해시 출력
+        printKeyHash()
+
         // 스플래시 화면 설정
         window.setFlags(
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -60,6 +68,36 @@ class MainActivity : FlutterActivity() {
                 arrayOf(Manifest.permission.RECORD_AUDIO),
                 REQUEST_RECORD_AUDIO
             )
+        }
+    }
+
+    // 키 해시 출력 함수
+    private fun printKeyHash() {
+        try {
+            val packageInfo = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES)
+            }
+            
+            val signatures = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                packageInfo.signingInfo?.apkContentsSigners
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.signatures
+            }
+            
+            signatures?.forEach { signature ->
+                val md = MessageDigest.getInstance("SHA")
+                md.update(signature.toByteArray())
+                val keyHash = Base64.encodeToString(md.digest(), Base64.NO_WRAP)
+                Log.d("KeyHash", "키 해시: $keyHash")
+                Log.d("KeyHash", "패키지명: $packageName")
+                Log.d("KeyHash", "Android 버전: ${android.os.Build.VERSION.SDK_INT}")
+            }
+        } catch (e: Exception) {
+            Log.e("KeyHash", "키 해시 출력 중 오류: $e")
         }
     }
 
