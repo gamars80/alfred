@@ -348,7 +348,7 @@ class SearchRepository {
     required String keyword,
     int limit = 10,
   }) async {
-    final uri = '/api/recipes/search';
+    final uri = '/api/products/ai-recipes/search';
     final params = {
       'keyword': keyword,
       'limit': limit,
@@ -360,11 +360,45 @@ class SearchRepository {
     try {
       final response = await _dio.get(uri, queryParameters: params);
       debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
-      return (response.data as List)
+      return (response.data['items'] as List)
           .map((item) => PopularRecipe.fromJson(item))
           .toList();
     } on DioException catch (e) {
       debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
+      rethrow;
+    }
+  }
+
+  // AI 레시피 검색 (페이지네이션 지원)
+  Future<RecipePageResult> fetchAiRecipes({
+    required String keyword,
+    String? cursor,
+    String sortBy = 'createdAt',
+    String sortDir = 'desc',
+    int limit = 20,
+    String? source,
+    String? searchKeyword,
+  }) async {
+    final aiRecipesUri = '/api/products/ai-recipes/search';
+    final params = {
+      'keyword': keyword,
+      'sortBy': sortBy,
+      'sortDir': sortDir,
+      'limit': limit,
+      if (cursor != null) 'cursor': cursor,
+      if (source != null) 'source': source,
+      if (searchKeyword != null && searchKeyword.isNotEmpty) 'searchKeyword': searchKeyword,
+    };
+
+    debugPrint('📡 [GET] $aiRecipesUri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(aiRecipesUri, queryParameters: params);
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $aiRecipesUri');
+      return RecipePageResult.fromJson(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $aiRecipesUri\n▶ message: ${e.message}');
       rethrow;
     }
   }

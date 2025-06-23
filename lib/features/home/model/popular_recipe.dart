@@ -1,34 +1,38 @@
 class PopularRecipe {
-  final int historyId;
-  final String userId;
+  final int? historyId;
+  final String? userId;
   final String recipeId;
-  final int count;
+  final int? count;
   final String recipeName;
   final String detailLink;
   final String recipeImage;
   final double averageRating;
   final int reviewCount;
   final int viewCount;
-  final bool liked;
-  final String createdAt;
-  final String ingredients;
+  final bool? liked;
+  final String? createdAt;
+  final String? ingredients;
   final String? suggested;
+  final String? source;
+  final String? primarySearchKeyword;
 
   PopularRecipe({
-    required this.historyId,
-    required this.userId,
+    this.historyId,
+    this.userId,
     required this.recipeId,
-    required this.count,
+    this.count,
     required this.recipeName,
     required this.detailLink,
     required this.recipeImage,
     required this.averageRating,
     required this.reviewCount,
     required this.viewCount,
-    required this.liked,
-    required this.createdAt,
-    required this.ingredients,
+    this.liked,
+    this.createdAt,
+    this.ingredients,
     this.suggested,
+    this.source,
+    this.primarySearchKeyword,
   });
 
   // 최적화된 이미지 URL 반환
@@ -42,20 +46,22 @@ class PopularRecipe {
 
   factory PopularRecipe.fromJson(Map<String, dynamic> json) {
     return PopularRecipe(
-      historyId: json['historyId'] as int? ?? 0,
-      userId: json['userId'] as String? ?? '',
+      historyId: json['historyId'] as int?,
+      userId: json['userId'] as String?,
       recipeId: json['recipeId'] as String,
-      count: json['count'] as int? ?? 0,
+      count: json['count'] as int?,
       recipeName: json['recipeName'] as String,
       detailLink: json['detailLink'] as String,
       recipeImage: json['recipeImage'] as String,
       averageRating: (json['averageRating'] as num? ?? 0).toDouble(),
       reviewCount: json['reviewCount'] as int? ?? 0,
       viewCount: json['viewCount'] as int? ?? 0,
-      liked: json['liked'] as bool? ?? false,
-      createdAt: json['createdAt']?.toString() ?? '',
-      ingredients: json['ingredients'] as String? ?? '',
+      liked: json['liked'] as bool?,
+      createdAt: json['createdAt']?.toString(),
+      ingredients: json['ingredients'] as String?,
       suggested: json['suggested'] as String?,
+      source: json['source'] as String?,
+      primarySearchKeyword: json['primarySearchKeyword'] as String?,
     );
   }
 
@@ -75,6 +81,8 @@ class PopularRecipe {
       'createdAt': createdAt,
       'ingredients': ingredients,
       'suggested': suggested,
+      'source': source,
+      'primarySearchKeyword': primarySearchKeyword,
     };
   }
 }

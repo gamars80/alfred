@@ -156,51 +156,52 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => _openReviews(context),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Icon(Icons.reviews, size: 12, color: Colors.black54),
-                              SizedBox(width: 2),
-                              Flexible(
-                                child: Text(
-                                  '리뷰',
-                                  style: TextStyle(fontSize: 9, color: Colors.black54),
-                                  overflow: TextOverflow.ellipsis,
+                  if (product.source != 'ABLY') // ABLY 상품은 버튼 숨김
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _openReviews(context),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.reviews, size: 12, color: Colors.black54),
+                                SizedBox(width: 2),
+                                Flexible(
+                                  child: Text(
+                                    '리뷰',
+                                    style: TextStyle(fontSize: 9, color: Colors.black54),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => _openDetailImage(context),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: const [
-                              Icon(Icons.image_search, size: 12, color: Colors.black54),
-                              SizedBox(width: 2),
-                              Flexible(
-                                child: Text(
-                                  '상세',
-                                  style: TextStyle(fontSize: 9, color: Colors.black54),
-                                  overflow: TextOverflow.ellipsis,
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _openDetailImage(context),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: const [
+                                Icon(Icons.image_search, size: 12, color: Colors.black54),
+                                SizedBox(width: 2),
+                                Flexible(
+                                  child: Text(
+                                    '상세',
+                                    style: TextStyle(fontSize: 9, color: Colors.black54),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                 ],
               ),
             ),

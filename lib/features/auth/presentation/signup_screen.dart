@@ -93,7 +93,16 @@ class _SignupScreenState extends State<SignupScreen> {
         }
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: '회원가입에 실패했습니다');
+      // 디바이스 차단 에러 메시지 감지
+      if (e.toString().contains('This device is blocked from registration')) {
+        Fluttertoast.showToast(
+          msg: '이 디바이스는 차단되어 있습니다. 차단 기간이 끝난 후 다시 시도해주세요.',
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER,
+        );
+      } else {
+        Fluttertoast.showToast(msg: '회원가입에 실패했습니다');
+      }
     } finally {
       setState(() => _isLoading = false);
     }
