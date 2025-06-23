@@ -19,8 +19,8 @@ android {
         applicationId "com.gamars.alfred"
         minSdk 23 // ✅ 여기만 23으로 변경
         targetSdk 35
-        versionCode 11
-        versionName "1.0.11"
+        versionCode 14
+        versionName "1.0.14"
     }
 
     signingConfigs {

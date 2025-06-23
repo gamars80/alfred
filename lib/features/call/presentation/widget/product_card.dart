@@ -269,8 +269,7 @@ class ProductCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      if (product.source == 'ABLY' ||
-                          product.source == 'ZIGZAG' ||
+                      if (product.source == 'ZIGZAG' ||
                           product.source == 'ATTRANGS' ||
                           product.source == 'HOTPING' ||  product.source == '29CM' ||
                           product.source == 'MUSINSA' || product.source == 'XEXYMIX' || product.source == 'QUEENIT')

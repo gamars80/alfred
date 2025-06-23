@@ -60,7 +60,17 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e, stack) {
       debugPrint("카카오 로그인 핸들링 실패: $e\n$stack");
-      _showError(context, '로그인에 실패했습니다');
+      
+      // 디바이스 차단 에러 메시지 감지
+      if (e.toString().contains('This device is blocked from registration')) {
+        Fluttertoast.showToast(
+          msg: '이 디바이스는 차단되어 있습니다. 차단 기간이 끝난 후 다시 시도해주세요.',
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER,
+        );
+      } else {
+        _showError(context, '로그인에 실패했습니다');
+      }
     }
   }
 
