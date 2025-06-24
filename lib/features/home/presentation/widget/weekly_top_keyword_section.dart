@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../search/presentation/category_product_screen.dart';
 import '../../../search/presentation/source_product_screen.dart';
+import '../../../search/presentation/all_fashion_product_screen.dart';
 import '../../data/popular_repository.dart';
 
 
@@ -57,8 +58,13 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
               children: [
                 TextButton(
                   onPressed: () {
-                    // TODO: 전체 패션 상품 화면으로 이동하는 로직 구현
                     debugPrint('WeeklyTopKeywordSection - 전체 패션 상품 버튼 클릭');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AllFashionProductScreen(),
+                      ),
+                    );
                   },
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

@@ -179,6 +179,41 @@ class SearchRepository {
     }
   }
 
+  Future<ProductPageResult> fetchAllProducts({
+    String? cursor,
+    String sortBy = 'createdAt',
+    String sortDir = 'desc',
+    String? searchKeyword,
+  }) async {
+    final uri = '/api/products/search';
+    final params = {
+      'sortBy': sortBy,
+      'sortDir': sortDir,
+      'limit': pageSize,
+      if (cursor != null) 'cursor': cursor,
+      if (searchKeyword != null && searchKeyword.isNotEmpty) 'searchKeyword': searchKeyword,
+    };
+
+    debugPrint('📡 [GET] $uri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(uri, queryParameters: params);
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      
+      // 디버깅: API 응답 전체 출력
+      debugPrint('API 응답 데이터: ${response.data}');
+      if (response.data['items'] != null && response.data['items'].isNotEmpty) {
+        debugPrint('첫 번째 상품 JSON: ${response.data['items'][0]}');
+      }
+      
+      return ProductPageResult.fromJson(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
+      rethrow;
+    }
+  }
+
   Future<ReviewPageResult> fetchReviews({
     String? category,
     String? source,
