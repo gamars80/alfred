@@ -187,20 +187,16 @@ class _CommunityCardState extends State<CommunityCard> {
                                   imageFilter: showBlur
                                       ? ImageFilter.blur(sigmaX: 6, sigmaY: 6)
                                       : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                                  child: Transform(
-                                    transform: Matrix4.rotationZ(3.14159),
-                                    alignment: Alignment.center,
-                                    child: CachedNetworkImage(
-                                      imageUrl: url,
-                                      width: 96,
-                                      height: 96,
-                                      fit: BoxFit.cover,
-                                      fadeInDuration: const Duration(milliseconds: 200),
-                                      memCacheWidth: 192,
-                                      errorWidget: (context, url, error) => Container(
-                                        color: Colors.grey[200],
-                                        child: const Icon(Icons.error),
-                                      ),
+                                  child: CachedNetworkImage(
+                                    imageUrl: url,
+                                    width: 96,
+                                    height: 96,
+                                    fit: BoxFit.cover,
+                                    fadeInDuration: const Duration(milliseconds: 200),
+                                    memCacheWidth: 192,
+                                    errorWidget: (context, url, error) => Container(
+                                      color: Colors.grey[200],
+                                      child: const Icon(Icons.error),
                                     ),
                                   ),
                                 ),

@@ -172,20 +172,21 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
                     ),
                   ),
                   const Spacer(),
-                  TextButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              ReviewListScreen(source: widget.source),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.reviews, size: 18),
-                    label: const Text('전체 리뷰'),
-                    style: TextButton.styleFrom(foregroundColor: Colors.deepPurple),
-                  ),
+                  if (widget.source != 'ABLY') // ABLY가 아닐 때만 전체 리뷰 버튼 표시
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ReviewListScreen(source: widget.source),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.reviews, size: 18),
+                      label: const Text('전체 리뷰'),
+                      style: TextButton.styleFrom(foregroundColor: Colors.deepPurple),
+                    ),
                 ],
               ),
             ),
