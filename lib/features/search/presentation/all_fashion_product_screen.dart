@@ -5,6 +5,7 @@ import '../../call/model/product.dart';
 import '../data/search_repository.dart';
 import '../presentation/widget/product_card.dart';
 import 'search_screen.dart';
+import 'review_list_screen.dart';
 import 'widget/sort_dropdown.dart';
 
 class AllFashionProductScreen extends StatefulWidget {
@@ -165,6 +166,21 @@ class _AllFashionProductScreenState extends State<AllFashionProductScreen> {
                       fontWeight: FontWeight.w500,
                       color: Colors.black54,
                     ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ReviewListScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.reviews, size: 18),
+                    label: const Text('전체 리뷰'),
+                    style: TextButton.styleFrom(foregroundColor: Colors.deepPurple),
                   ),
                 ],
               ),
