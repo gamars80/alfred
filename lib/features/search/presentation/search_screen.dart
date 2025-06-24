@@ -47,14 +47,20 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.black),
         title: TextField(
           controller: _controller,
           autofocus: true,
           textInputAction: TextInputAction.search,
           onSubmitted: _submit,
+          style: const TextStyle(color: Colors.black),
           decoration: const InputDecoration(
             hintText: '검색어를 입력하세요',
+            hintStyle: TextStyle(color: Colors.grey),
             border: InputBorder.none,
           ),
         ),
@@ -76,6 +82,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
+                  color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 8),
@@ -84,7 +91,11 @@ class _SearchScreenState extends State<SearchScreen> {
                 runSpacing: 8,
                 children: _recent.map((kw) {
                   return ActionChip(
-                    label: Text(kw),
+                    label: Text(
+                      kw,
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                    backgroundColor: Colors.grey[100],
                     onPressed: () => _submit(kw),
                   );
                 }).toList(),
