@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../call/model/product.dart';
 import '../data/review_repository.dart';
 import '../model/review.dart';
@@ -41,6 +42,19 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
         initialIndex: initialIndex,
       ),
     );
+  }
+
+  Future<void> _openProductDetail() async {
+    final Uri url = Uri.parse(widget.product.link);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('링크를 열 수 없습니다.')),
+        );
+      }
+    }
   }
 
   @override
@@ -117,301 +131,384 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
                     }
 
                     final reviews = snapshot.data!;
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: reviews.length,
-                      itemBuilder: (context, i) {
-                        final review = reviews[i];
-
-                        // 옵션을 / 기준으로 두 줄 분리
-                        final firstLine = review.selectedOptions.isNotEmpty
-                            ? review.selectedOptions.first
-                            : '';
-                        final secondLine = review.selectedOptions.length > 1
-                            ? review.selectedOptions[1]
-                            : '';
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFFEEEEEE),
-                              width: 1,
+                    
+                    // 리뷰가 없을 때의 표현
+                    if (reviews.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.rate_review_outlined,
+                              color: Colors.grey[400],
+                              size: 64,
                             ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (review.rating > 0) ...[
-                                  Row(
+                            const SizedBox(height: 16),
+                            Text(
+                              '아직 리뷰가 없습니다',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '첫 번째 리뷰를 작성해보세요!',
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: reviews.length,
+                            itemBuilder: (context, i) {
+                              final review = reviews[i];
+
+                              // 옵션을 / 기준으로 두 줄 분리
+                              final firstLine = review.selectedOptions.isNotEmpty
+                                  ? review.selectedOptions.first
+                                  : '';
+                              final secondLine = review.selectedOptions.length > 1
+                                  ? review.selectedOptions[1]
+                                  : '';
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: const Color(0xFFEEEEEE),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(14),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      ...List.generate(
-                                        5,
-                                        (j) => Padding(
-                                          padding: const EdgeInsets.only(right: 1),
-                                          child: Icon(
-                                            j < review.rating
-                                                ? Icons.star_rounded
-                                                : Icons.star_outline_rounded,
-                                            color: j < review.rating
-                                                ? const Color(0xFFFFB400)
-                                                : const Color(0xFFE0E0E0),
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        '${review.rating}.0',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                          color: Color(0xFF616161),
-                                        ),
-                                      ),
-                                      if (firstLine.isNotEmpty || secondLine.isNotEmpty) ...[
-                                        const SizedBox(width: 8),
-                                        Container(
-                                          width: 1,
-                                          height: 12,
-                                          color: const Color(0xFFE0E0E0),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            firstLine + (secondLine.isNotEmpty ? ' / $secondLine' : ''),
-                                            style: const TextStyle(
-                                              fontSize: 11,
-                                              color: Color(0xFF757575),
+                                      if (review.rating > 0) ...[
+                                        Row(
+                                          children: [
+                                            ...List.generate(
+                                              5,
+                                              (j) => Padding(
+                                                padding: const EdgeInsets.only(right: 1),
+                                                child: Icon(
+                                                  j < review.rating
+                                                      ? Icons.star_rounded
+                                                      : Icons.star_outline_rounded,
+                                                  color: j < review.rating
+                                                      ? const Color(0xFFFFB400)
+                                                      : const Color(0xFFE0E0E0),
+                                                  size: 16,
+                                                ),
+                                              ),
                                             ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              '${review.rating}.0',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF616161),
+                                              ),
+                                            ),
+                                            if (firstLine.isNotEmpty || secondLine.isNotEmpty) ...[
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                width: 1,
+                                                height: 12,
+                                                color: const Color(0xFFE0E0E0),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  firstLine + (secondLine.isNotEmpty ? ' / $secondLine' : ''),
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                    color: Color(0xFF757575),
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                      ] else if (firstLine.isNotEmpty || secondLine.isNotEmpty) ...[
+                                        Text(
+                                          firstLine + (secondLine.isNotEmpty ? ' / $secondLine' : ''),
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: Color(0xFF757575),
                                           ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
+                                        const SizedBox(height: 10),
                                       ],
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                ] else if (firstLine.isNotEmpty || secondLine.isNotEmpty) ...[
-                                  Text(
-                                    firstLine + (secondLine.isNotEmpty ? ' / $secondLine' : ''),
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: Color(0xFF757575),
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 10),
-                                ],
 
-                                LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    final hasImages = review.imageUrls.isNotEmpty;
-                                    final contentWidth = hasImages 
-                                        ? constraints.maxWidth - 100 
-                                        : constraints.maxWidth;
-                                    
-                                    final textPainter = TextPainter(
-                                      text: TextSpan(
-                                        text: review.content,
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          height: 1.5,
-                                        ),
-                                      ),
-                                      maxLines: 3,
-                                      textDirection: TextDirection.ltr,
-                                    );
-                                    textPainter.layout(maxWidth: contentWidth);
-                                    
-                                    final isOverflowing = textPainter.didExceedMaxLines;
-                                    final isExpanded = _expandedReviews[i] ?? false;
+                                      LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          final hasImages = review.imageUrls.isNotEmpty;
+                                          final contentWidth = hasImages 
+                                              ? constraints.maxWidth - 100 
+                                              : constraints.maxWidth;
+                                          
+                                          final textPainter = TextPainter(
+                                            text: TextSpan(
+                                              text: review.content,
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                height: 1.5,
+                                              ),
+                                            ),
+                                            maxLines: 3,
+                                            textDirection: TextDirection.ltr,
+                                          );
+                                          textPainter.layout(maxWidth: contentWidth);
+                                          
+                                          final isOverflowing = textPainter.didExceedMaxLines;
+                                          final isExpanded = _expandedReviews[i] ?? false;
 
-                                    return Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
+                                          return Row(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              AnimatedCrossFade(
-                                                firstChild: Text(
-                                                  review.content,
-                                                  maxLines: 3,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: const TextStyle(
-                                                    fontSize: 13,
-                                                    color: Color(0xFF424242),
-                                                    height: 1.5,
-                                                    letterSpacing: -0.2,
-                                                  ),
-                                                ),
-                                                secondChild: Text(
-                                                  review.content,
-                                                  style: const TextStyle(
-                                                    fontSize: 13,
-                                                    color: Color(0xFF424242),
-                                                    height: 1.5,
-                                                    letterSpacing: -0.2,
-                                                  ),
-                                                ),
-                                                crossFadeState: isExpanded
-                                                    ? CrossFadeState.showSecond
-                                                    : CrossFadeState.showFirst,
-                                                duration: const Duration(milliseconds: 200),
-                                              ),
-                                              if (isOverflowing) ...[
-                                                const SizedBox(height: 6),
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    setState(() {
-                                                      _expandedReviews[i] = !isExpanded;
-                                                    });
-                                                  },
-                                                  child: Text(
-                                                    isExpanded ? '접기' : '더보기',
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Color(0xFFE91E63),
-                                                      fontWeight: FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                              if (hasImages && isExpanded) ...[
-                                                const SizedBox(height: 12),
-                                                SizedBox(
-                                                  height: 80,
-                                                  child: ListView.separated(
-                                                    scrollDirection: Axis.horizontal,
-                                                    physics: const BouncingScrollPhysics(),
-                                                    itemCount: review.imageUrls.length,
-                                                    separatorBuilder: (context, index) =>
-                                                        const SizedBox(width: 8),
-                                                    itemBuilder: (context, index) {
-                                                      return GestureDetector(
-                                                        onTap: () => _showImageViewer(
-                                                          context,
-                                                          review.imageUrls,
-                                                          index,
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    AnimatedCrossFade(
+                                                      firstChild: Text(
+                                                        review.content,
+                                                        maxLines: 3,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        style: const TextStyle(
+                                                          fontSize: 13,
+                                                          color: Color(0xFF424242),
+                                                          height: 1.5,
+                                                          letterSpacing: -0.2,
                                                         ),
-                                                        child: ClipRRect(
-                                                          borderRadius: BorderRadius.circular(8),
-                                                          child: CachedNetworkImage(
-                                                            imageUrl: review.imageUrls[index],
-                                                            width: 80,
-                                                            height: 80,
-                                                            fit: BoxFit.cover,
-                                                            placeholder: (_, __) => Container(
-                                                              color: const Color(0xFFF5F5F5),
-                                                              child: const Center(
-                                                                child: CircularProgressIndicator(
-                                                                  strokeWidth: 2,
-                                                                  color: Color(0xFFE91E63),
+                                                      ),
+                                                      secondChild: Text(
+                                                        review.content,
+                                                        style: const TextStyle(
+                                                          fontSize: 13,
+                                                          color: Color(0xFF424242),
+                                                          height: 1.5,
+                                                          letterSpacing: -0.2,
+                                                        ),
+                                                      ),
+                                                      crossFadeState: isExpanded
+                                                          ? CrossFadeState.showSecond
+                                                          : CrossFadeState.showFirst,
+                                                      duration: const Duration(milliseconds: 200),
+                                                    ),
+                                                    if (isOverflowing) ...[
+                                                      const SizedBox(height: 6),
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            _expandedReviews[i] = !isExpanded;
+                                                          });
+                                                        },
+                                                        child: Text(
+                                                          isExpanded ? '접기' : '더보기',
+                                                          style: const TextStyle(
+                                                            fontSize: 12,
+                                                            color: Color(0xFFE91E63),
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                    if (hasImages && isExpanded) ...[
+                                                      const SizedBox(height: 12),
+                                                      SizedBox(
+                                                        height: 80,
+                                                        child: ListView.separated(
+                                                          scrollDirection: Axis.horizontal,
+                                                          physics: const BouncingScrollPhysics(),
+                                                          itemCount: review.imageUrls.length,
+                                                          separatorBuilder: (context, index) =>
+                                                              const SizedBox(width: 8),
+                                                          itemBuilder: (context, index) {
+                                                            return GestureDetector(
+                                                              onTap: () => _showImageViewer(
+                                                                context,
+                                                                review.imageUrls,
+                                                                index,
+                                                              ),
+                                                              child: ClipRRect(
+                                                                borderRadius: BorderRadius.circular(8),
+                                                                child: CachedNetworkImage(
+                                                                  imageUrl: review.imageUrls[index],
+                                                                  width: 80,
+                                                                  height: 80,
+                                                                  fit: BoxFit.cover,
+                                                                  placeholder: (_, __) => Container(
+                                                                    color: const Color(0xFFF5F5F5),
+                                                                    child: const Center(
+                                                                      child: CircularProgressIndicator(
+                                                                        strokeWidth: 2,
+                                                                        color: Color(0xFFE91E63),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                  errorWidget: (_, __, ___) =>
+                                                                      Container(
+                                                                    color: const Color(0xFFF5F5F5),
+                                                                    child: const Icon(
+                                                                      Icons.image_not_supported_outlined,
+                                                                      color: Color(0xFFBDBDBD),
+                                                                      size: 24,
+                                                                    ),
+                                                                  ),
                                                                 ),
                                                               ),
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ],
+                                                ),
+                                              ),
+                                              if (hasImages && !isExpanded) ...[
+                                                const SizedBox(width: 12),
+                                                GestureDetector(
+                                                  onTap: () => _showImageViewer(
+                                                    context,
+                                                    review.imageUrls,
+                                                    0,
+                                                  ),
+                                                  child: Stack(
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius: BorderRadius.circular(8),
+                                                        child: CachedNetworkImage(
+                                                          imageUrl: review.imageUrls[0],
+                                                          width: 80,
+                                                          height: 80,
+                                                          fit: BoxFit.cover,
+                                                          placeholder: (_, __) => Container(
+                                                            color: const Color(0xFFF5F5F5),
+                                                            child: const Center(
+                                                              child: CircularProgressIndicator(
+                                                                strokeWidth: 2,
+                                                                color: Color(0xFFE91E63),
+                                                              ),
                                                             ),
-                                                            errorWidget: (_, __, ___) =>
-                                                                Container(
-                                                              color: const Color(0xFFF5F5F5),
-                                                              child: const Icon(
-                                                                Icons.image_not_supported_outlined,
-                                                                color: Color(0xFFBDBDBD),
-                                                                size: 24,
+                                                          ),
+                                                          errorWidget: (_, __, ___) =>
+                                                              Container(
+                                                            color: const Color(0xFFF5F5F5),
+                                                            child: const Icon(
+                                                              Icons.image_not_supported_outlined,
+                                                              color: Color(0xFFBDBDBD),
+                                                              size: 24,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      if (review.imageUrls.length > 1)
+                                                        Positioned(
+                                                          right: 4,
+                                                          bottom: 4,
+                                                          child: Container(
+                                                            padding: const EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2,
+                                                            ),
+                                                            decoration: BoxDecoration(
+                                                              color: Colors.black.withOpacity(0.7),
+                                                              borderRadius: BorderRadius.circular(4),
+                                                            ),
+                                                            child: Text(
+                                                              '+${review.imageUrls.length - 1}',
+                                                              style: const TextStyle(
+                                                                color: Colors.white,
+                                                                fontSize: 11,
+                                                                fontWeight: FontWeight.w500,
                                                               ),
                                                             ),
                                                           ),
                                                         ),
-                                                      );
-                                                    },
+                                                    ],
                                                   ),
                                                 ),
                                               ],
                                             ],
-                                          ),
-                                        ),
-                                        if (hasImages && !isExpanded) ...[
-                                          const SizedBox(width: 12),
-                                          GestureDetector(
-                                            onTap: () => _showImageViewer(
-                                              context,
-                                              review.imageUrls,
-                                              0,
-                                            ),
-                                            child: Stack(
-                                              children: [
-                                                ClipRRect(
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  child: CachedNetworkImage(
-                                                    imageUrl: review.imageUrls[0],
-                                                    width: 80,
-                                                    height: 80,
-                                                    fit: BoxFit.cover,
-                                                    placeholder: (_, __) => Container(
-                                                      color: const Color(0xFFF5F5F5),
-                                                      child: const Center(
-                                                        child: CircularProgressIndicator(
-                                                          strokeWidth: 2,
-                                                          color: Color(0xFFE91E63),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    errorWidget: (_, __, ___) =>
-                                                        Container(
-                                                      color: const Color(0xFFF5F5F5),
-                                                      child: const Icon(
-                                                        Icons.image_not_supported_outlined,
-                                                        color: Color(0xFFBDBDBD),
-                                                        size: 24,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                if (review.imageUrls.length > 1)
-                                                  Positioned(
-                                                    right: 4,
-                                                    bottom: 4,
-                                                    child: Container(
-                                                      padding: const EdgeInsets.symmetric(
-                                                        horizontal: 6,
-                                                        vertical: 2,
-                                                      ),
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.black.withOpacity(0.7),
-                                                        borderRadius: BorderRadius.circular(4),
-                                                      ),
-                                                      child: Text(
-                                                        '+${review.imageUrls.length - 1}',
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 11,
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    );
-                                  },
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
+                              );
+                            },
+                          ),
+                        ),
+                        // 하단 고정 버튼
+                        Container(
+                          width: double.infinity,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, -2),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: _openProductDetail,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.open_in_new,
+                                      color: const Color(0xFFE91E63),
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '리뷰 더보러 가기',
+                                      style: const TextStyle(
+                                        color: Color(0xFFE91E63),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
-                        );
-                      },
+                        ),
+                      ],
                     );
                   },
                 ),
