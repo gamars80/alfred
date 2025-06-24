@@ -52,6 +52,30 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    // TODO: 전체 패션 상품 화면으로 이동하는 로직 구현
+                    debugPrint('WeeklyTopKeywordSection - 전체 패션 상품 버튼 클릭');
+                  },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text(
+                    '전체 패션 상품',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             TabBar(
               controller: _tabController,
               labelColor: Colors.black87,
