@@ -16,7 +16,7 @@ class ReviewListScreen extends StatefulWidget {
     super.key,
     this.category,
     this.source,
-  }) : assert(category != null || source != null);
+  });
 
   @override
   State<ReviewListScreen> createState() => _ReviewListScreenState();
@@ -33,11 +33,11 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
   bool _hasMore = true;
   String? _searchKeyword;
 
-  /// “리뷰 20개마다 한 줄 전체 폭 배너”를 삽입하기 위한 상수
+  /// "리뷰 20개마다 한 줄 전체 폭 배너"를 삽입하기 위한 상수
   static const int _reviewsPerBanner = 20; // 배너 삽입 기준(리뷰 개수)
   static const int _reviewsPerRow = 2;     // 한 행(가로)에 2개의 리뷰 카드
 
-  /// 한 배너 블록 당 “리뷰가 차지하는 행 수” = 20 / 2 = 10
+  /// 한 배너 블록 당 "리뷰가 차지하는 행 수" = 20 / 2 = 10
   static final int _rowsPerBanner = _reviewsPerBanner ~/ _reviewsPerRow;
 
   /// 하나의 블록(10 Row 리뷰 + 1 Row 배너) 당 총 행 수
@@ -116,7 +116,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
     }
   }
 
-  /// “리뷰를 2개씩 묶어 한 행에 배치” → 실제 리뷰 행(row) 개수
+  /// "리뷰를 2개씩 묶어 한 행에 배치" → 실제 리뷰 행(row) 개수
   int get _totalReviewRows {
     return (_reviews.length / _reviewsPerRow).ceil();
   }
@@ -127,17 +127,17 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
     return _totalReviewRows + bannerCount;
   }
 
-  /// 주어진 ListView 인덱스(idx)가 “배너 행”인지 판단
+  /// 주어진 ListView 인덱스(idx)가 "배너 행"인지 판단
   bool _isBannerRow(int rowIdx) {
     // 한 블록(리뷰 10행 + 1배너)씩 보면,
     // (rowIdx + 1) % _blockRows == 0  이면 배너
     return ((rowIdx + 1) % _blockRows) == 0;
   }
 
-  /// 주어진 ListView 인덱스(rowIdx)에 대응하는 “리뷰 행” 인덱스로 변환
+  /// 주어진 ListView 인덱스(rowIdx)에 대응하는 "리뷰 행" 인덱스로 변환
   /// (즉, 배너 행들을 제외한 뒤 실제로 몇 번째 리뷰 행인지)
   int _reviewRowIndexForRow(int rowIdx) {
-    // rowIdx까지 포함했을 때 들어간 “배너 행” 개수
+    // rowIdx까지 포함했을 때 들어간 "배너 행" 개수
     final bannersBefore = (rowIdx + 1) ~/ _blockRows;
     // 따라서 실제 리뷰 행 인덱스 = rowIdx - bannersBefore
     return rowIdx - bannersBefore;
@@ -153,7 +153,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black87),
         title: Text(
-          widget.category ?? widget.source!,
+          widget.category ?? widget.source ?? '전체 리뷰',
           style: const TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.w600,
@@ -203,7 +203,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: _totalListItemCount,
                   itemBuilder: (context, rowIdx) {
-                    // 1) “배너 행”이면
+                    // 1) "배너 행"이면
                     if (_isBannerRow(rowIdx)) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(
@@ -281,7 +281,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
     );
   }
 
-  /// 주어진 “리뷰 인덱스”에 해당하는 카드 위젯
+  /// 주어진 "리뷰 인덱스"에 해당하는 카드 위젯
   Widget _buildReviewCard(int reviewIdx) {
     final review = _reviews[reviewIdx];
     return _ReviewCard(review: review);
