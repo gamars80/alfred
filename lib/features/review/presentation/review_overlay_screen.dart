@@ -26,11 +26,20 @@ class _ReviewOverlayScreenState extends State<ReviewOverlayScreen> {
     debugPrint(widget.product.source);
     debugPrint(widget.product.source);
     debugPrint(widget.product.source);
-    reviewsFuture = repo.fetchReviews(
-      productId: widget.product.productId,
-      source: widget.product.source,
-      productLink: widget.product.link,
-    );
+    
+    // 카테고리에 따라 다른 API 호출
+    if (widget.product.category == 'care') {
+      reviewsFuture = repo.fetchCareReviews(
+        productId: widget.product.productId,
+        source: widget.product.source ?? '',
+      );
+    } else {
+      reviewsFuture = repo.fetchReviews(
+        productId: widget.product.productId,
+        source: widget.product.source,
+        productLink: widget.product.link,
+      );
+    }
   }
 
   void _showImageViewer(BuildContext context, List<String> imageUrls, int initialIndex) {

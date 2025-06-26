@@ -4,11 +4,14 @@ import 'package:alfred_clean/features/call/presentation/widget/event_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/hospital_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/youtube_list.dart';
 import 'package:alfred_clean/features/call/presentation/widget/product_card.dart';
+import 'package:alfred_clean/features/call/presentation/widget/care_product_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/fashion_command_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/foods_command_card.dart';
+import 'package:alfred_clean/features/call/presentation/widget/care_command_card.dart';
 import 'package:flutter/material.dart';
 import '../data/beauty_api.dart';
 import '../data/food_api.dart';
+import '../data/care_api.dart';
 import '../model/community_post.dart';
 import '../model/event.dart';
 import '../model/hostpital.dart';
@@ -38,6 +41,7 @@ class CallScreenBody extends StatefulWidget {
   final String? recipeSummary;
   final String? requiredIngredients;
   final String? suggestionReason;
+  final String? reason; // 뷰티케어 추천 이유
 
   const CallScreenBody({
     super.key,
@@ -52,6 +56,7 @@ class CallScreenBody extends StatefulWidget {
     this.recipeSummary,
     this.requiredIngredients,
     this.suggestionReason,
+    this.reason,
   });
 
   @override
@@ -65,6 +70,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
   late TabController _fashionTabController;
+  bool _isReasonExpanded = false; // 추천이유 섹션 접기/펼치기 상태
 
   // ===== 뷰티 명령 관련 상태 추가 =====
   List<RecentBeautyCommand> _recentBeautyCommands = [];
@@ -77,11 +83,15 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   List<RecentFoodsCommand> _recentFoodsCommands = [];
   bool _isLoadingFoodsCommands = false;
 
+  // ===== 뷰티케어 명령 관련 상태 추가 =====
+  List<RecentCareCommand> _recentCareCommands = [];
+  bool _isLoadingCareCommands = false;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _fashionTabController = TabController(length: 3, vsync: this);
+    _fashionTabController = TabController(length: 4, vsync: this); // 4개 탭으로 변경
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {
@@ -99,6 +109,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
     _loadRecentCommands();
     _loadRecentBeautyCommands();
     _loadRecentFoodsCommands();
+    _loadRecentCareCommands();
   }
 
   @override
@@ -159,6 +170,19 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
     }
   }
 
+  Future<void> _loadRecentCareCommands() async {
+    if (_isLoadingCareCommands) return;
+    setState(() => _isLoadingCareCommands = true);
+    try {
+      final commands = await CareApi().fetchRecentCareCommands();
+      setState(() => _recentCareCommands = commands);
+    } catch (e) {
+      debugPrint('❌ Failed to load recent care commands: $e');
+    } finally {
+      setState(() => _isLoadingCareCommands = false);
+    }
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -192,12 +216,18 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
     debugPrint('Recent fashion commands: ${_recentCommands.length}');
     debugPrint('Recent beauty commands: ${_recentBeautyCommands.length}');
     debugPrint('Recent foods commands: ${_recentFoodsCommands.length}');
+    debugPrint('Recent care commands: ${_recentCareCommands.length}');
     debugPrint('Selected category: ${widget.selectedCategory}');
     debugPrint('Categorized products: ${widget.categorizedProducts}');
     debugPrint('Selected source: $selectedSource');
     if (widget.selectedCategory == '쇼핑') {
       debugPrint('Available sources: ${widget.categorizedProducts.keys.toList()}');
       debugPrint('Products for selected source: ${widget.categorizedProducts[selectedSource]?.length ?? 0}');
+    }
+
+    // 뷰티케어 카테고리이고 추천이유가 있을 때 추천이유 섹션을 맨 위에 추가
+    if (widget.selectedCategory == '뷰티케어' && widget.reason != null && widget.reason!.isNotEmpty) {
+      sections.add(_buildReasonSection());
     }
 
     // 다른 추천 컨텐츠가 있을 때는 최신 명령 섹션을 생략
@@ -208,12 +238,12 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
             widget.youtubeVideos.isNotEmpty ||
             widget.categorizedProducts.isNotEmpty;
 
-    // 다른 추천 컨텐츠가 없을 때만 "최신 패션/뷰티/음식 명령" 섹션 표시
-    if (!hasRecommendedContent && (_recentCommands.isNotEmpty || _recentBeautyCommands.isNotEmpty || _recentFoodsCommands.isNotEmpty)) {
+    // 다른 추천 컨텐츠가 없을 때만 "최신 패션/뷰티/음식/뷰티케어 명령" 섹션 표시
+    if (!hasRecommendedContent && (_recentCommands.isNotEmpty || _recentBeautyCommands.isNotEmpty || _recentFoodsCommands.isNotEmpty || _recentCareCommands.isNotEmpty)) {
       sections.add(
         Column(
           children: [
-            // 패션 / 시술성형 / 음식 탭바
+            // 패션 / 시술성형 / 음식 / 뷰티케어 탭바
             _buildFashionTabBar(),
             const SizedBox(height: kSpacing),
 
@@ -241,6 +271,15 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
                 title: '최신 음식 명령',
                 children: _recentFoodsCommands
                     .map((command) => FoodsCommandCard(command: command))
+                    .toList(),
+              ),
+
+            // ====== 뷰티케어 탭 ======
+            if (selectedFashionTab == 3 && _recentCareCommands.isNotEmpty)
+              _buildSection(
+                title: '최신 뷰티케어 명령',
+                children: _recentCareCommands
+                    .map((command) => CareCommandCard(command: command))
                     .toList(),
               ),
           ],
@@ -376,11 +415,21 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
                     ),
                     itemCount: entry.value.length,
                     itemBuilder: (context, index) {
-                      return ProductCard(
-                        id: widget.id,
-                        product: entry.value[index],
-                        historyCreatedAt: widget.createdAt,
-                      );
+                      // 뷰티케어 카테고리일 때는 CareProductCard 사용
+                      if (widget.selectedCategory == '뷰티케어') {
+                        return CareProductCard(
+                          id: widget.id,
+                          product: entry.value[index],
+                          historyCreatedAt: widget.createdAt,
+                        );
+                      } else {
+                        // 다른 카테고리는 기존 ProductCard 사용
+                        return ProductCard(
+                          id: widget.id,
+                          product: entry.value[index],
+                          historyCreatedAt: widget.createdAt,
+                        );
+                      }
                     },
                   ),
                 ),
@@ -646,8 +695,113 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
               textAlign: TextAlign.left,
             ),
           ),
+          Tab(
+            child: Text(
+              '뷰티케어',
+              textAlign: TextAlign.left,
+            ),
+          ),
         ],
       ),
     );
   }
+
+  Widget _buildReasonSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: kSpacing, vertical: kSpacing),
+      child: Card(
+        elevation: 2,
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey.shade200),
+        ),
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3E5F5),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.psychology_outlined,
+                    color: Color(0xFF7B1FA2),
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '알프레드의 추천이유',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A1A1A),
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            initiallyExpanded: _isReasonExpanded,
+            onExpansionChanged: (value) {
+              setState(() {
+                _isReasonExpanded = value;
+              });
+            },
+            tilePadding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            children: [
+              const Divider(height: 24, thickness: 1, color: Color(0xFFE0E0E0)),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F5FF),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFFE1BEE7),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF7B1FA2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.lightbulb_outline,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        widget.reason!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF1A1A1A),
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
+
