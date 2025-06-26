@@ -178,7 +178,7 @@ class ProductCard extends StatelessWidget {
                             child: Text(
                               product.mallName,
                               style: const TextStyle(
-                                fontSize: 8,
+                                fontSize: 10,
                                 height: 1.0,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF666666),
@@ -198,12 +198,12 @@ class ProductCard extends StatelessWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.star_rounded, size: 8, color: Colors.orange[600]),
+                                  Icon(Icons.star_rounded, size: 10, color: Colors.orange[600]),
                                   const SizedBox(width: 2),
                                   Text(
                                     '${product.reviewCount}',
                                     style: TextStyle(
-                                      fontSize: 8,
+                                      fontSize: 10,
                                       height: 1.0,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.orange[800],

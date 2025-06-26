@@ -32,6 +32,7 @@ class _CallScreenState extends State<CallScreen> {
   String? _recipeSummary;
   String? _requiredIngredients;
   String? _suggestionReason;
+  String? _reason; // 뷰티케어 추천 이유
 
   Map<String, List<Product>> _categorizedProducts = {};
   List<CommunityPost> _communityPosts = [];
@@ -70,6 +71,7 @@ class _CallScreenState extends State<CallScreen> {
               recipeSummary: _recipeSummary,
               requiredIngredients: _requiredIngredients,
               suggestionReason: _suggestionReason,
+              reason: _reason,
             ),
           ],
         ),
@@ -119,6 +121,7 @@ class _CallScreenState extends State<CallScreen> {
           _recipeSummary = data.recipeSummary;
           _requiredIngredients = data.requiredIngredients?.join(', ');
           _suggestionReason = data.suggestionReason;
+          _reason = data.reason;
           // ── 여기서 성별/연령대 초기화 ───────────────────
           _selectedGender = null;
           _selectedAge = null;
@@ -134,7 +137,7 @@ class _CallScreenState extends State<CallScreen> {
       setState(() => _isLoading = false);
 
       if (success) {
-        if (_selectedCategory == '쇼핑' || _selectedCategory == '음식/식자재') {
+        if (_selectedCategory == '쇼핑' || _selectedCategory == '음식/식자재' || _selectedCategory == '뷰티케어') {
           Flushbar(
             message: '현재 결과는 일부입니다. 히스토리에서 모두 확인하세요 🛍️',
             duration: const Duration(seconds: 3),

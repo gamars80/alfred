@@ -197,6 +197,7 @@ class VoiceCommandBottomSheet {
             DropdownMenuItem(value: '쇼핑', child: Text('쇼핑')),
             DropdownMenuItem(value: '시술/성형', child: Text('시술/성형')),
             DropdownMenuItem(value: '음식/식자재', child: Text('음식/식자재')),
+            DropdownMenuItem(value: '뷰티케어', child: Text('뷰티케어')),
           ],
           onChanged: (v) {
             if (v != null) onChanged(v);
