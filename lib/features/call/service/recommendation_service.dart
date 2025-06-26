@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import '../data/beauty_api.dart';
 import '../data/product_api.dart';
 import '../data/food_api.dart';
+import '../data/care_api.dart';
 import '../model/community_post.dart';
 import '../model/event.dart';
 import '../model/hostpital.dart';
@@ -26,6 +27,7 @@ class RecommendationResult {
   final String? recipeSummary;
   final List<String>? requiredIngredients;
   final String? suggestionReason;
+  final String? reason; // 뷰티케어 추천 이유
 
   RecommendationResult({
     this.id = 0,
@@ -41,6 +43,7 @@ class RecommendationResult {
     this.recipeSummary,
     this.requiredIngredients,
     this.suggestionReason,
+    this.reason,
   });
 }
 
@@ -48,11 +51,13 @@ class RecommendedProductsResult {
   final int id;
   final int createdAt;
   final Map<String, List<Product>> items;
+  final String? reason; // 뷰티케어 추천 이유
 
   RecommendedProductsResult({
     required this.id,
     required this.createdAt,
     required this.items,
+    this.reason,
   });
 }
 
@@ -89,6 +94,16 @@ class RecommendationService {
           id: result.id,
           createdAt: result.createdAt,
           products: result.items,
+        ));
+      } else if (selectedCategory == '뷰티케어') {
+        final api = CareApi();
+        final result = await api.fetchRecommendedCareProducts(query);
+        debugPrint("care result id::::::::::::::::::::::::${result.id}");
+        onSuccess(RecommendationResult(
+          id: result.id,
+          createdAt: result.createdAt,
+          products: result.items,
+          reason: result.reason,
         ));
       } else {
         final api = BeautyApi();
