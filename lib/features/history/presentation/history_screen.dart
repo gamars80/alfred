@@ -4,12 +4,15 @@ import 'package:alfred_clean/features/history/data/history_repository.dart';
 import 'package:alfred_clean/features/history/model/recommendation_history.dart';
 import 'package:alfred_clean/features/history/model/beauty_history.dart';
 import 'package:alfred_clean/features/history/model/foods_history.dart';
+import 'package:alfred_clean/features/history/model/care_history.dart';
 import 'package:alfred_clean/features/history/presentation/widget/history_card.dart';
 import 'package:alfred_clean/features/history/presentation/widget/beauty_history_card.dart';
 import 'package:alfred_clean/features/history/presentation/widget/foods_history_card.dart';
+import 'package:alfred_clean/features/history/presentation/widget/care_history_card.dart';
 import 'package:alfred_clean/features/history/presentation/history_detail_screen.dart';
 import 'beauty_history_detail_screen.dart';
 import 'foods_history_detail_screen.dart';
+import 'care_history_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -25,6 +28,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   final ScrollController _shoppingController = ScrollController();
   final ScrollController _communityController = ScrollController();
   final ScrollController _foodController = ScrollController();
+  final ScrollController _careController = ScrollController();
 
   // 쇼핑 탭 상태
   List<RecommendationHistory> _histories = [];
@@ -47,12 +51,19 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   bool _hasMoreFoods = true;
   bool _isFoodsInitialLoading = true;
 
+  // 뷰티 탭 상태
+  List<CareHistory> _careHistories = [];
+  String? _careNextPageKey;
+  bool _isCareLoadingMore = false;
+  bool _hasMoreCare = true;
+  bool _isCareInitialLoading = true;
+
   final int _limit = 10;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this)
+    _tabController = TabController(length: 4, vsync: this)
       ..addListener(_handleTabSelection);
 
     // 쇼핑 탭 스크롤 리스너
@@ -83,6 +94,15 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
       }
     });
 
+    // 뷰티 탭 스크롤 리스너
+    _careController.addListener(() {
+      if (_isCareInitialLoading || _isCareLoadingMore) return;
+      if (_careController.position.pixels >=
+          _careController.position.maxScrollExtent - 200) {
+        _loadMoreCare();
+      }
+    });
+
     // 첫 번째 탭 초기 로딩
     _loadInitialHistories();
   }
@@ -98,6 +118,9 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
     } else if (_tabController.index == 2) {
       setState(() => _isFoodsInitialLoading = true);
       _loadInitialFoodsHistories();
+    } else if (_tabController.index == 3) {
+      setState(() => _isCareInitialLoading = true);
+      _loadInitialCareHistories();
     }
   }
 
@@ -225,6 +248,47 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
     }
   }
 
+  Future<void> _loadInitialCareHistories() async {
+    setState(() => _isCareInitialLoading = true);
+    try {
+      final response = await repository.fetchCareHistories(limit: _limit);
+      setState(() {
+        _careHistories = response.histories;
+        _careNextPageKey = response.nextPageKey;
+        _hasMoreCare = (_careNextPageKey?.isNotEmpty ?? false);
+      });
+    } catch (e) {
+      debugPrint('Error loading care histories: $e');
+    } finally {
+      setState(() => _isCareInitialLoading = false);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_careController.hasClients) {
+          _careController.jumpTo(0);
+        }
+      });
+    }
+  }
+
+  Future<void> _loadMoreCare() async {
+    if (_isCareLoadingMore || !_hasMoreCare) return;
+    setState(() => _isCareLoadingMore = true);
+    try {
+      final response = await repository.fetchCareHistories(
+        limit: _limit,
+        nextPageKey: _careNextPageKey,
+      );
+      setState(() {
+        _careHistories.addAll(response.histories);
+        _careNextPageKey = response.nextPageKey;
+        _hasMoreCare = (_careNextPageKey?.isNotEmpty ?? false);
+      });
+    } catch (e) {
+      debugPrint('Error loading more care histories: $e');
+    } finally {
+      setState(() => _isCareLoadingMore = false);
+    }
+  }
+
   Widget _buildSkeleton() {
     return ListView.builder(
       itemCount: 5,
@@ -247,6 +311,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
     _shoppingController.dispose();
     _communityController.dispose();
     _foodController.dispose();
+    _careController.dispose();
     super.dispose();
   }
 
@@ -267,35 +332,35 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(30),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Color(0xFFE0E0E0),
+                  width: 1.0,
+                ),
+              ),
             ),
             child: TabBar(
               controller: _tabController,
               isScrollable: true,
-              indicator: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).primaryColor.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  )
-                ],
+              indicator: const UnderlineTabIndicator(
+                borderSide: BorderSide(
+                  width: 2.0,
+                  color: Colors.deepPurple,
+                ),
               ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelColor: Colors.white,
+              indicatorSize: TabBarIndicatorSize.label,
+              labelColor: Colors.deepPurple,
               unselectedLabelColor: Colors.grey,
               labelStyle: const TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w600),
+                  fontSize: 16, fontWeight: FontWeight.w600),
+              unselectedLabelStyle: const TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.w400),
               tabs: const [
                 Tab(text: '패션쇼핑'), 
                 Tab(text: '시술/성형'),
                 Tab(text: '음식/식자재'),
+                Tab(text: '뷰티'),
               ],
             ),
           ),
@@ -308,6 +373,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
           _buildShoppingTab(),
           _buildCommunityTab(),
           _buildFoodsTab(),
+          _buildCareTab(),
         ],
       ),
     );
@@ -433,6 +499,50 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
                 setState(() {
                   final idx = _foodsHistories.indexWhere((h) => h.id == updated.id);
                   if (idx != -1) _foodsHistories[idx] = updated;
+                });
+              }
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCareTab() {
+    return RefreshIndicator(
+      onRefresh: _loadInitialCareHistories,
+      child: _isCareInitialLoading
+          ? _buildSkeleton()
+          : _careHistories.isEmpty
+          ? const Center(
+        child: Text('뷰티 히스토리가 없습니다.',
+            style: TextStyle(fontSize: 16, color: Colors.grey)),
+      )
+          : ListView.builder(
+        controller: _careController,
+        itemCount: _careHistories.length + (_isCareLoadingMore ? 1 : 0),
+        itemBuilder: (context, idx) {
+          if (idx == _careHistories.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final history = _careHistories[idx];
+          return CareHistoryCard(
+            history: history,
+            onTap: () async {
+              final updated = await Navigator.push<CareHistory>(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CareHistoryDetailScreen(history: history),
+                ),
+              );
+              if (updated != null) {
+                setState(() {
+                  final idx = _careHistories.indexWhere((h) => h.id == updated.id);
+                  if (idx != -1) _careHistories[idx] = updated;
                 });
               }
             },
