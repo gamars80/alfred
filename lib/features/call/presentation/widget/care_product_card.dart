@@ -301,7 +301,7 @@ class CareProductCard extends StatelessWidget {
           ),
           // mallName을 이미지 우측 상단에 배치
           Positioned(
-            top: token != null ? 40 : 8,
+            top: 8,
             right: 8,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -325,7 +325,7 @@ class CareProductCard extends StatelessWidget {
           if (token != null)
             Positioned(
               top: 8,
-              right: 8,
+              left: 8,
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
