@@ -2,6 +2,7 @@
 import 'package:alfred_clean/features/like/presentation/widget/beauty_community_liked_tab.dart';
 import 'package:alfred_clean/features/like/presentation/widget/beauty_event_liked_tab.dart';
 import 'package:alfred_clean/features/like/presentation/widget/beauty_hospital_liked_tab.dart';
+import 'package:alfred_clean/features/like/presentation/widget/care_liked_tab.dart';
 import 'package:alfred_clean/features/like/presentation/widget/food_liked_tab.dart';
 import 'package:alfred_clean/features/like/presentation/widget/product_liked_tab.dart';
 import 'package:flutter/material.dart';
@@ -23,13 +24,14 @@ class _LikedProductScreenState extends State<LikedProductScreen>
     Tab(text: '시술 커뮤니티'),
     Tab(text: '시술 이벤트'),
     Tab(text: '시술 병원'),
+    Tab(text: '뷰티케어'),
     Tab(text: '음식/식자재'),
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
   }
 
   @override
@@ -40,6 +42,31 @@ class _LikedProductScreenState extends State<LikedProductScreen>
 
   @override
   Widget build(BuildContext context) {
+    Widget buildCustomTabBar(BuildContext context) {
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(_tabs.length, (index) {
+            final selected = _tabController.index == index;
+            return GestureDetector(
+              onTap: () => setState(() => _tabController.index = index),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                child: Text(
+                  _tabs[index].text!,
+                  style: GoogleFonts.notoSans(
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                    fontSize: 14,
+                    color: selected ? const Color(0xFF1A1A1A) : Colors.grey,
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -54,36 +81,25 @@ class _LikedProductScreenState extends State<LikedProductScreen>
             color: const Color(0xFF1A1A1A),
           ),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
-            alignment: Alignment.centerLeft,
-            child: TabBar(
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildCustomTabBar(context),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFE0E0E0)),
+          Expanded(
+            child: TabBarView(
               controller: _tabController,
-              isScrollable: true,
-              tabs: _tabs,
-              labelStyle: GoogleFonts.notoSans(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              indicatorColor: const Color(0xFF1A1A1A),
-              labelColor: const Color(0xFF1A1A1A),
-              unselectedLabelColor: Colors.grey,
-              indicatorWeight: 2,
-              padding: EdgeInsets.zero,
-              labelPadding: const EdgeInsets.symmetric(horizontal: 16),
+              children: const [
+                FashionLikedTab(),
+                BeautyCommunityLikedTab(),
+                BeautyEventLikedTab(),
+                BeautyHospitalLikedTab(),
+                CareLikedTab(),
+                FoodLikedTab(),
+              ],
             ),
           ),
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          FashionLikedTab(),
-          BeautyCommunityLikedTab(),
-          BeautyEventLikedTab(),
-          BeautyHospitalLikedTab(),
-          FoodLikedTab(),
         ],
       ),
     );
