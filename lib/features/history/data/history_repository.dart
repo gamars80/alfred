@@ -214,4 +214,38 @@ class HistoryRepository {
       rethrow;
     }
   }
+
+  Future<void> postCareRating({
+    required int historyId,
+    required int rating,
+  }) async {
+    final endpoint = '/api/ratings/care';
+    debugPrint('▶️ postCareRating 요청 시작 → endpoint=$endpoint, historyId=$historyId, rating=$rating');
+
+    try {
+      final response = await _dio.post(
+        endpoint,
+        data: {
+          'historyId': historyId,
+          'rating': rating,
+        },
+      );
+
+      debugPrint(
+        '✅ postCareRating 응답 [${response.statusCode}]\n'
+        'data=${response.data}',
+      );
+    } on DioException catch (e, stack) {
+      debugPrint('❌ postCareRating DioError 발생 → type=${e.type}, message=${e.message}');
+      if (e.response != null) {
+        debugPrint('  Response [${e.response?.statusCode}]: ${e.response?.data}');
+      }
+      debugPrint('  StackTrace:\n$stack');
+      rethrow;
+    } catch (e, stack) {
+      debugPrint('❌ postCareRating 알 수 없는 에러 발생 → $e');
+      debugPrint('  StackTrace:\n$stack');
+      rethrow;
+    }
+  }
 }

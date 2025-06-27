@@ -6,6 +6,7 @@ import 'package:alfred_clean/features/history/presentation/widget/care_history_c
 import 'package:alfred_clean/features/like/presentation/liked_product_screen.dart';
 import 'package:alfred_clean/features/like/data/services/food_like_service.dart';
 import 'package:alfred_clean/features/like/data/like_repository.dart';
+import 'package:alfred_clean/features/history/data/history_repository.dart';
 
 class CareHistoryDetailScreen extends StatefulWidget {
   final CareHistory history;
@@ -23,7 +24,9 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
   late CareHistory _history;
   bool _isReasonExpanded = false; // 추천이유 섹션 접기/펼치기 상태
   final LikeRepository _likeRepository = LikeRepository();
+  final HistoryRepository _repository = HistoryRepository();
   bool _isLikeLoading = false;
+  bool _isRating = false;
   String? _selectedMall; // 선택된 mallName 필터
 
   @override
@@ -47,6 +50,34 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
       return _history.recommendations;
     }
     return _history.recommendations.where((r) => r.mallName == _selectedMall).toList();
+  }
+
+  // 평점 제출
+  Future<void> _submitRating(int rating) async {
+    if (_isRating) return;
+    setState(() => _isRating = true);
+
+    try {
+      await _repository.postCareRating(
+        historyId: _history.id,
+        rating: rating,
+      );
+      setState(() {
+        _history = _history.copyWith(
+          hasRating: true,
+          myRating: rating,
+        );
+      });
+    } catch (e) {
+      debugPrint('Error submitting rating: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('평점 등록에 실패했습니다.')),
+        );
+      }
+    } finally {
+      setState(() => _isRating = false);
+    }
   }
 
   // 필터 섹션 제목 위젯
@@ -208,67 +239,130 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              // 히스토리 카드
-              CareHistoryCard(
-                history: _history,
-                onTap: () {}, // 상세 화면에서는 탭 비활성화
-              ),
-              const SizedBox(height: 16),
-              
-              // 추천이유 섹션 (reason이 있을 때만 표시)
-              if (_history.reason != null && _history.reason!.isNotEmpty) ...[
-                _buildReasonSection(),
-                const SizedBox(height: 16),
-              ],
-              
-              // 상품 목록 섹션
-              Container(
-                color: Colors.white,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionTitle(
-                      title: '추천 상품',
-                      icon: Icons.shopping_cart_outlined,
-                      count: _filteredRecommendations.length,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.6,
-                          mainAxisSpacing: 12,
-                          crossAxisSpacing: 12,
-                          mainAxisExtent: 290,
-                        ),
-                        itemCount: _filteredRecommendations.length,
-                        itemBuilder: (context, index) {
-                          final recommendation = _filteredRecommendations[index];
-                          final product = recommendation.toProduct();
-                          
-                          return CareProductCard(
-                            product: product,
-                            id: _history.id,
-                            historyCreatedAt: _history.createdAt,
-                            isLiked: recommendation.liked,
-                            onLikeToggle: () => _handleLike(recommendation),
-                            token: 'token', // 좋아요 버튼을 표시하기 위한 토큰
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20), // 하단 여백 추가
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  // 히스토리 카드
+                  CareHistoryCard(
+                    history: _history,
+                    onTap: () {}, // 상세 화면에서는 탭 비활성화
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // 추천이유 섹션 (reason이 있을 때만 표시)
+                  if (_history.reason != null && _history.reason!.isNotEmpty) ...[
+                    _buildReasonSection(),
+                    const SizedBox(height: 16),
                   ],
+                  
+                  // 상품 목록 섹션
+                  Container(
+                    color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionTitle(
+                          title: '추천 상품',
+                          icon: Icons.shopping_cart_outlined,
+                          count: _filteredRecommendations.length,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.6,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              mainAxisExtent: 290,
+                            ),
+                            itemCount: _filteredRecommendations.length,
+                            itemBuilder: (context, index) {
+                              final recommendation = _filteredRecommendations[index];
+                              final product = recommendation.toProduct();
+                              
+                              return CareProductCard(
+                                product: product,
+                                id: _history.id,
+                                historyCreatedAt: _history.createdAt,
+                                isLiked: recommendation.liked,
+                                onLikeToggle: () => _handleLike(recommendation),
+                                token: 'token', // 좋아요 버튼을 표시하기 위한 토큰
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 20), // 하단 여백 추가
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 평점 버튼 (평점이 없을 때만 표시)
+            if (!_history.hasRating)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 8, offset: Offset(0, -4))],
+                  ),
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 24),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const Text(
+                        "주인님 저의 추천에 평가를 내려주세요",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(5, (index) {
+                          return GestureDetector(
+                            onTap: _isRating ? null : () async {
+                              final newRating = index + 1;
+                              await _submitRating(newRating);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: Icon(
+                                index < (_history.myRating ?? 0) ? Icons.star : Icons.star_border,
+                                size: 40,
+                                color: _isRating ? Colors.grey : Colors.amber,
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 32),
+                      if (_isRating) const Center(child: CircularProgressIndicator()),
+                    ],
+                  ),
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
