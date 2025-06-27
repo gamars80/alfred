@@ -435,6 +435,76 @@ class LikeRepository {
       rethrow;
     }
   }
+
+  Future<int> postLikeCare({
+    required int historyId,
+    required String recommendationId,
+    required String productId,
+    required String mallName,
+  }) async {
+    debugPrint('📡 POST /api/likes/care 호출');
+    debugPrint('   요청 데이터: {historyId: $historyId, recommendationId: $recommendationId, productId: $productId, mallName: $mallName}');
+
+    try {
+      final response = await _dio.post(
+        '/api/likes/care',
+        data: {
+          'historyId': historyId,
+          'recommendationId': recommendationId,
+          'productId': productId,
+          'mallName': mallName,
+        },
+      );
+      
+      debugPrint('✅ 케어 상품 좋아요 요청 성공 - 상태 코드: ${response.statusCode}');
+      debugPrint('   응답 데이터: ${response.data}');
+      
+      return response.data['userLikeId'] as int;
+    } on DioException catch (e) {
+      debugPrint('❌ DioException 발생: ${e.message}');
+      debugPrint('   상태 코드: ${e.response?.statusCode}');
+      debugPrint('   응답 데이터: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      debugPrint('❌ 일반 예외 발생: $e');
+      debugPrint('$st');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteLikeCare({
+    required int historyId,
+    required String recommendationId,
+    required String productId,
+    required String mallName,
+  }) async {
+    debugPrint('📡 DELETE /api/likes/care 호출');
+    debugPrint('   요청 데이터: {historyId: $historyId, recommendationId: $recommendationId, productId: $productId, mallName: $mallName}');
+
+    try {
+      final response = await _dio.delete(
+        '/api/likes/care',
+        data: {
+          'historyId': historyId,
+          'recommendationId': recommendationId,
+          'productId': productId,
+          'mallName': mallName,
+        },
+      );
+      
+      debugPrint('✅ 케어 상품 좋아요 취소 요청 성공 - 상태 코드: ${response.statusCode}');
+      debugPrint('   응답 데이터: ${response.data}');
+    } on DioException catch (e) {
+      debugPrint('❌ DioException 발생: ${e.message}');
+      debugPrint('   상태 코드: ${e.response?.statusCode}');
+      debugPrint('   응답 데이터: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      debugPrint('❌ 일반 예외 발생: $e');
+      debugPrint('$st');
+      rethrow;
+    }
+  }
 }
 
 
