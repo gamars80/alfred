@@ -27,58 +27,59 @@ class CareCommandCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      elevation: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            // TODO: Implement navigation to care recommendation screen
-          },
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              command.query,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF2C3E50),
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 3),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        command.query,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF1A1A1A),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        DateFormat('yyyy.MM.dd').format(
-                          DateTime.fromMillisecondsSinceEpoch(command.createdAt),
-                        ),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF666666),
-                        ),
-                      ),
-                    ],
+                Text(
+                  _formatDate(command.createdAt),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[600],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.copy, size: 20),
                   onPressed: () => _copyToClipboard(context),
+                  icon: Icon(
+                    Icons.content_copy_rounded,
+                    size: 18,
+                    color: Colors.grey[600],
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  tooltip: '명령어 복사하기',
                 ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );
+  }
+
+  String _formatDate(int timestamp) {
+    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    return DateFormat('yyyy.MM.dd HH:mm').format(date);
   }
 } 
