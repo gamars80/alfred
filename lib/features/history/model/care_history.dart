@@ -42,6 +42,25 @@ class CareHistory {
     this.reason,
   });
 
+  CareHistory copyWith({
+    List<CareRecommendation>? recommendations,
+    bool? hasRating,
+    int? myRating,
+    String? status,
+  }) {
+    return CareHistory(
+      id: id,
+      createdAt: createdAt,
+      query: query,
+      keyword: keyword,
+      status: status ?? this.status,
+      hasRating: hasRating ?? this.hasRating,
+      myRating: myRating ?? this.myRating,
+      recommendations: recommendations ?? this.recommendations,
+      reason: reason,
+    );
+  }
+
   factory CareHistory.fromJson(Map<String, dynamic> json) {
     return CareHistory(
       id: json['id'] as int,
