@@ -8,6 +8,7 @@ import '../../../../common/utils/toast_util.dart';
 import '../../../auth/common/dio/dio_client.dart';
 import '../../../auth/presentation/product_detail_image_viewer_screen.dart';
 import '../../../review/presentation/review_overlay_screen.dart';
+import '../../data/care_api.dart';
 import '../../model/product.dart';
 
 class CareProductCard extends StatelessWidget {
@@ -44,6 +45,14 @@ class CareProductCard extends StatelessWidget {
   }
 
   Future<void> _openWebview(BuildContext context) async {
+    // 브라우저를 열기 전에 API 호출
+    final careApi = CareApi();
+    careApi.openCare(
+      product.productId,
+      id.toString(),
+      product.source ?? '',
+    );
+
     final uri = Uri.parse(product.link);
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!launched) {
