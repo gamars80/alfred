@@ -96,6 +96,21 @@ class CareApi {
       rethrow;
     }
   }
+
+  /// 상품 오픈 기록 API
+  Future<void> openCare(String productId, String historyId, String source) async {
+    try {
+      await _dio.post(
+        '/api/products/productId/historyId/source/openCare'
+          .replaceFirst('productId', productId)
+          .replaceFirst('historyId', historyId)
+          .replaceFirst('source', source),
+      );
+    } catch (e) {
+      debugPrint('❌ [openCare] Error: $e');
+      // 실패해도 예외를 던지지 않음
+    }
+  }
 }
 
 /// 최근 뷰티케어 명령 모델
