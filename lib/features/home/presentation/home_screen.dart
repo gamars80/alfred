@@ -7,6 +7,9 @@ import 'popular_section.dart';
 import 'package:alfred_clean/features/home/presentation/widget/weekly_top_food_command_section.dart';
 import 'package:alfred_clean/features/home/presentation/widget/weekly_top_food_product_section.dart';
 import 'package:alfred_clean/features/home/presentation/widget/weekly_top_recipe_section.dart';
+import 'package:alfred_clean/features/home/presentation/widget/weekly_top_care_keyword_section.dart';
+import 'package:alfred_clean/features/home/presentation/widget/weekly_top_care_product_section.dart';
+import 'package:alfred_clean/features/home/presentation/widget/popular_care_like_section.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     Tab(icon: Icon(Icons.shopping_bag_outlined), text: '패션쇼핑'),
     Tab(icon: Icon(Icons.face_retouching_natural), text: '시술성형'),
     Tab(icon: Icon(Icons.restaurant), text: '음식/식자재'),
+    Tab(icon: Icon(Icons.spa), text: '뷰티'),
   ];
   
   late TabController _tabController;
@@ -73,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             FashionShoppingTab(),
             SurgeryTab(), // ✅ 연결됨
             FoodShoppingTab(), // 음식/식자재 탭
+            BeautyTab(), // 뷰티 탭
           ],
         ),
       ),
@@ -110,6 +115,24 @@ class FoodShoppingTab extends StatelessWidget {
         WeeklyTopFoodCommandSection(),
         WeeklyTopFoodProductSection(),
         WeeklyTopRecipeSection(),
+        // 👉 추가 섹션들 구현 예정
+      ],
+    );
+  }
+}
+
+// 💄 뷰티 탭 콘텐츠
+class BeautyTab extends StatelessWidget {
+  const BeautyTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: const [
+        WeeklyTopCareKeywordSection(),
+        WeeklyTopCareProductSection(),
+        PopularCareLikeSection(),
         // 👉 추가 섹션들 구현 예정
       ],
     );
