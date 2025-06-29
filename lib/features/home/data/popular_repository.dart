@@ -9,6 +9,9 @@ import '../model/popular_beauty_keyword.dart';
 import '../model/popular_food_ingredient.dart';
 import '../model/popular_food_product.dart';
 import '../model/popular_recipe.dart';
+import '../model/popular_care_keyword.dart';
+import '../model/popular_care_product.dart';
+import '../model/popular_care_like.dart';
 
 class PopularRepository {
   final Dio _dio = DioClient.dio;
@@ -98,5 +101,64 @@ class PopularRepository {
     return (response.data as List)
         .map((e) => PopularRecipe.fromJson(e))
         .toList();
+  }
+
+  Future<List<PopularCareKeyword>> fetchWeeklyTopCareKeywords() async {
+    final response = await _dio.get('/api/products/weekly/top/care/keyword');
+    return (response.data as List)
+        .map((e) => PopularCareKeyword.fromJson(e))
+        .toList();
+  }
+
+  Future<List<PopularCareProduct>> fetchWeeklyTopCareProducts() async {
+    try {
+      print('🔍 Fetching weekly top care products...');
+      final response = await _dio.get('/api/products/weekly/top/care/products');
+      print('📡 API Response status: ${response.statusCode}');
+      print('📡 API Response data: ${response.data}');
+      
+      if (response.data == null) {
+        print('❌ Response data is null');
+        return [];
+      }
+      
+      if (response.data is! List) {
+        print('❌ Response data is not a List: ${response.data.runtimeType}');
+        return [];
+      }
+      
+      final products = (response.data as List).map((e) => PopularCareProduct.fromJson(e)).toList();
+      print('✅ Parsed ${products.length} care products');
+      return products;
+    } catch (e) {
+      print('❌ Error fetching weekly top care products: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<PopularCareLike>> fetchPopularCareLikes() async {
+    try {
+      print('🔍 Fetching popular care likes...');
+      final response = await _dio.get('/api/popular/care');
+      print('📡 API Response status: ${response.statusCode}');
+      print('📡 API Response data: ${response.data}');
+      
+      if (response.data == null) {
+        print('❌ Response data is null');
+        return [];
+      }
+      
+      if (response.data is! List) {
+        print('❌ Response data is not a List: ${response.data.runtimeType}');
+        return [];
+      }
+      
+      final likes = (response.data as List).map((e) => PopularCareLike.fromJson(e)).toList();
+      print('✅ Parsed ${likes.length} care likes');
+      return likes;
+    } catch (e) {
+      print('❌ Error fetching popular care likes: $e');
+      rethrow;
+    }
   }
 }
