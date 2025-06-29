@@ -74,7 +74,10 @@ class CareProductCard extends StatelessWidget {
 
     final p = product!;
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        debugPrint('CareProductCard - onTap called with keyword: ${p.keyword}');
+        onTap?.call();
+      },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: 160,
@@ -97,11 +100,11 @@ class CareProductCard extends StatelessWidget {
             Stack(
               children: [
                 InkWell(
+                  onTap: () => _launchProductLink(context, p.productLink),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(12),
                     topRight: Radius.circular(12),
                   ),
-                  onTap: () => _launchProductLink(context, p.productLink),
                   child: ClipRRect(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(12),

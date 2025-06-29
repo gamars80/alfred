@@ -5,6 +5,8 @@ import '../../call/model/product.dart';
 import '../model/review.dart';
 import '../model/keyword_review.dart';
 import '../model/food_review.dart';
+import '../model/care_product.dart';
+import '../model/care_review.dart';
 import '../../home/model/popular_recipe.dart';
 
 class ProductPageResult {
@@ -434,6 +436,85 @@ class SearchRepository {
       return RecipePageResult.fromJson(response.data);
     } on DioException catch (e) {
       debugPrint('❌ [DioException] $aiRecipesUri\n▶ message: ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// 뷰티케어 상품 검색 API
+  Future<CareProductSearchResponse> fetchCareProductsByKeyword({
+    String? keyword,
+    String? cursor,
+    String sortBy = 'createdAt',
+    String sortDir = 'desc',
+    String? searchKeyword,
+    String? source,
+    int limit = 20,
+  }) async {
+    final uri = '/api/products/ai-care/search';
+    final params = {
+      'sortBy': sortBy,
+      'sortDir': sortDir,
+      'limit': limit,
+      if (keyword != null && keyword.isNotEmpty) 'keyword': keyword,
+      if (cursor != null) 'cursor': cursor,
+      if (searchKeyword != null && searchKeyword.isNotEmpty) 'searchKeyword': searchKeyword,
+      if (source != null) 'source': source,
+    };
+
+    debugPrint('📡 [GET] $uri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(uri, queryParameters: params);
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      
+      // 디버깅: API 응답 전체 출력
+      debugPrint('API 응답 데이터: ${response.data}');
+      if (response.data['items'] != null && response.data['items'].isNotEmpty) {
+        debugPrint('첫 번째 상품 JSON: ${response.data['items'][0]}');
+      }
+      
+      return CareProductSearchResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
+      debugPrint('❌ [DioException] statusCode: ${e.response?.statusCode}');
+      debugPrint('❌ [DioException] response data: ${e.response?.data}');
+      rethrow;
+    }
+  }
+
+  /// 뷰티케어 리뷰 검색 API
+  Future<CareReviewPageResult> fetchCareReviews({
+    required String keyword,
+    String? cursor,
+    String? searchKeyword,
+  }) async {
+    final uri = '/api/reviews/care/search';
+    final params = {
+      'keyword': keyword,
+      'limit': pageSize,
+      if (cursor != null) 'cursor': cursor,
+      if (searchKeyword != null && searchKeyword.isNotEmpty) 'searchKeyword': searchKeyword,
+    };
+
+    debugPrint('📡 [GET] $uri');
+    debugPrint('    ▶ queryParameters: $params');
+
+    try {
+      final response = await _dio.get(uri, queryParameters: params);
+      debugPrint('✅ [RESPONSE ${response.statusCode}] $uri');
+      
+      // 디버깅: API 응답 전체 출력
+      debugPrint('뷰티케어 리뷰 API 응답 데이터: ${response.data}');
+      if (response.data['items'] != null && response.data['items'].isNotEmpty) {
+        debugPrint('첫 번째 리뷰 JSON: ${response.data['items'][0]}');
+      }
+      
+      return CareReviewPageResult.fromJson(response.data);
+    } on DioException catch (e) {
+      debugPrint('❌ [DioException] $uri\n▶ message: ${e.message}');
+      debugPrint('❌ [DioException] statusCode: ${e.response?.statusCode}');
+      debugPrint('❌ [DioException] response data: ${e.response?.data}');
       rethrow;
     }
   }
