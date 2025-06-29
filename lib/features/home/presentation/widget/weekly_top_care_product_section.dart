@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/popular_repository.dart';
 import '../../model/popular_care_product.dart';
 import 'care_product_card.dart';
+import '../../../search/presentation/care_keyword_product_screen.dart';
 
 class WeeklyTopCareProductSection extends StatefulWidget {
   const WeeklyTopCareProductSection({super.key});
@@ -68,7 +69,16 @@ class _WeeklyTopCareProductSectionState extends State<WeeklyTopCareProductSectio
                     product: product,
                     rank: index + 1,
                     onTap: () {
-                      // TODO: 상세 진입 등 필요시 구현
+                      debugPrint('WeeklyTopCareProductSection - Navigating to CareKeywordProductScreen with keyword: ${product.keyword}');
+                      
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CareKeywordProductScreen(
+                            keyword: product.keyword,
+                          ),
+                        ),
+                      );
                     },
                   );
                 },

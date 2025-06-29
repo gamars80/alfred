@@ -157,7 +157,7 @@ class CareHistoryCard extends StatelessWidget {
       case 'FAILED':
         return '실패';
       default:
-        return '알 수 없음';
+        return '대기중';
     }
   }
 } 

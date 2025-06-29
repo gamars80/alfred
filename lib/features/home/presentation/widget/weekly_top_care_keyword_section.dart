@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/popular_repository.dart';
 import '../../model/popular_care_keyword.dart';
+import '../../../search/presentation/care_keyword_product_screen.dart';
 
 class WeeklyTopCareKeywordSection extends StatefulWidget {
   const WeeklyTopCareKeywordSection({super.key});
@@ -118,8 +119,16 @@ class _WeeklyTopCareKeywordSectionState extends State<WeeklyTopCareKeywordSectio
           height: 30, // 각 항목의 고정 높이
           child: InkWell(
             onTap: () {
-              // TODO: 키워드 클릭 시 검색 화면으로 이동
-              debugPrint('WeeklyTopCareKeywordSection - Keyword tapped: ${keyword.keyword}');
+              debugPrint('WeeklyTopCareKeywordSection - Navigating to CareKeywordProductScreen with keyword: ${keyword.keyword}');
+              
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CareKeywordProductScreen(
+                    keyword: keyword.keyword,
+                  ),
+                ),
+              );
             },
             borderRadius: BorderRadius.circular(6),
             child: Row(
