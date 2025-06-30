@@ -537,6 +537,72 @@ class LikeRepository {
       rethrow;
     }
   }
+
+  Future<void> postLikeCareCommunity({
+    required int historyId,
+    required String communityId,
+    required String source,
+  }) async {
+    debugPrint('▶️ postLikeCareCommunity: historyId=$historyId, communityId=$communityId, source=$source');
+
+    try {
+      final payload = {
+        'historyId': historyId,
+        'communityId': communityId,
+        'source': source,
+      };
+      debugPrint('   요청 페이로드: $payload');
+
+      final response = await _dio.post(
+        '/api/likes/care-community',
+        data: payload,
+      );
+
+      debugPrint('✅ API 응답 상태: ${response.statusCode}');
+      debugPrint('   응답 데이터: ${response.data}');
+    } on DioException catch (e) {
+      debugPrint('⚠️ DioException 발생: ${e.message}');
+      debugPrint('   response.data: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      debugPrint('❌ 알 수 없는 예외: $e');
+      debugPrint('$st');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteLikeCareCommunity({
+    required int historyId,
+    required String communityId,
+    required String source,
+  }) async {
+    debugPrint('▶️ deleteLikeCareCommunity: historyId=$historyId, communityId=$communityId, source=$source');
+
+    try {
+      final payload = {
+        'historyId': historyId,
+        'communityId': communityId,
+        'source': source,
+      };
+      debugPrint('   요청 페이로드: $payload');
+
+      final response = await _dio.delete(
+        '/api/likes/care-community',
+        data: payload,
+      );
+
+      debugPrint('✅ API 응답 상태: ${response.statusCode}');
+      debugPrint('   응답 데이터: ${response.data}');
+    } on DioException catch (e) {
+      debugPrint('⚠️ DioException 발생: ${e.message}');
+      debugPrint('   response.data: ${e.response?.data}');
+      rethrow;
+    } catch (e, st) {
+      debugPrint('❌ 알 수 없는 예외: $e');
+      debugPrint('$st');
+      rethrow;
+    }
+  }
 }
 
 
