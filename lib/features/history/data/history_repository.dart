@@ -27,10 +27,10 @@ class HistoryRepository {
         queryParameters: queryParams,
       );
 
-      debugPrint(
-        '✅ fetchHistories 응답 [${response.statusCode}]\n'
-            'data=${response.data}',
-      );
+      // debugPrint(
+      //   '✅ fetchHistories 응답 [${response.statusCode}]\n'
+      //       'data=${response.data}',
+      // );
 
       return HistoryResponse.fromJson(response.data);
     } on DioException catch (e, stack) {
@@ -157,10 +157,10 @@ class HistoryRepository {
         queryParameters: queryParams,
       );
 
-      debugPrint(
-        '✅ fetchFoodsHistories 응답 [${response.statusCode}]\n'
-        'data=${response.data}',
-      );
+      // debugPrint(
+      //   '✅ fetchFoodsHistories 응답 [${response.statusCode}]\n'
+      //   'data=${response.data}',
+      // );
 
       return FoodsHistoryResponse.fromJson(response.data);
     } on DioException catch (e, stack) {
@@ -195,10 +195,10 @@ class HistoryRepository {
         queryParameters: queryParams,
       );
 
-      debugPrint(
-        '✅ fetchCareHistories 응답 [${response.statusCode}]\n'
-        'data=${response.data}',
-      );
+      // debugPrint(
+      //   '✅ fetchCareHistories 응답 [${response.statusCode}]\n'
+      //   'data=${response.data}',
+      // );
 
       return CareHistoryResponse.fromJson(response.data);
     } on DioException catch (e, stack) {
