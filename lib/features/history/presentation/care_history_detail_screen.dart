@@ -3,6 +3,7 @@ import 'package:alfred_clean/features/call/presentation/widget/care_product_card
 import 'package:alfred_clean/features/call/presentation/product_webview_screen.dart';
 import 'package:alfred_clean/features/history/model/care_history.dart';
 import 'package:alfred_clean/features/history/presentation/widget/care_history_card.dart';
+import 'package:alfred_clean/features/history/presentation/widget/care_review_card.dart';
 import 'package:alfred_clean/features/like/presentation/liked_product_screen.dart';
 import 'package:alfred_clean/features/like/data/services/food_like_service.dart';
 import 'package:alfred_clean/features/like/data/like_repository.dart';
@@ -257,6 +258,12 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
                     const SizedBox(height: 16),
                   ],
                   
+                  // 추천 리뷰 섹션 (reviews가 있을 때만 표시)
+                  if (_history.reviews.isNotEmpty) ...[
+                    _buildReviewsSection(),
+                    const SizedBox(height: 16),
+                  ],
+                  
                   // 상품 목록 섹션
                   Container(
                     color: Colors.white,
@@ -462,6 +469,61 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildReviewsSection() {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 섹션 제목
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                const Icon(Icons.rate_review_outlined, size: 20, color: Colors.black87),
+                const SizedBox(width: 8),
+                Text(
+                  '알프레드의 추천리뷰 ${_history.reviews.length}개',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // 리뷰 카드들 (가로 스크롤)
+          SizedBox(
+            height: 420, // 카드 높이를 더 늘려서 오버플로우 방지
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: _history.reviews.length,
+              itemBuilder: (context, index) {
+                final review = _history.reviews[index];
+                return CareReviewCard(
+                  review: review,
+                  onTap: () {
+                    // 리뷰 상세 페이지로 이동 (필요시 구현)
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => ReviewDetailScreen(review: review),
+                    //   ),
+                    // );
+                  },
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 20), // 하단 여백
+        ],
       ),
     );
   }

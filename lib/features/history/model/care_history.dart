@@ -1,4 +1,5 @@
 import 'package:alfred_clean/features/call/model/product.dart';
+import 'package:alfred_clean/features/history/model/care_review.dart';
 
 class CareHistoryResponse {
   final List<CareHistory> histories;
@@ -29,6 +30,7 @@ class CareHistory {
   final int? myRating;
   final List<CareRecommendation> recommendations;
   final String? reason;
+  final List<CareReview> reviews;
 
   CareHistory({
     required this.id,
@@ -40,6 +42,7 @@ class CareHistory {
     this.myRating,
     required this.recommendations,
     this.reason,
+    required this.reviews,
   });
 
   CareHistory copyWith({
@@ -47,6 +50,7 @@ class CareHistory {
     bool? hasRating,
     int? myRating,
     String? status,
+    List<CareReview>? reviews,
   }) {
     return CareHistory(
       id: id,
@@ -58,6 +62,7 @@ class CareHistory {
       myRating: myRating ?? this.myRating,
       recommendations: recommendations ?? this.recommendations,
       reason: reason,
+      reviews: reviews ?? this.reviews,
     );
   }
 
@@ -74,6 +79,11 @@ class CareHistory {
           .map((e) => CareRecommendation.fromJson(e as Map<String, dynamic>))
           .toList(),
       reason: json['reason'] as String?,
+      reviews: json['reviews'] != null
+          ? (json['reviews'] as List<dynamic>)
+              .map((e) => CareReview.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : [],
     );
   }
 }
