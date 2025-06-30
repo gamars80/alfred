@@ -497,10 +497,9 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
               ],
             ),
           ),
-          
           // 리뷰 카드들 (가로 스크롤)
           SizedBox(
-            height: 420, // 카드 높이를 더 늘려서 오버플로우 방지
+            height: 390, // 카드 높이를 더 늘려서 오버플로우 방지
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),

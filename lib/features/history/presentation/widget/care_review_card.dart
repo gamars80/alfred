@@ -75,7 +75,7 @@ class _CareReviewCardState extends State<CareReviewCard> {
       onTap: widget.onTap,
       child: Container(
         width: 220,
-        height: 290, // 카드 높이를 더 늘려서 오버플로우 방지
+        // height: 280, // 카드 높이를 줄여서 더 콤팩트하게
         margin: const EdgeInsets.only(right: 12),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -97,7 +97,7 @@ class _CareReviewCardState extends State<CareReviewCard> {
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 child: AspectRatio(
-                  aspectRatio: 1.1, // 더 넓은 비율
+                  aspectRatio: 1.2, // 이미지 비율을 더 넓게 조정
                   child: Image.network(
                     widget.review.thumbnailImageUrl,
                     fit: BoxFit.cover,
@@ -168,48 +168,40 @@ class _CareReviewCardState extends State<CareReviewCard> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     
                     // 리뷰 내용 (4줄 강제 제한 + 더보기 기능)
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              processedContent,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Colors.black54,
-                                height: 1.2,
-                              ),
-                              maxLines: 4,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          
-                          // 더보기 버튼 (내용이 길 때만 표시)
-                          if (shouldShowMoreButton)
-                            GestureDetector(
-                              onTap: _openReviewInBrowser,
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(
-                                  '더보기',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: Color(0xFF7B1FA2),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
+                    Text(
+                      processedContent,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.black54,
+                        height: 1.2,
                       ),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     
-                    // 하단 정보 (더 콤팩트하게)
+                    // 더보기 버튼 (내용이 길 때만 표시)
+                    if (shouldShowMoreButton)
+                      GestureDetector(
+                        onTap: _openReviewInBrowser,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            '더보기',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Color(0xFF7B1FA2),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+
                     const SizedBox(height: 6),
+
+                    // 하단 정보 (더 콤팩트하게)
                     Row(
                       children: [
                         // 좋아요 수
