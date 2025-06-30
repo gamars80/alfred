@@ -200,6 +200,22 @@ class HistoryRepository {
       //   'data=${response.data}',
       // );
 
+      debugPrint('✅ fetchCareHistories 응답 [${response.statusCode}]');
+      debugPrint('🔍 Raw response data: ${response.data}');
+      
+      // communityPosts 데이터 확인
+      if (response.data['histories'] != null) {
+        final histories = response.data['histories'] as List;
+        for (int i = 0; i < histories.length; i++) {
+          final history = histories[i];
+          final communityPosts = history['communityPosts'];
+          debugPrint('🔍 History $i - communityPosts: $communityPosts');
+          if (communityPosts != null) {
+            debugPrint('🔍 History $i - communityPosts length: ${(communityPosts as List).length}');
+          }
+        }
+      }
+
       return CareHistoryResponse.fromJson(response.data);
     } on DioException catch (e, stack) {
       debugPrint('❌ fetchCareHistories DioError 발생 → type=${e.type}, message=${e.message}');

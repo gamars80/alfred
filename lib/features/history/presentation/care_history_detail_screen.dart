@@ -4,6 +4,7 @@ import 'package:alfred_clean/features/call/presentation/product_webview_screen.d
 import 'package:alfred_clean/features/history/model/care_history.dart';
 import 'package:alfred_clean/features/history/presentation/widget/care_history_card.dart';
 import 'package:alfred_clean/features/history/presentation/widget/care_review_card.dart';
+import 'package:alfred_clean/features/history/presentation/widget/care_community_card.dart';
 import 'package:alfred_clean/features/like/presentation/liked_product_screen.dart';
 import 'package:alfred_clean/features/like/data/services/food_like_service.dart';
 import 'package:alfred_clean/features/like/data/like_repository.dart';
@@ -34,6 +35,10 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
   void initState() {
     super.initState();
     _history = widget.history;
+    
+    // 디버깅을 위한 로그 추가
+    debugPrint('🔍 CareHistoryDetailScreen - communityPosts count: ${_history.communityPosts.length}');
+    debugPrint('🔍 CareHistoryDetailScreen - communityPosts data: ${_history.communityPosts}');
   }
 
   // mallName 목록 가져오기
@@ -203,6 +208,10 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 디버깅을 위한 로그 추가
+    debugPrint('🔍 build method - communityPosts count: ${_history.communityPosts.length}');
+    debugPrint('🔍 build method - communityPosts isEmpty: ${_history.communityPosts.isEmpty}');
+    
     return WillPopScope(
       onWillPop: () async {
         Navigator.pop(context, _history);
@@ -240,86 +249,86 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
             ),
           ],
         ),
-        body: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  // 히스토리 카드
-                  CareHistoryCard(
-                    history: _history,
-                    onTap: () {}, // 상세 화면에서는 탭 비활성화
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // 추천이유 섹션 (reason이 있을 때만 표시)
-                  if (_history.reason != null && _history.reason!.isNotEmpty) ...[
-                    _buildReasonSection(),
-                    const SizedBox(height: 16),
-                  ],
-                  
-                  // 추천 리뷰 섹션 (reviews가 있을 때만 표시)
-                  if (_history.reviews.isNotEmpty) ...[
-                    _buildReviewsSection(),
-                    const SizedBox(height: 16),
-                  ],
-                  
-                  // 상품 목록 섹션
-                  Container(
-                    color: Colors.white,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSectionTitle(
-                          title: '추천 상품',
-                          icon: Icons.shopping_cart_outlined,
-                          count: _filteredRecommendations.length,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.6,
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                              mainAxisExtent: 290,
-                            ),
-                            itemCount: _filteredRecommendations.length,
-                            itemBuilder: (context, index) {
-                              final recommendation = _filteredRecommendations[index];
-                              final product = recommendation.toProduct();
-                              
-                              return CareProductCard(
-                                product: product,
-                                id: _history.id,
-                                historyCreatedAt: _history.createdAt,
-                                isLiked: recommendation.liked,
-                                onLikeToggle: () => _handleLike(recommendation),
-                                token: 'token', // 좋아요 버튼을 표시하기 위한 토큰
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 20), // 하단 여백 추가
-                      ],
-                    ),
-                  ),
-                ],
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // 히스토리 카드
+              CareHistoryCard(
+                history: _history,
+                onTap: () {}, // 상세 화면에서는 탭 비활성화
               ),
-            ),
-            // 평점 버튼 (평점이 없을 때만 표시)
-            if (!_history.hasRating)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(
+              const SizedBox(height: 16),
+              
+              // 추천이유 섹션 (reason이 있을 때만 표시)
+              if (_history.reason != null && _history.reason!.isNotEmpty) ...[
+                _buildReasonSection(),
+                const SizedBox(height: 16),
+              ],
+              
+              // 추천 커뮤니티 섹션 (communityPosts가 있을 때만 표시)
+              if (_history.communityPosts.isNotEmpty) ...[
+                _buildCommunitySection(),
+                const SizedBox(height: 16),
+              ],
+              
+              // 추천 리뷰 섹션 (reviews가 있을 때만 표시)
+              if (_history.reviews.isNotEmpty) ...[
+                _buildReviewsSection(),
+                const SizedBox(height: 16),
+              ],
+              
+              // 상품 목록 섹션
+              Container(
+                color: Colors.white,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionTitle(
+                      title: '추천 상품',
+                      icon: Icons.shopping_cart_outlined,
+                      count: _filteredRecommendations.length,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.6,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          mainAxisExtent: 290,
+                        ),
+                        itemCount: _filteredRecommendations.length,
+                        itemBuilder: (context, index) {
+                          final recommendation = _filteredRecommendations[index];
+                          final product = recommendation.toProduct();
+                          
+                          return CareProductCard(
+                            product: product,
+                            id: _history.id,
+                            historyCreatedAt: _history.createdAt,
+                            isLiked: recommendation.liked,
+                            onLikeToggle: () => _handleLike(recommendation),
+                            token: 'token', // 좋아요 버튼을 표시하기 위한 토큰
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 20), // 하단 여백 추가
+                  ],
+                ),
+              ),
+              
+              // 평점 버튼 (평점이 없을 때만 표시)
+              if (!_history.hasRating) ...[
+                const SizedBox(height: 16),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    borderRadius: BorderRadius.all(Radius.circular(24)),
                     boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 8, offset: Offset(0, -4))],
                   ),
                   padding: const EdgeInsets.all(24),
@@ -368,8 +377,10 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
                     ],
                   ),
                 ),
-              ),
-          ],
+                const SizedBox(height: 16),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -469,6 +480,71 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCommunitySection() {
+    debugPrint('🔍 _buildCommunitySection called - communityPosts count: ${_history.communityPosts.length}');
+    
+    return Container(
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 섹션 제목
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                const Icon(Icons.forum_outlined, size: 20, color: Colors.black87),
+                const SizedBox(width: 8),
+                Text(
+                  '알프레드의 추천 커뮤니티 ${_history.communityPosts.length}개',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // 커뮤니티 카드들 (가로 스크롤)
+          SizedBox(
+            height: 240, // 고정 높이 설정
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: _history.communityPosts.length,
+              itemBuilder: (context, index) {
+                final post = _history.communityPosts[index];
+                return CareCommunityCard(
+                  post: post,
+                  historyId: _history.id,
+                  onTap: () {
+                    // 커뮤니티 상세 페이지로 이동 (필요시 구현)
+                  },
+                  onLikeToggle: () {
+                    // 좋아요 토글 처리 - 히스토리 상태 업데이트
+                    setState(() {
+                      _history = _history.copyWith(
+                        communityPosts: _history.communityPosts.map((p) {
+                          if (p.id == post.id) {
+                            return p.copyWith(liked: !p.liked);
+                          }
+                          return p;
+                        }).toList(),
+                      );
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 20), // 하단 여백
+        ],
       ),
     );
   }

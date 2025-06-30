@@ -45,41 +45,48 @@ class _CallScreenState extends State<CallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: const Text('추천 결과', style: TextStyle(fontSize: 20, color: Colors.black)),
+    return SafeArea(
+      child: DefaultTabController(
+        length: 2,
+        child: Scaffold(
           backgroundColor: Colors.white,
-          elevation: 0.5,
-          iconTheme: const IconThemeData(color: Colors.black),
-        ),
-        body: Stack(
-          children: [
-            _isLoading
-                ? const AlfredLoadingOverlay()
-                : CallScreenBody(
-              id: _id,
-              createdAt: _createdAt,
-              categorizedProducts: _categorizedProducts,
-              communityPosts: _communityPosts,
-              events: _events,
-              hospitals: _hospitals,
-              youtubeVideos: _youtubeVideos,
-              selectedCategory: _selectedCategory,
-              recipeSummary: _recipeSummary,
-              requiredIngredients: _requiredIngredients,
-              suggestionReason: _suggestionReason,
-              reason: _reason,
-            ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: _handleVoiceCommand,
-          label: const Text('알프레드~'),
-          icon: const Icon(Icons.mic),
-          backgroundColor: Colors.deepPurple,
+          appBar: AppBar(
+            title: const Text('추천 결과', style: TextStyle(fontSize: 20, color: Colors.black)),
+            backgroundColor: Colors.white,
+            elevation: 0.5,
+            iconTheme: const IconThemeData(color: Colors.black),
+          ),
+          body: Stack(
+            children: [
+              _isLoading
+                  ? const AlfredLoadingOverlay()
+                  : CallScreenBody(
+                id: _id,
+                createdAt: _createdAt,
+                categorizedProducts: _categorizedProducts,
+                communityPosts: _communityPosts,
+                events: _events,
+                hospitals: _hospitals,
+                youtubeVideos: _youtubeVideos,
+                selectedCategory: _selectedCategory,
+                recipeSummary: _recipeSummary,
+                requiredIngredients: _requiredIngredients,
+                suggestionReason: _suggestionReason,
+                reason: _reason,
+              ),
+            ],
+          ),
+          floatingActionButton: Builder(
+            builder: (context) {
+              if (_isLoading) return const SizedBox.shrink();
+              return FloatingActionButton.extended(
+                onPressed: _handleVoiceCommand,
+                label: const Text('알프레드~'),
+                icon: const Icon(Icons.mic),
+                backgroundColor: Colors.deepPurple,
+              );
+            },
+          ),
         ),
       ),
     );
