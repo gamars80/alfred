@@ -55,7 +55,6 @@ class PopularProductCard extends StatelessWidget {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
       width: 160,
-      height: 250,
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -81,14 +80,14 @@ class PopularProductCard extends StatelessWidget {
                   child: ExtendedImage.network(
                     product.productImage,
                     width: 160,
-                    height: 140,
+                    height: 110,
                     fit: BoxFit.cover,
                     cache: true,
                     loadStateChanged: (state) {
                       if (state.extendedImageLoadState == LoadState.failed) {
                         return Container(
                           width: 160,
-                          height: 140,
+                          height: 110,
                           color: Colors.grey[200],
                           child: const Icon(Icons.broken_image),
                         );
@@ -118,6 +117,25 @@ class PopularProductCard extends StatelessWidget {
                   ),
                 ),
               ),
+              Positioned(
+                right: 8,
+                bottom: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    product.mallName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
           Expanded(
@@ -126,8 +144,15 @@ class PopularProductCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(product.mallName, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
-                  const SizedBox(height: 4),
+                  Flexible(
+                    child: Text(
+                      product.productName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
                   Row(
                     children: [
                       if (product.reason.contains('%')) ...[
@@ -144,15 +169,6 @@ class PopularProductCard extends StatelessWidget {
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 2),
-                  Expanded(
-                    child: Text(
-                      product.productName,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 9, color: Colors.black87),
-                    ),
                   ),
                 ],
               ),

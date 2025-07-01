@@ -48,27 +48,30 @@ class _PopularSectionState extends State<PopularSection> with SingleTickerProvid
         const SizedBox(height: 12),
 
         // 상품 리스트
-        SizedBox(
-          height: 240,
-          child: FutureBuilder<List<PopularProduct>>(
-            future: futurePopular,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return ListView.separated(
+        FutureBuilder<List<PopularProduct>>(
+          future: futurePopular,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return SizedBox(
+                height: 210,
+                child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: 5,
                   separatorBuilder: (_, __) => const SizedBox(width: 12),
                   itemBuilder: (_, __) => const PopularProductSkeletonCard(),
-                );
-              } else if (snapshot.hasError) {
-                return Center(child: Text('불러오기 실패: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('데이터 없음'));
-              }
+                ),
+              );
+            } else if (snapshot.hasError) {
+              return Center(child: Text('불러오기 실패: \\${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('데이터 없음'));
+            }
 
-              final products = snapshot.data!;
-              return ListView.separated(
+            final products = snapshot.data!;
+            return SizedBox(
+              height: 230,
+              child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: products.length,
@@ -83,9 +86,9 @@ class _PopularSectionState extends State<PopularSection> with SingleTickerProvid
                     },
                   );
                 },
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ],
     );

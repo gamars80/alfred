@@ -44,7 +44,7 @@ class ProductCard extends StatelessWidget {
 
 
   Future<void> _openWebview(BuildContext context) async {
-    
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -107,6 +107,59 @@ class ProductCard extends StatelessWidget {
         );
       }
     }
+  }
+
+  void _showFullReason(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      builder: (context) {
+        return Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.psychology_outlined, color: Color(0xFF1976D2)),
+                    const SizedBox(width: 8),
+                    const Text(
+                      '알프레드의 추천 이유',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1976D2),
+                      ),
+                    ),
+                    Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  product.reason,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF212121),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -222,31 +275,17 @@ class ProductCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (product.reason.isNotEmpty) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE3F2FD),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                                child: Text(
-                                  product.reason,
-                                  style: const TextStyle(
-                                    fontSize: 8,
-                                    height: 1.2,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1976D2),
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                              const SizedBox(height: 4),
+                              _ReasonWithMore(
+                                reason: product.reason,
+                                onMore: () => _showFullReason(context),
                               ),
-                              const SizedBox(height: 2),
                             ],
                             Expanded(
                               child: Text(
                                 product.name,
                                 style: const TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 10,
                                   height: 1.2,
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFF212121),
@@ -372,6 +411,91 @@ class ProductCard extends StatelessWidget {
                       color: isLiked == true ? Colors.red : Colors.white,
                       size: 20,
                     ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReasonWithMore extends StatefulWidget {
+  final String reason;
+  final VoidCallback onMore;
+  const _ReasonWithMore({required this.reason, required this.onMore});
+
+  @override
+  State<_ReasonWithMore> createState() => _ReasonWithMoreState();
+}
+
+class _ReasonWithMoreState extends State<_ReasonWithMore> {
+  bool _isOverflow = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkOverflow());
+  }
+
+  void _checkOverflow() {
+    final span = TextSpan(
+      text: widget.reason,
+      style: const TextStyle(
+        fontSize: 10,
+        height: 1.4,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF1976D2),
+      ),
+    );
+    final tp = TextPainter(
+      text: span,
+      maxLines: 2,
+      textDirection: Directionality.of(context),
+    );
+    tp.layout(maxWidth: context.size?.width ?? 200);
+    setState(() {
+      _isOverflow = tp.didExceedMaxLines;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE3F2FD),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              widget.reason,
+              style: const TextStyle(
+                fontSize: 10,
+                height: 1.4,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1976D2),
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (_isOverflow)
+            GestureDetector(
+              onTap: widget.onMore,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 4, top: 1),
+                child: Text(
+                  '더보기',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1976D2),
+                    decoration: TextDecoration.underline,
                   ),
                 ),
               ),
