@@ -45,7 +45,7 @@ class _WeeklyTopProductSectionState extends State<WeeklyTopProductSection> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 260,
+          height: 210,
           child: FutureBuilder<List<PopularProduct>>(
             future: futureWeeklyTopProducts,
             builder: (context, snapshot) {

@@ -406,11 +406,11 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio:
-                          MediaQuery.of(context).size.width <= 320 ? 0.55 : 0.6,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
+                        crossAxisCount: 2,
+                        childAspectRatio:
+                        MediaQuery.of(context).size.width <= 320 ? 0.55 : 0.6,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
                         mainAxisExtent: 290
                     ),
                     itemCount: entry.value.length,
@@ -578,7 +578,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
         ),
       );
     }
-    
+
     // 시술/성형 카테고리일 때는 강남언니, 바비톡만 표시
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: kSpacing),
