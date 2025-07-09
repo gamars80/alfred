@@ -212,14 +212,6 @@ class _FoodIngredientReviewListScreenState extends State<FoodIngredientReviewLis
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          '리뷰 API 준비 중입니다',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
                       ],
                     ),
                   )
