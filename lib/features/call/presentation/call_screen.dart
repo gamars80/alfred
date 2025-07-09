@@ -28,7 +28,8 @@ class _CallScreenState extends State<CallScreen> {
   String? _selectedGender;
   String? _selectedAge;
   String? _errorMessage;
-  String _selectedCategory = '쇼핑';
+  String _selectedCategory = '';
+  String _resultCategory = '';
   String? _recipeSummary;
   String? _requiredIngredients;
   String? _suggestionReason;
@@ -68,7 +69,7 @@ class _CallScreenState extends State<CallScreen> {
                 events: _events,
                 hospitals: _hospitals,
                 youtubeVideos: _youtubeVideos,
-                selectedCategory: _selectedCategory,
+                selectedCategory: _resultCategory,
                 recipeSummary: _recipeSummary,
                 requiredIngredients: _requiredIngredients,
                 suggestionReason: _suggestionReason,
@@ -144,7 +145,11 @@ class _CallScreenState extends State<CallScreen> {
       setState(() => _isLoading = false);
 
       if (success) {
-        if (_selectedCategory == '쇼핑' || _selectedCategory == '음식/식자재' || _selectedCategory == '뷰티케어') {
+        setState(() {
+          _resultCategory = _selectedCategory;
+          _selectedCategory = '';
+        });
+        if (_resultCategory == '쇼핑' || _resultCategory == '음식/식자재' || _resultCategory == '뷰티케어') {
           Flushbar(
             message: '현재 결과는 일부입니다. 히스토리에서 모두 확인하세요 🛍️',
             duration: const Duration(seconds: 3),
