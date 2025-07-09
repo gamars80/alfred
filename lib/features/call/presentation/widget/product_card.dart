@@ -281,24 +281,23 @@ class ProductCard extends StatelessWidget {
                                 onMore: () => _showFullReason(context),
                               ),
                             ],
-                            Expanded(
-                              child: Text(
-                                product.name,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  height: 1.2,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF212121),
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                            Text(
+                              product.name,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                height: 1.2,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF212121),
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
+                            const SizedBox(height: 2),
                             Text(
                               '₩${_currencyFormatter.format(product.price)}',
                               style: const TextStyle(
                                 fontSize: 12,
-                                height: 1.2,
+                                height: 2,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.black,
                               ),
