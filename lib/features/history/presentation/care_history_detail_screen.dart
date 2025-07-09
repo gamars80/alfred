@@ -326,7 +326,7 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
                               childAspectRatio: 0.6,
                               mainAxisSpacing: 12,
                               crossAxisSpacing: 12,
-                              mainAxisExtent: 290,
+                              mainAxisExtent: 250,
                             ),
                             itemCount: _filteredRecommendations.length,
                             itemBuilder: (context, index) {
