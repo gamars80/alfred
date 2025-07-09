@@ -36,14 +36,11 @@ dependencies:
   package_info_plus: ^8.0.2
   firebase_messaging: ^15.2.7
 
-  
-
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -55,3 +52,9 @@ flutter:
     - family: Pretendard
       fonts:
         - asset: assets/fonts/Pretendard-Regular.ttf
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/icon/alfred_icon.png"
+  min_sdk_android: 21

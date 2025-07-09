@@ -71,6 +71,14 @@ class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen>
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context, widget.history),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite, color: Colors.red),
+            onPressed: () {
+              // 좋아요 기능 구현
+            },
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.deepPurple,

@@ -60,22 +60,43 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
 
   // 평점 제출
   Future<void> _submitRating(int rating) async {
-    if (_isRating) return;
+    debugPrint('🔍 _submitRating 호출됨 - rating: $rating, historyId: ${_history.id}');
+    debugPrint('🔍 _isRating 상태: $_isRating');
+    debugPrint('🔍 현재 _history.hasRating: ${_history.hasRating}');
+    
+    if (_isRating) {
+      debugPrint('🔍 이미 평점 제출 중이므로 리턴');
+      return;
+    }
+    
     setState(() => _isRating = true);
+    debugPrint('🔍 _isRating을 true로 설정');
 
     try {
+      debugPrint('🔍 postCareRating API 호출 시작');
       await _repository.postCareRating(
         historyId: _history.id,
         rating: rating,
       );
+      debugPrint('🔍 postCareRating API 호출 성공');
+      
       setState(() {
         _history = _history.copyWith(
           hasRating: true,
           myRating: rating,
         );
       });
+      debugPrint('🔍 히스토리 상태 업데이트 완료 - hasRating: true, myRating: $rating');
+      debugPrint('🔍 업데이트 후 _history.hasRating: ${_history.hasRating}');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('평점이 등록되었습니다: $rating점')),
+        );
+      }
     } catch (e) {
-      debugPrint('Error submitting rating: $e');
+      debugPrint('❌ Error submitting rating: $e');
+      debugPrint('❌ 에러 상세: ${e.toString()}');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('평점 등록에 실패했습니다.')),
@@ -83,6 +104,8 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
       }
     } finally {
       setState(() => _isRating = false);
+      debugPrint('🔍 _isRating을 false로 설정');
+      debugPrint('🔍 finally 후 _history.hasRating: ${_history.hasRating}');
     }
   }
 
@@ -211,6 +234,9 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
     // 디버깅을 위한 로그 추가
     debugPrint('🔍 build method - communityPosts count: ${_history.communityPosts.length}');
     debugPrint('🔍 build method - communityPosts isEmpty: ${_history.communityPosts.isEmpty}');
+    debugPrint('🔍 build method - hasRating: ${_history.hasRating}');
+    debugPrint('🔍 build method - myRating: ${_history.myRating}');
+    debugPrint('🔍 build method - 평점 버튼 표시 여부: ${!_history.hasRating}');
     
     return WillPopScope(
       onWillPop: () async {
@@ -249,86 +275,95 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              // 히스토리 카드
-              CareHistoryCard(
-                history: _history,
-                onTap: () {}, // 상세 화면에서는 탭 비활성화
-              ),
-              const SizedBox(height: 16),
-              
-              // 추천이유 섹션 (reason이 있을 때만 표시)
-              if (_history.reason != null && _history.reason!.isNotEmpty) ...[
-                _buildReasonSection(),
-                const SizedBox(height: 16),
-              ],
-              
-              // 추천 커뮤니티 섹션 (communityPosts가 있을 때만 표시)
-              if (_history.communityPosts.isNotEmpty) ...[
-                _buildCommunitySection(),
-                const SizedBox(height: 16),
-              ],
-              
-              // 추천 리뷰 섹션 (reviews가 있을 때만 표시)
-              if (_history.reviews.isNotEmpty) ...[
-                _buildReviewsSection(),
-                const SizedBox(height: 16),
-              ],
-              
-              // 상품 목록 섹션
-              Container(
-                color: Colors.white,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionTitle(
-                      title: '추천 상품',
-                      icon: Icons.shopping_cart_outlined,
-                      count: _filteredRecommendations.length,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.6,
-                          mainAxisSpacing: 12,
-                          crossAxisSpacing: 12,
-                          mainAxisExtent: 290,
-                        ),
-                        itemCount: _filteredRecommendations.length,
-                        itemBuilder: (context, index) {
-                          final recommendation = _filteredRecommendations[index];
-                          final product = recommendation.toProduct();
-                          
-                          return CareProductCard(
-                            product: product,
-                            id: _history.id,
-                            historyCreatedAt: _history.createdAt,
-                            isLiked: recommendation.liked,
-                            onLikeToggle: () => _handleLike(recommendation),
-                            token: 'token', // 좋아요 버튼을 표시하기 위한 토큰
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20), // 하단 여백 추가
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  // 히스토리 카드
+                  CareHistoryCard(
+                    history: _history,
+                    onTap: () {}, // 상세 화면에서는 탭 비활성화
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // 추천이유 섹션 (reason이 있을 때만 표시)
+                  if (_history.reason != null && _history.reason!.isNotEmpty) ...[
+                    _buildReasonSection(),
+                    const SizedBox(height: 16),
                   ],
-                ),
+                  
+                  // 추천 커뮤니티 섹션 (communityPosts가 있을 때만 표시)
+                  if (_history.communityPosts.isNotEmpty) ...[
+                    _buildCommunitySection(),
+                    const SizedBox(height: 16),
+                  ],
+                  
+                  // 추천 리뷰 섹션 (reviews가 있을 때만 표시)
+                  if (_history.reviews.isNotEmpty) ...[
+                    _buildReviewsSection(),
+                    const SizedBox(height: 16),
+                  ],
+                  
+                  // 상품 목록 섹션
+                  Container(
+                    color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionTitle(
+                          title: '추천 상품',
+                          icon: Icons.shopping_cart_outlined,
+                          count: _filteredRecommendations.length,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.6,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              mainAxisExtent: 290,
+                            ),
+                            itemCount: _filteredRecommendations.length,
+                            itemBuilder: (context, index) {
+                              final recommendation = _filteredRecommendations[index];
+                              final product = recommendation.toProduct();
+                              
+                              return CareProductCard(
+                                product: product,
+                                id: _history.id,
+                                historyCreatedAt: _history.createdAt,
+                                isLiked: recommendation.liked,
+                                onLikeToggle: () => _handleLike(recommendation),
+                                token: 'token', // 좋아요 버튼을 표시하기 위한 토큰
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 20), // 하단 여백 추가
+                      ],
+                    ),
+                  ),
+                  
+                  // 평점 버튼이 있을 때 하단 여백 추가
+                  if (!_history.hasRating) const SizedBox(height: 120),
+                ],
               ),
-              
-              // 평점 버튼 (평점이 없을 때만 표시)
-              if (!_history.hasRating) ...[
-                const SizedBox(height: 16),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+            // 평점 버튼 (평점이 없을 때만 표시) - 하단 고정
+            if (!_history.hasRating)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(24)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                     boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 8, offset: Offset(0, -4))],
                   ),
                   padding: const EdgeInsets.all(24),
@@ -358,7 +393,9 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
                         children: List.generate(5, (index) {
                           return GestureDetector(
                             onTap: _isRating ? null : () async {
+                              debugPrint('🔍 하단 평점 버튼에서 별점 클릭됨 - index: $index');
                               final newRating = index + 1;
+                              debugPrint('🔍 평점 계산: $newRating점');
                               await _submitRating(newRating);
                             },
                             child: Padding(
@@ -377,10 +414,86 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-              ],
-            ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 평점 버텀시트 표시
+  void _showRatingBottomSheet() {
+    debugPrint('🔍 _showRatingBottomSheet 호출됨');
+    debugPrint('🔍 현재 _history.hasRating: ${_history.hasRating}');
+    debugPrint('🔍 현재 _isRating: $_isRating');
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
           ),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 드래그 핸들
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // 제목
+            const Text(
+              "주인님 저의 추천에 평가를 내려주세요",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A1A1A),
+              ),
+            ),
+            const SizedBox(height: 32),
+            // 별점 선택
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) {
+                return GestureDetector(
+                  onTap: _isRating ? null : () async {
+                    debugPrint('🔍 버텀시트에서 별점 클릭됨 - index: $index');
+                    final newRating = index + 1;
+                    debugPrint('🔍 평점 계산: $newRating점');
+                    debugPrint('🔍 버텀시트 닫기 전 _history.hasRating: ${_history.hasRating}');
+                    Navigator.pop(context); // 버텀시트 닫기
+                    debugPrint('🔍 _submitRating 호출 전');
+                    await _submitRating(newRating);
+                    debugPrint('🔍 _submitRating 호출 완료');
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Icon(
+                      Icons.star_border,
+                      size: 48,
+                      color: _isRating ? Colors.grey : Colors.amber,
+                    ),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 32),
+            // 로딩 인디케이터
+            if (_isRating) const Center(child: CircularProgressIndicator()),
+            const SizedBox(height: 16),
+          ],
         ),
       ),
     );
