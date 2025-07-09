@@ -26,7 +26,7 @@ class VoiceCommandBottomSheet {
   }) {
     String? localGender = selectedGender;
     String? localAge = selectedAge;
-    String localCategory = selectedCategory;
+    String? localCategory = selectedCategory.isEmpty ? null : selectedCategory;
     bool modalIsListening = false;
     int? remainingCommands;
 
@@ -130,7 +130,7 @@ class VoiceCommandBottomSheet {
                     localCategory,
                     (v) {
                       localCategory = v;
-                      onCategoryChanged(v);
+                      onCategoryChanged(v ?? '');
                       setModalState(() {});
                     },
                     remainingCommands,
@@ -144,13 +144,17 @@ class VoiceCommandBottomSheet {
                       onMicPressed: handleMic, // 네이티브 startListening 호출
                       onSubmit: () {
                         final q = controller.text.trim();
+                        if ((localCategory ?? '').isEmpty) {
+                          Fluttertoast.showToast(msg: '카테고리를 먼저 선택하세요');
+                          return;
+                        }
                         if (q.isEmpty) {
                           Fluttertoast.showToast(msg: '검색어를 입력해주세요.');
                           return;
                         }
                         Navigator.pop(context, q);
                       },
-                      category: localCategory,
+                      category: localCategory ?? '',
                     )
                   else
                     _buildErrorInputs(
@@ -181,26 +185,27 @@ class VoiceCommandBottomSheet {
 
 
   static Widget _buildCategorySelector(
-      String selected,
-      ValueChanged<String> onChanged,
+      String? selected,
+      ValueChanged<String?> onChanged,
       int? remainingCommands,
       ) {
     return Row(
       children: [
         const Text('카테고리:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87)),
         const SizedBox(width: 8),
-        DropdownButton<String>(
+        DropdownButton<String?>(
           value: selected,
           dropdownColor: Colors.white,
           style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
           items: const [
+            DropdownMenuItem(value: null, child: Text('선택해주세요')),
             DropdownMenuItem(value: '쇼핑', child: Text('쇼핑')),
             DropdownMenuItem(value: '시술/성형', child: Text('시술/성형')),
             DropdownMenuItem(value: '음식/식자재', child: Text('음식/식자재')),
             DropdownMenuItem(value: '뷰티케어', child: Text('뷰티케어')),
           ],
           onChanged: (v) {
-            if (v != null) onChanged(v);
+            onChanged(v);
           },
         ),
         const Spacer(),
