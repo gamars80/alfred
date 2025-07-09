@@ -195,19 +195,18 @@ class CareProductCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                             ],
-                            Expanded(
-                              child: Text(
-                                product.name,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  height: 1.2,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF212121),
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                            Text(
+                              product.name,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                height: 1.2,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF212121),
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
+                            const SizedBox(height: 2),
                             Row(
                               children: [
                                 Expanded(
