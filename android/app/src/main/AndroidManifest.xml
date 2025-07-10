@@ -30,6 +30,16 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Android 12+ splash screen 아이콘을 투명하게 설정 -->
+            <meta-data
+                android:name="android.windowSplashScreenAnimatedIcon"
+                android:resource="@drawable/transparent" />
+            <meta-data
+                android:name="android.windowSplashScreenBackground"
+                android:resource="@color/white" />
+            <meta-data
+                android:name="android.windowSplashScreenIconBackgroundColor"
+                android:resource="@color/white" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

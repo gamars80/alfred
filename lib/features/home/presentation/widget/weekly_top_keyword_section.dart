@@ -94,8 +94,8 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: MediaQuery.of(context).size.width <= 320 ? 120 : 
-                      MediaQuery.of(context).size.width < 360 ? 130 : 140, // 320px에서 더 작게
+              height: MediaQuery.of(context).size.width <= 320 ? 150 :
+                      MediaQuery.of(context).size.width < 360 ? 170 : 150,
               child: TabBarView(
                 controller: _tabController,
                 children: [
