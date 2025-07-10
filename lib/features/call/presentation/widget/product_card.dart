@@ -316,39 +316,41 @@ class ProductCard extends StatelessWidget {
                           margin: const EdgeInsets.only(top: 2),
                           child: Row(
                             children: [
-                              Expanded(
-                                child: TextButton(
-                                  onPressed: () => _openDetailImage(context),
-                                  style: TextButton.styleFrom(
-                                    backgroundColor: const Color(0xFFF8F8F8),
-                                    foregroundColor: const Color(0xFF424242),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    padding: EdgeInsets.zero,
-                                    minimumSize: const Size(0, 20),
-                                    maximumSize: const Size(double.infinity, 20),
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.image_outlined, size: 10, color: Colors.grey[700]),
-                                      const SizedBox(width: 2),
-                                      Text(
-                                        '상세',
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          height: 1.0,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[700],
-                                        ),
+                              if (product.source != '29CM' && product.source != 'HOTPING' && product.source != 'XEXYMIX')
+                                Expanded(
+                                  child: TextButton(
+                                    onPressed: () => _openDetailImage(context),
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: const Color(0xFFF8F8F8),
+                                      foregroundColor: const Color(0xFF424242),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
                                       ),
-                                    ],
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: const Size(0, 20),
+                                      maximumSize: const Size(double.infinity, 20),
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.image_outlined, size: 10, color: Colors.grey[700]),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          '상세',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            height: 1.0,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
+                              if (product.source != '29CM' && product.source != 'HOTPING' && product.source != 'XEXYMIX')
+                                const SizedBox(width: 4),
                               Expanded(
                                 child: TextButton(
                                   onPressed: () => _openReviews(context),

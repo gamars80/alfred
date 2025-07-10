@@ -130,6 +130,9 @@ class _AllFashionProductScreenState extends State<AllFashionProductScreen> {
   @override
   Widget build(BuildContext context) {
     debugPrint('AllFashionProductScreen - build called, products length: ${_products.length}');
+    // 동적으로 카드 높이 계산: 카드 너비의 1.25배
+    final double gridWidth = (MediaQuery.of(context).size.width - 16 * 2 - 12) / 2;
+    final double cardHeight = gridWidth * 1.25;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -203,18 +206,18 @@ class _AllFashionProductScreenState extends State<AllFashionProductScreen> {
                       SliverPadding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         sliver: SliverGrid(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             mainAxisSpacing: 16,
                             crossAxisSpacing: 12,
-                            childAspectRatio: 0.60,
-                            mainAxisExtent: 280,
+                            childAspectRatio: 0.85,
+                            mainAxisExtent: 255, // 필요시 주석처리
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
                               final productIndex = i + index;
                               if (productIndex >= _products.length || productIndex >= i + 10) return null;
-                              return ProductCard(product: _products[productIndex]);
+                              return ProductCard(product: _products[productIndex], cardHeight: cardHeight);
                             },
                             childCount: 10,
                           ),

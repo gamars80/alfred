@@ -125,6 +125,9 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 동적으로 카드 높이 계산: 카드 너비의 1.25배
+    final double gridWidth = (MediaQuery.of(context).size.width - 16 * 2 - 12) / 2; // 패딩, crossAxisSpacing 반영
+    final double cardHeight = gridWidth * 1.25;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -156,7 +159,7 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
               child: Row(
                 children: [
                   Text(
-                    '$_totalCount개의 검색결과',
+                    '$_totalCount개의 검색결과22',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -202,18 +205,18 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                         maxCrossAxisExtent: 220,
                         mainAxisSpacing: 16,
                         crossAxisSpacing: 12,
                         childAspectRatio: 0.60,
-                          mainAxisExtent: 280
+                        mainAxisExtent: 255, // 필요시 주석처리
                       ),
                       delegate: SliverChildBuilderDelegate(
-                            (context, index) {
+                        (context, index) {
                           final productIndex = i + index;
                           if (productIndex >= _products.length || productIndex >= i + 10) return null;
-                          return ProductCard(product: _products[productIndex]);
+                          return ProductCard(product: _products[productIndex], cardHeight: cardHeight);
                         },
                         childCount: (_products.length - i) >= 10 ? 10 : (_products.length - i),
                       ),
