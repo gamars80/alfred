@@ -41,6 +41,21 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
     }
   }
 
+  String _getProductImageUrl(String imageUrl) {
+    // mallName이 'HOTPING'이고 이미지 URL에 스키마가 없는 경우 https:를 추가
+    if (widget.review.mallName == 'HOTPING' && 
+        !imageUrl.startsWith('https:') && 
+        !imageUrl.startsWith('http:')) {
+      // //로 시작하는 경우 https:를 앞에 붙임
+      if (imageUrl.startsWith('//')) {
+        return 'https:$imageUrl';
+      }
+      // 스키마가 없는 경우 https://를 앞에 붙임
+      return 'https://$imageUrl';
+    }
+    return imageUrl;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,7 +112,7 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
                       borderRadius: BorderRadius.circular(4),
                       child: widget.review.productImageUrl != null
                           ? CachedNetworkImage(
-                              imageUrl: widget.review.productImageUrl!,
+                              imageUrl: _getProductImageUrl(widget.review.productImageUrl!),
                               width: 48,
                               height: 48,
                               fit: BoxFit.cover,

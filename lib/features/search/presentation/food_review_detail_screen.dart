@@ -131,18 +131,6 @@ class FoodReviewDetailScreen extends StatelessWidget {
                                         color: Colors.deepOrange,
                                       ),
                                     ),
-                                    const Spacer(),
-                                    ElevatedButton(
-                                      onPressed: () => _launchProductUrl(context),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.deepOrange,
-                                        foregroundColor: Colors.white,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                      child: const Text('구매하기'),
-                                    ),
                                   ],
                                 ),
                               ],
@@ -175,45 +163,6 @@ class FoodReviewDetailScreen extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 16),
-                  ],
-
-                  // 리뷰 메타 정보 (평점이 0이 아닐 때만 표시)
-                  if (review.rating > 0) ...[
-                    Row(
-                      children: [
-                        Icon(Icons.star, size: 16, color: Colors.amber[600]),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${review.rating}점',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '리뷰 ${review.recommendationFoodsItem.reviewCount}개',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ] else ...[
-                    // 평점이 0일 때는 리뷰 개수만 표시
-                    Row(
-                      children: [
-                        const Spacer(),
-                        Text(
-                          '리뷰 ${review.recommendationFoodsItem.reviewCount}개',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ],
               ),
