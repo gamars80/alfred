@@ -57,9 +57,9 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
 
   Future<void> _fetchProducts({bool refresh = false}) async {
     debugPrint('SourceProductScreen - fetchProducts called, refresh: $refresh');
-    
+
     if (_isLoading) return; // 이미 로딩 중이면 중복 요청 방지
-    
+
     setState(() => _isLoading = true);
 
     if (refresh) {
@@ -94,8 +94,8 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.response?.statusCode == 500 
-              ? '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' 
+            content: Text(e.response?.statusCode == 500
+              ? '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
               : '검색 중 오류가 발생했습니다.'),
           ),
         );
@@ -134,6 +134,9 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
   @override
   Widget build(BuildContext context) {
     debugPrint('SourceProductScreen - build called, products length: ${_products.length}');
+    // 동적으로 카드 높이 계산: 카드 너비의 1.25배
+    final double gridWidth = (MediaQuery.of(context).size.width - 16 * 2 - 12) / 2; // 패딩, crossAxisSpacing 반영
+    final double cardHeight = gridWidth * 1.85;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -208,19 +211,18 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
                       SliverPadding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         sliver: SliverGrid(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             mainAxisSpacing: 16,
                             crossAxisSpacing: 12,
                             childAspectRatio: 0.60,
-                              mainAxisExtent: 280
-
+                            mainAxisExtent: cardHeight,
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
                               final productIndex = i + index;
                               if (productIndex >= _products.length || productIndex >= i + 10) return null;
-                              return ProductCard(product: _products[productIndex]);
+                              return ProductCard(product: _products[productIndex], cardHeight: cardHeight);
                             },
                             childCount: 10,
                           ),
@@ -256,30 +258,30 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
   // 전체 아이템 개수 계산 (상품 + 광고)
   int _calculateTotalItems() {
     if (_products.isEmpty) return 0;
-    
+
     // 10개마다 광고 1개 추가 (row 단위가 아닌 개별 상품 기준)
     final productRows = (_products.length / 2).ceil(); // 2개씩 표시하므로 row 수 계산
     final adCount = (_products.length - 1) ~/ 10; // 10개 단위로 광고 추가
     final totalCount = productRows + adCount;
-    
+
     debugPrint('SourceProductScreen - Calculating total items: products=${_products.length}, rows=$productRows, ads=$adCount, total=$totalCount');
     return totalCount;
   }
 
   // 2개의 상품을 포함하는 row 위젯 생성
-  Widget _buildProductRow(int leftIndex, int? rightIndex) {
+  Widget _buildProductRow(int leftIndex, int? rightIndex, double cardHeight) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: ProductCard(product: _products[leftIndex]),
+            child: ProductCard(product: _products[leftIndex], cardHeight: cardHeight),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: rightIndex != null && rightIndex < _products.length
-                ? ProductCard(product: _products[rightIndex])
+                ? ProductCard(product: _products[rightIndex], cardHeight: cardHeight)
                 : const SizedBox(), // 오른쪽 상품이 없을 경우 빈 공간
           ),
         ],

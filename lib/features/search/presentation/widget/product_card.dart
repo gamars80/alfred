@@ -8,13 +8,14 @@ import '../../../review/presentation/review_overlay_screen.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
+  final double cardHeight;
 
-  const ProductCard({super.key, required this.product});
+  const ProductCard({super.key, required this.product, required this.cardHeight});
 
   void _openLink(BuildContext context) async {
     final url = Uri.parse(product.link);
     if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+      await launchUrl(url);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('링크를 열 수 없습니다.')),
@@ -86,16 +87,18 @@ class ProductCard extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GestureDetector(
-            onTap: () => _openLink(context),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+            child: GestureDetector(
+              onTap: () => _openLink(context),
               child: Stack(
                 children: [
-                  AspectRatio(
-                    aspectRatio: 1,
+                  SizedBox(
+                    width: double.infinity,
+                    height: 140,
                     child: CachedNetworkImage(
                       imageUrl: product.image.startsWith('http')
                           ? product.image
@@ -108,8 +111,8 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    top: 6,
-                    left: 6,
+                    top: 8,
+                    left: 8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
@@ -130,56 +133,58 @@ class ProductCard extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  product.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${product.price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}원',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.deepPurple,
-                    ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '${product.price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}원',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepPurple,
                   ),
-                  const SizedBox(height: 8),
-                  if (product.source != 'ABLY') // ABLY 상품은 버튼 숨김
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => _openReviews(context),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.reviews, size: 12, color: Colors.black54),
-                                SizedBox(width: 2),
-                                Flexible(
-                                  child: Text(
-                                    '리뷰',
-                                    style: TextStyle(fontSize: 9, color: Colors.black54),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                ),
+                const SizedBox(height: 8),
+                if (product.source != 'ABLY')
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => _openReviews(context),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(Icons.reviews, size: 12, color: Colors.black54),
+                              SizedBox(width: 2),
+                              Flexible(
+                                child: Text(
+                                  '리뷰',
+                                  style: TextStyle(fontSize: 9, color: Colors.black54),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
+                      ),
+                      if (product.source != '29CM' && product.source != 'HOTPING' && product.source != 'XEXYMIX')
                         const SizedBox(width: 4),
+                      if (product.source != '29CM' && product.source != 'HOTPING' && product.source != 'XEXYMIX')
                         Expanded(
                           child: GestureDetector(
                             onTap: () => _openDetailImage(context),
@@ -200,10 +205,10 @@ class ProductCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                ],
-              ),
+                    ],
+                  ),
+                const SizedBox(height: 12),
+              ],
             ),
           ),
         ],
