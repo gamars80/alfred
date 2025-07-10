@@ -38,7 +38,7 @@ class _PopularCareLikeSectionState extends State<PopularCareLikeSection> {
           ),
         ),
         SizedBox(
-          height: 240,
+          height: 220,
           child: FutureBuilder<List<PopularCareLike>>(
             future: _futureLikes,
             builder: (context, snapshot) {
