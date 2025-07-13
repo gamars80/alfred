@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 class DeviceInfoService {
   static final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
@@ -10,7 +12,18 @@ class DeviceInfoService {
   static Future<String> getDeviceUniqueId() async {
     if (Platform.isAndroid) {
       final androidInfo = await _deviceInfo.androidInfo;
-      return androidInfo.id;
+      final id = androidInfo.data['androidId'];
+      if (id != null && id != 'unknown') {
+        return id;
+      }
+      // Fallback: 앱 자체 UUID
+      final prefs = await SharedPreferences.getInstance();
+      String? uuid = prefs.getString('app_device_uuid');
+      if (uuid == null) {
+        uuid = const Uuid().v4();
+        await prefs.setString('app_device_uuid', uuid);
+      }
+      return uuid;
     } else if (Platform.isIOS) {
       final iosInfo = await _deviceInfo.iosInfo;
       return iosInfo.identifierForVendor ?? 'unknown';
