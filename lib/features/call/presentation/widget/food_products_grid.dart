@@ -150,7 +150,7 @@ class _FoodProductsGridState extends State<FoodProductsGrid> {
             crossAxisSpacing: 9,
             mainAxisSpacing: 11,
             // 이 높이(예: 260) 이하로는 안 작아지기 때문에 overflow 걱정 끝!
-            mainAxisExtent: 240
+            mainAxisExtent: 260
           ),
           itemCount: allProducts.length,
           itemBuilder: (context, index) => FoodProductCard(product: allProducts[index], historyId: widget.historyId),
