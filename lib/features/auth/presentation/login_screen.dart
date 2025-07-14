@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:math';
 
 import '../data/auth_api.dart' as my_auth;
 import '../model/login_response.dart';
@@ -20,6 +21,10 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _isProcessingCode = false;
   bool _isSignedUp = false;  // Add flag to track signup status
+  String? _codeVerifier; // 메모리 기반 code_verifier
+  bool _loginSuccess = false; // 로그인 성공 플래그
+  String? _errorMessage; // 에러 메시지 상태 추가
+  String? _lastProcessedCode; // 마지막으로 처리한 code 값 기억
 
   /// Navigate to WebView with url and title
   void _openWebView(BuildContext context, String url, String title) {
@@ -47,20 +52,20 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (signupResp.token == null || signupResp.token!.isEmpty) {
+          if (!mounted) return;
           _showError(context, '회원가입 후 토큰 발급에 실패했습니다');
           return;
         }
 
-        // 상태 관리 필요 없으면 생략 가능
-        // setState(() => _isSignedUp = true);
-
+        if (!mounted) return;
         await _saveTokenAndNavigate(context, signupResp.token!, route: '/main');
       } else {
+        if (!mounted) return;
         await _saveTokenAndNavigate(context, loginResp.token, route: '/main');
       }
     } catch (e, stack) {
       debugPrint("카카오 로그인 핸들링 실패: $e\n$stack");
-      
+      if (!mounted) return;
       // 디바이스 차단 에러 메시지 감지
       if (e.toString().contains('This device is blocked from registration')) {
         Fluttertoast.showToast(
@@ -76,21 +81,28 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _loginWithKakao(BuildContext context) async {
     try {
+      // 1. code_verifier 생성 및 메모리에 저장
+      _codeVerifier = _generateCodeVerifier();
       final isKakaoInstalled = await isKakaoTalkInstalled();
-
+      debugPrint('isKakaoTalkInstalled: $isKakaoInstalled');
       if (!isKakaoInstalled) {
-        // fallback 방지: 설치 안 된 경우 사용자에게 안내
         _showError(context, '카카오톡이 설치되어 있어야 로그인할 수 있습니다.');
         return;
       }
-
-      // 1. 카카오톡 앱 로그인 시도
+      // 2. 카카오톡 앱 로그인 시도
       final token = await UserApi.instance.loginWithKakaoTalk();
       await _afterLogin(context, token);
     } catch (e) {
       debugPrint("카카오 로그인 실패: $e");
       _showError(context, '카카오 로그인에 실패했습니다. $e');
+      _codeVerifier = null;
     }
+  }
+
+  String _generateCodeVerifier() {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    final rand = Random.secure();
+    return List.generate(64, (_) => charset[rand.nextInt(charset.length)]).join();
   }
 
   Future<void> _afterLogin(BuildContext context, OAuthToken token) async {
@@ -111,11 +123,13 @@ class _LoginScreenState extends State<LoginScreen> {
         required String route,
       }) async {
     if (token == null || token.isEmpty) {
+      if (!mounted) return;
       _showError(context, '유효하지 않은 토큰입니다');
       return;
     }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('accessToken', token);
+    if (!mounted) return;
     context.go(route);
   }
 
@@ -192,62 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Check for kakao oauth code in the route
-    final code = GoRouterState.of(context).uri.queryParameters['code'];
-    if (code != null && !_isProcessingCode) {
-      _isProcessingCode = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        try {
-          debugPrint('Handling kakao oauth code: $code');
-          
-          final prefs = await SharedPreferences.getInstance();
-          final codeVerifier = prefs.getString('kakao_code_verifier');
-          
-          if (codeVerifier == null) {
-            debugPrint('Code verifier not found, starting new login flow');
-            await _loginWithKakao(context);
-            return;
-          }
-
-          debugPrint('Using code verifier: $codeVerifier');
-
-          final token = await AuthApi.instance.issueAccessToken(
-            authCode: code,
-            codeVerifier: codeVerifier,
-            redirectUri: 'kakao22e6b88148da0c4cb1293cbe664cecc4://oauth', // 직접 명시!
-          );
-          
-          debugPrint('Got kakao token: ${token.accessToken}');
-          
-          await TokenManagerProvider.instance.manager.setToken(token);
-          
-          final user = await UserApi.instance.me();
-          debugPrint('Got kakao user info: ${user.id}');
-          
-          final loginId = user.id.toString();
-          final email = user.kakaoAccount?.email ?? '';
-          final name = user.kakaoAccount?.profile?.nickname ?? '';
-          final phoneNumber = user.kakaoAccount?.phoneNumber ?? '';
-
-          await _handleKakaoLogin(context, loginId, email, name, phoneNumber);
-        } catch (e, stack) {
-          debugPrint('Kakao login error: $e\n$stack');
-          if (!_isSignedUp) {
-            _showError(context, '카카오 로그인에 실패했습니다');
-            if (context.mounted) {
-              context.go('/login');
-            }
-          }
-        } finally {
-          if (mounted) {
-            setState(() {
-              _isProcessingCode = false;
-            });
-          }
-        }
-      });
-    }
-
+    // build에서는 code 파라미터 처리 X, 오직 UI만 렌더링
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A), // Deep black
       body: Container(
@@ -412,6 +371,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     const SizedBox(height: 40),
+                    // 로그인 처리 중에는 로딩 인디케이터, 아닐 때만 에러 메시지 표시
+                    if (_isProcessingCode)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 16.0),
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFD4AF37),
+                        ),
+                      )
+                    else if (_errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.redAccent, fontSize: 14),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -423,6 +399,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showError(BuildContext context, String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
