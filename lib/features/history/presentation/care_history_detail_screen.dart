@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:alfred_clean/features/call/presentation/widget/care_product_card.dart';
 import 'package:alfred_clean/features/call/presentation/product_webview_screen.dart';
@@ -321,12 +323,13 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
                           child: GridView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               childAspectRatio: 0.6,
                               mainAxisSpacing: 12,
                               crossAxisSpacing: 12,
-                              mainAxisExtent: 280,
+                              // mainAxisExtent: 280,
+                                mainAxisExtent: Platform.isIOS ? 290 : 260
                             ),
                             itemCount: _filteredRecommendations.length,
                             itemBuilder: (context, index) {
@@ -688,7 +691,7 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
           ),
           // 리뷰 카드들 (가로 스크롤)
           SizedBox(
-            height: 355, // 카드 높이를 더 늘려서 오버플로우 방지
+            height: 365, // 카드 높이를 더 늘려서 오버플로우 방지
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
