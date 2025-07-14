@@ -326,7 +326,7 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
                               childAspectRatio: 0.6,
                               mainAxisSpacing: 12,
                               crossAxisSpacing: 12,
-                              mainAxisExtent: 270,
+                              mainAxisExtent: 280,
                             ),
                             itemCount: _filteredRecommendations.length,
                             itemBuilder: (context, index) {
@@ -688,7 +688,7 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
           ),
           // 리뷰 카드들 (가로 스크롤)
           SizedBox(
-            height: 390, // 카드 높이를 더 늘려서 오버플로우 방지
+            height: 355, // 카드 높이를 더 늘려서 오버플로우 방지
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
