@@ -1,6 +1,7 @@
 // lib/features/history/presentation/history_detail_screen.dart
 import 'package:alfred_clean/features/call/model/product.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 import '../../../service/token_manager.dart';
 import '../../call/presentation/widget/product_card.dart';
@@ -209,7 +210,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                                     }(),
                                     mainAxisSpacing: 12,
                                     crossAxisSpacing: 12,
-                                      mainAxisExtent: 320
+                                    mainAxisExtent: Platform.isIOS ? 320 : 290
                                   ),
                                   itemCount: products.length,
                                   itemBuilder: (context, index) {

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../../model/product.dart';
 import 'food_product_card.dart';
@@ -145,12 +147,13 @@ class _FoodProductsGridState extends State<FoodProductsGrid> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 9,
             mainAxisSpacing: 11,
             // 이 높이(예: 260) 이하로는 안 작아지기 때문에 overflow 걱정 끝!
-            mainAxisExtent: 260
+            // mainAxisExtent: 260
+              mainAxisExtent: Platform.isIOS ? 260 : 240
           ),
           itemCount: allProducts.length,
           itemBuilder: (context, index) => FoodProductCard(product: allProducts[index], historyId: widget.historyId),
