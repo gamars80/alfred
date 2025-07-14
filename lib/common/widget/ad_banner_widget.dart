@@ -1,6 +1,7 @@
 // lib/common/widget/ad_banner_widget.dart
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'dart:io';
 
 class AdBannerWidget extends StatefulWidget {
   const AdBannerWidget({super.key});
@@ -23,8 +24,10 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
   void _loadAd() {
     debugPrint('AdBannerWidget - Loading ad...');
     
-    // 실제 광고 ID 사용
-    const adUnitId = 'ca-app-pub-4542840362692423/4003152127';
+    // 플랫폼별 광고 단위 ID 분기 (iOS는 실제 광고 단위)
+    final adUnitId = Platform.isAndroid
+        ? 'ca-app-pub-4542840362692423/4003152127' // Android 광고 단위 ID
+        : 'ca-app-pub-4542840362692423/8125225348'; // iOS 실제 광고 단위 ID
     
     debugPrint('AdBannerWidget - Creating BannerAd with ID: $adUnitId');
 
