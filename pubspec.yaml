@@ -1,4 +1,5 @@
 name: alfred_clean
+version: 1.0.0+1
 
 environment:
   sdk: ">=3.7.0 <4.0.0"
@@ -36,6 +37,7 @@ dependencies:
   package_info_plus: ^8.0.2
   firebase_messaging: ^15.2.7
   uuid: ^4.4.0
+
 
 dev_dependencies:
   flutter_test:
