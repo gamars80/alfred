@@ -118,18 +118,19 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   void didUpdateWidget(CallScreenBody oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedCategory == '쇼핑' && widget.categorizedProducts.isNotEmpty) {
-      // 쇼핑 카테고리이고 상품이 있을 때, 첫 번째 available source를 selectedSource로 설정
       final sources = widget.categorizedProducts.keys.toList();
-      if (sources.isNotEmpty && selectedSource != sources[0]) {
+      if (sources.isNotEmpty && !sources.contains(selectedSource)) {
         setState(() {
           selectedSource = sources[0];
         });
       }
-    } else if (widget.selectedCategory == '시술/성형' && selectedSource != '강남언니') {
-      // 시술/성형 카테고리일 때는 '강남언니'로 초기화
-      setState(() {
-        selectedSource = '강남언니';
-      });
+    } else if (widget.selectedCategory == '시술/성형') {
+      // 현재 selectedSource가 '강남언니' 또는 '바비톡'이 아니면만 초기화
+      if (selectedSource != '강남언니' && selectedSource != '바비톡') {
+        setState(() {
+          selectedSource = '강남언니';
+        });
+      }
     }
   }
 
@@ -209,6 +210,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   }
 
   List<Widget> _buildSections(BuildContext context) {
+    debugPrint('buildSections called, selectedSource: $selectedSource');
     final sections = <Widget>[];
 
     // Debug prints to check the values
@@ -325,23 +327,36 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
             if (selectedProcedureTab == 0) ...[
               _buildSourceFilter(),
               const SizedBox(height: kSpacing / 2),
-              ...widget.events
-                  .where((e) => e.source?.trim() == selectedSource.trim())
-                  .map((e) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: kSpacing,
-                    vertical: kSpacing / 2,
-                  ),
-                  child: _buildElevatedCard(
-                    child: EventCard(
-                      event: e,
-                      historyCreatedAt: widget.createdAt,
+              // 필터링 후 남은 이벤트 개수와 각 이벤트 정보 로그
+              ...(() {
+                final filteredEvents = widget.events
+                    .where((e) {
+                      final eventMallName = (e.source ?? '').trim();
+                      final selected = selectedSource.trim();
+                      debugPrint('[이벤트 필터] e.source: "' + eventMallName + '" | selectedSource: "' + selected + '"');
+                      return eventMallName == selected;
+                    })
+                    .toList();
+                debugPrint('필터 후 남은 이벤트 개수: \\${filteredEvents.length}');
+                for (final e in filteredEvents) {
+                  debugPrint('렌더링할 이벤트: id=\\${e.id}, title=\\${e.title}, source=\\${e.source}');
+                }
+                return filteredEvents.map((e) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: kSpacing,
+                      vertical: kSpacing / 2,
                     ),
-                  ),
-                );
-              })
-                  .toList(),
+                    child: _buildElevatedCard(
+                      child: EventCard(
+                        key: ValueKey('eventcard-${e.id}-${e.source}'),
+                        event: e,
+                        historyCreatedAt: widget.createdAt,
+                      ),
+                    ),
+                  );
+                }).toList();
+              })(),
             ] else ...[
               ...widget.hospitals.map((h) {
                 return Padding(
@@ -604,6 +619,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
           if (!isSelected) {
             setState(() {
               selectedSource = source;
+              debugPrint('필터 버튼 클릭 후 selectedSource: $selectedSource');
             });
           }
         },
@@ -635,20 +651,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
   }
 
   Widget _buildElevatedCard({required Widget child}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(kCardBorderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: child,
-    );
+    return child;
   }
 
   Widget _buildFashionTabBar() {

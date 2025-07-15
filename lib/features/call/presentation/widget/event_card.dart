@@ -166,6 +166,7 @@ class _EventCardState extends State<EventCard> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('EventCard build: id=${widget.event.id}, source=${widget.event.source}');
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
