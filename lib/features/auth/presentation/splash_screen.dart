@@ -53,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       
       // 3. 충분한 표시 시간 보장
       print('🎬 Splash Screen - Starting delay');
-      await Future.delayed(const Duration(seconds: 8)); // 전체 표시 시간 8초로 증가
+      await Future.delayed(const Duration(seconds: 3)); // 전체 표시 시간 3초로 변경
       print('🎬 Splash Screen - Delay completed');
 
       if (!mounted) return;
