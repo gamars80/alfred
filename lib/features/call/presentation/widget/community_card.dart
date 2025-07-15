@@ -73,182 +73,185 @@ class _CommunityCardState extends State<CommunityCard> {
     final displayText = isLong ? content.substring(0, _limit) + '...' : content;
 
     return RepaintBoundary(
-      child: Card(
-        color: Colors.white,
-        elevation: 2,
-        shadowColor: const Color.fromRGBO(128, 128, 128, 0.25),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.grey.shade200, width: 1),
-        ),
+      child: Container(
         margin: const EdgeInsets.symmetric(vertical: 10),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                displayText,
-                style: const TextStyle(
-                  fontSize: 11,
-                  height: 1.5,
-                  color: Color(0xFF2D2D2D),
-                ),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              displayText,
+              style: const TextStyle(
+                fontSize: 11,
+                height: 1.5,
+                color: Color(0xFF2D2D2D),
               ),
-              if (isLong) ...[
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                      onTap: () async {
-                        final baseUrl = widget.source == '강남언니'
-                            ? 'https://www.gangnamunni.com/community/'
-                            : 'https://web.babitalk.com/community/';
-                        final uri = Uri.parse('$baseUrl${_post.id}');
+            ),
+            if (isLong) ...[
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () async {
+                      final baseUrl = widget.source == '강남언니'
+                          ? 'https://www.gangnamunni.com/community/'
+                          : 'https://web.babitalk.com/community/';
+                      final uri = Uri.parse('$baseUrl${_post.id}');
 
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('URL을 열 수 없습니다.')),
+                        );
+                      }
+                    },
+                    child: const Text(
+                      '[더보기]',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFE091B3),
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: _toggleLike,
+                    child: Row(
+                      children: [
+                        Icon(
+                          isLiked ? Icons.favorite : Icons.favorite_border,
+                          size: 24,
+                          color: isLiked ? const Color(0xFFFF4D6D) : Colors.grey,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (_post.photoUrls.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 96,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _post.photoUrls.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (_, i) {
+                    final url = _post.photoUrls[i];
+                    final showBlur = i > 0 && _post.photoUrls.length > 1;
+
+                    return GestureDetector(
+                      onTap: () async {
+                        if (showBlur) {
+                          final uri = Uri.parse('https://www.gangnamunni.com/community/${_post.id}');
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('URL을 열 수 없습니다.')),
+                            );
+                          }
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('URL을 열 수 없습니다.')),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => GalleryPage(
+                                images: _post.photoUrls,
+                                initialIndex: i,
+                              ),
+                            ),
                           );
                         }
                       },
-                      child: const Text(
-                        '[더보기]',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFE091B3),
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: _toggleLike,
-                      child: Row(
+                      child: Stack(
                         children: [
-                          Icon(
-                            isLiked ? Icons.favorite : Icons.favorite_border,
-                            size: 24,
-                            color: isLiked ? const Color(0xFFFF4D6D) : Colors.grey,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-              if (_post.photoUrls.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 96,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _post.photoUrls.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (_, i) {
-                      final url = _post.photoUrls[i];
-                      final showBlur = i > 0 && _post.photoUrls.length > 1;
-
-                      return GestureDetector(
-                        onTap: () async {
-                          if (showBlur) {
-                            final uri = Uri.parse('https://www.gangnamunni.com/community/${_post.id}');
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri, mode: LaunchMode.externalApplication);
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('URL을 열 수 없습니다.')),
-                              );
-                            }
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => GalleryPage(
-                                  images: _post.photoUrls,
-                                  initialIndex: i,
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                        child: Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: ColorFiltered(
-                                colorFilter: showBlur
-                                    ? ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken)
-                                    : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
-                                child: ImageFiltered(
-                                  imageFilter: showBlur
-                                      ? ImageFilter.blur(sigmaX: 6, sigmaY: 6)
-                                      : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                                  child: CachedNetworkImage(
-                                    imageUrl: url,
-                                    width: 96,
-                                    height: 96,
-                                    fit: BoxFit.cover,
-                                    fadeInDuration: const Duration(milliseconds: 200),
-                                    memCacheWidth: 192,
-                                    errorWidget: (context, url, error) => Container(
-                                      color: Colors.grey[200],
-                                      child: const Icon(Icons.error),
-                                    ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: ColorFiltered(
+                              colorFilter: showBlur
+                                  ? ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken)
+                                  : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+                              child: ImageFiltered(
+                                imageFilter: showBlur
+                                    ? ImageFilter.blur(sigmaX: 6, sigmaY: 6)
+                                    : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                                child: CachedNetworkImage(
+                                  imageUrl: url,
+                                  width: 96,
+                                  height: 96,
+                                  fit: BoxFit.cover,
+                                  fadeInDuration: const Duration(milliseconds: 200),
+                                  memCacheWidth: 192,
+                                  errorWidget: (context, url, error) => Container(
+                                    color: Colors.grey[200],
+                                    child: const Icon(Icons.error),
                                   ),
                                 ),
                               ),
                             ),
-                            if (showBlur)
-                              const Positioned.fill(
-                                child: Center(
-                                  child: Text(
-                                    'Click',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.black54,
-                                          offset: Offset(1, 1),
-                                          blurRadius: 2,
-                                        )
-                                      ],
-                                    ),
+                          ),
+                          if (showBlur)
+                            const Positioned.fill(
+                              child: Center(
+                                child: Text(
+                                  'Click',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black54,
+                                        offset: Offset(1, 1),
+                                        blurRadius: 2,
+                                      )
+                                    ],
                                   ),
                                 ),
                               ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              ],
-              const SizedBox(height: 12),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _IconText(icon: Icons.thumb_up, count: _post.thumbUpCount),
-                    const SizedBox(width: 24),
-                    _IconText(icon: Icons.comment, count: _post.commentCount),
-                    const SizedBox(width: 24),
-                    _IconText(icon: Icons.visibility, count: _post.viewCount),
-                    const SizedBox(width: 16),
-                    Text(
-                      '출처: ${widget.source}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                    ),
-                  ],
-                ),
-              )
+              ),
             ],
-          ),
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _IconText(icon: Icons.thumb_up, count: _post.thumbUpCount),
+                  const SizedBox(width: 24),
+                  _IconText(icon: Icons.comment, count: _post.commentCount),
+                  const SizedBox(width: 24),
+                  _IconText(icon: Icons.visibility, count: _post.viewCount),
+                  const SizedBox(width: 16),
+                  Text(
+                    '출처: ${widget.source}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            )
+          ],
         ),
       ),
     );

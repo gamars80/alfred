@@ -7,7 +7,6 @@ class Event {
   final String source;
   final String thumbnailUrl;
   final String location;
-  final String hospitalName;
   final int discountedPrice;
   final int discountRate;
   final double? rating;
@@ -15,6 +14,7 @@ class Event {
   final String detailImage;
   final bool liked;
   final String? detailLink;
+  final String hospitalName;
 
   Event({
     required this.id,
@@ -22,7 +22,6 @@ class Event {
     required this.source,
     required this.thumbnailUrl,
     required this.location,
-    required this.hospitalName,
     required this.discountedPrice,
     required this.discountRate,
     this.rating,
@@ -30,6 +29,7 @@ class Event {
     required this.detailImage,
     required this.liked,
     this.detailLink,
+    required this.hospitalName,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -43,7 +43,6 @@ class Event {
       source: json['source'],
       thumbnailUrl: json['thumbnailUrl'],
       location: json['location'],
-      hospitalName: json['hospitalName'],
       discountedPrice: json['discountedPrice'],
       discountRate: json['discountRate'],
       rating: double.tryParse(json['rating']?.toString() ?? ''),
@@ -51,6 +50,7 @@ class Event {
       detailImage: json['detailImage'] ?? '',
       liked: json['liked'] ?? false,
       detailLink: detailLink,
+      hospitalName: json['hospitalName'],
     );
   }
 
@@ -61,7 +61,6 @@ class Event {
       source: source,
       thumbnailUrl: thumbnailUrl,
       location: location,
-      hospitalName: hospitalName,
       discountedPrice: discountedPrice,
       discountRate: discountRate,
       rating: rating,
@@ -69,6 +68,7 @@ class Event {
       detailImage: detailImage,
       liked: liked ?? this.liked,
       detailLink: detailLink,
+      hospitalName: hospitalName,
     );
   }
 
