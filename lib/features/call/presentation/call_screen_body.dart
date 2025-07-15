@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:alfred_clean/features/call/presentation/widget/beauty_command_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/community_card.dart';
 import 'package:alfred_clean/features/call/presentation/widget/event_card.dart';
@@ -411,7 +413,8 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
                         MediaQuery.of(context).size.width <= 320 ? 0.55 : 0.6,
                         mainAxisSpacing: 12,
                         crossAxisSpacing: 12,
-                        mainAxisExtent: widget.selectedCategory == '뷰티케어' ? 265 : 285
+                        mainAxisExtent: widget.selectedCategory == '뷰티케어' ?
+                        265 : Platform.isIOS ? 290 : 285
                     ),
                     itemCount: entry.value.length,
                     itemBuilder: (context, index) {
