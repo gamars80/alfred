@@ -66,9 +66,9 @@ class VoiceCommandBottomSheet {
             try {
               const platform = MethodChannel('com.alfred/voice');
               final result = await platform.invokeMethod<String>('startListening');
-              if (result != null && result.isNotEmpty) {
-                controller.text = result;
-              }
+              print('음성인식 결과: '
+                  '${result == null ? 'null' : result.isEmpty ? '빈 문자열' : result}');
+              controller.text = result ?? '';
             } catch (e) {
               if (e.toString().contains('PERMISSION_DENIED')) {
                 final shouldOpenSettings = await showDialog<bool>(
