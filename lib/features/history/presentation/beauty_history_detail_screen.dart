@@ -150,10 +150,10 @@ class _BeautyHistoryDetailScreenState extends State<BeautyHistoryDetailScreen>
               itemBuilder: (ctx, i) {
                 final e = filteredEvents[i];
                 return Padding(
-                  key: ValueKey('event-${e.id}'),
+                  key: ValueKey('event-${e.id}-${e.source}'),
                   padding: const EdgeInsets.only(bottom: 12),
                   child: EventCard(
-                    key: ValueKey('eventcard-${e.id}'),
+                    key: ValueKey('eventcard-${e.id}-${e.source}'),
                     event: e,
                     historyCreatedAt: widget.history.createdAt,
                     onLikedChanged: (updated) {
