@@ -80,14 +80,29 @@ class _VoiceCommandInputWidgetState extends State<VoiceCommandInputWidget> {
             Row(
               children: [
                 TextButton.icon(
-                  onPressed: widget.onMicPressed,
+                  onPressed: widget.isListening ? null : widget.onMicPressed,
                   icon: Icon(Icons.mic, color: widget.isListening ? Colors.red : Colors.deepPurple),
-                  label: Text(
-                    widget.isListening ? '듣는 중...' : '음성 인식',
-                    style: TextStyle(
-                      color: widget.isListening ? Colors.red : Colors.deepPurple,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  label: Row(
+                    children: [
+                      Text(
+                        widget.isListening ? '듣는 중...' : '음성 인식',
+                        style: TextStyle(
+                          color: widget.isListening ? Colors.red : Colors.deepPurple,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (widget.isListening) ...[
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],
