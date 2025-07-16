@@ -61,7 +61,7 @@ flutter:
 
 flutter_launcher_icons:
   android: "launcher_icon"
-  ios: false
+  ios: true
   image_path: "assets/icon/alfred_icon.png"
   min_sdk_android: 21
 
