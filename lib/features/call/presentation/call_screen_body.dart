@@ -429,7 +429,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
                         mainAxisSpacing: 12,
                         crossAxisSpacing: 12,
                         mainAxisExtent: widget.selectedCategory == '뷰티케어' ?
-                        265 : Platform.isIOS ? 320 : 340
+                        265 : Platform.isIOS ? 320 : 290
                     ),
                     itemCount: entry.value.length,
                     itemBuilder: (context, index) {

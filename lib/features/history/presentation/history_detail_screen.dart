@@ -210,7 +210,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                                     }(),
                                     mainAxisSpacing: 12,
                                     crossAxisSpacing: 12,
-                                    mainAxisExtent: Platform.isIOS ? 320 : 340
+                                    mainAxisExtent: Platform.isIOS ? 320 : 290
                                   ),
                                   itemCount: products.length,
                                   itemBuilder: (context, index) {
