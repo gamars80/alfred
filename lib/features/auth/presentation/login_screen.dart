@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'dart:math';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../data/auth_api.dart' as my_auth;
 import '../model/login_response.dart';
@@ -116,6 +118,89 @@ class _LoginScreenState extends State<LoginScreen> {
     await _handleKakaoLogin(context, loginId, email, name, phoneNumber);
   }
 
+  Future<void> _loginWithApple(BuildContext context) async {
+    try {
+      // 애플 로그인 가능 여부 확인
+      final isAvailable = await SignInWithApple.isAvailable();
+      if (!isAvailable) {
+        _showError(context, '애플 로그인을 사용할 수 없습니다.');
+        return;
+      }
+
+      // 애플 로그인 요청
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        // p8 키 파일 경로 설정
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: 'com.gamars.alfred',
+          redirectUri: Uri.parse('https://your-backend-url.com/auth/apple/callback'),
+        ),
+      );
+
+      // 애플 사용자 정보 추출
+      final loginId = credential.userIdentifier ?? '';
+      final email = credential.email ?? '';
+      final firstName = credential.givenName ?? '';
+      final lastName = credential.familyName ?? '';
+      final name = '$firstName $lastName'.trim();
+
+      if (loginId.isEmpty) {
+        _showError(context, '애플 로그인에 실패했습니다.');
+        return;
+      }
+
+      await _handleAppleLogin(context, loginId, email, name);
+    } catch (e) {
+      debugPrint("애플 로그인 실패: $e");
+      _showError(context, '애플 로그인에 실패했습니다.');
+    }
+  }
+
+  Future<void> _handleAppleLogin(BuildContext context, String loginId, String email, String name) async {
+    try {
+      final loginResp = await my_auth.AuthApi.loginWithAppleId(loginId);
+
+      if (loginResp.needSignup) {
+        final agreed = await _showAgreementBottomSheet(context);
+        if (!agreed) return;
+
+        final signupResp = await my_auth.AuthApi.registerAppleUser(
+          loginId: loginId,
+          email: email,
+          name: name,
+        );
+
+        if (signupResp.token == null || signupResp.token!.isEmpty) {
+          if (!mounted) return;
+          _showError(context, '회원가입 후 토큰 발급에 실패했습니다');
+          return;
+        }
+
+        if (!mounted) return;
+        await _saveTokenAndNavigate(context, signupResp.token!, route: '/main');
+      } else {
+        if (!mounted) return;
+        await _saveTokenAndNavigate(context, loginResp.token, route: '/main');
+      }
+    } catch (e, stack) {
+      debugPrint("애플 로그인 핸들링 실패: $e\n$stack");
+      if (!mounted) return;
+      // 디바이스 차단 에러 메시지 감지
+      if (e.toString().contains('This device is blocked from registration')) {
+        Fluttertoast.showToast(
+          msg: '이 디바이스는 차단되어 있습니다. 차단 기간이 끝난 후 다시 시도해주세요.',
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER,
+        );
+      } else {
+        _showError(context, '로그인에 실패했습니다');
+      }
+    }
+  }
+
 
   Future<void> _saveTokenAndNavigate(
       BuildContext context,
@@ -142,52 +227,100 @@ class _LoginScreenState extends State<LoginScreen> {
       isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
+      backgroundColor: Colors.white,
       builder: (ctx) {
         bool agreeTos = true;
         bool agreePrivacy = true;
         return StatefulBuilder(
           builder: (ctx, setState) {
-            return Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('약관 동의', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 12),
-                    CheckboxListTile(
-                      value: agreeTos,
-                      onChanged: (v) => setState(() => agreeTos = v!),
-                      title: GestureDetector(
-                        onTap: () => _openWebView(context, tosUrl, '이용약관'),
-                        child: const Text('이용약관 (필수)', style: TextStyle(decoration: TextDecoration.underline)),
+            final bottom = MediaQuery.of(ctx).viewInsets.bottom;
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.only(left: 20, right: 20, top: 20, bottom: bottom + 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
-                    ),
-                    CheckboxListTile(
-                      value: agreePrivacy,
-                      onChanged: (v) => setState(() => agreePrivacy = v!),
-                      title: GestureDetector(
-                        onTap: () => _openWebView(context, privacyUrl, '개인정보처리 취급방침'),
-                        child: const Text('개인정보처리 취급방침 (필수)', style: TextStyle(decoration: TextDecoration.underline)),
+                      const Text('약관 동의', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const SizedBox(height: 20),
+                      CheckboxListTile(
+                        value: agreeTos,
+                        onChanged: (v) => setState(() => agreeTos = v!),
+                        title: GestureDetector(
+                          onTap: () => _openWebView(context, tosUrl, '이용약관'),
+                          child: const Text('이용약관 (필수)', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500)),
+                        ),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        contentPadding: EdgeInsets.zero,
+                        activeColor: const Color(0xFFD4AF37),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (!agreeTos) {
-                          Fluttertoast.showToast(msg: '이용약관에 동의해주세요');
-                          return;
-                        }
-                        if (!agreePrivacy) {
-                          Fluttertoast.showToast(msg: '개인정보처리 취급방침에 동의해주세요');
-                          return;
-                        }
-                        Navigator.of(ctx).pop(true);
-                      },
-                      child: const Text('동의 및 계속'),
-                    ),
-                  ],
+                      CheckboxListTile(
+                        value: agreePrivacy,
+                        onChanged: (v) => setState(() => agreePrivacy = v!),
+                        title: GestureDetector(
+                          onTap: () => _openWebView(context, privacyUrl, '개인정보처리 취급방침'),
+                          child: const Text('개인정보처리 취급방침 (필수)', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500)),
+                        ),
+                        controlAffinity: ListTileControlAffinity.leading,
+                        contentPadding: EdgeInsets.zero,
+                        activeColor: const Color(0xFFD4AF37),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.of(ctx).pop(false),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                side: const BorderSide(color: Colors.grey),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text('취소', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.grey)),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (!agreeTos) {
+                                  Fluttertoast.showToast(msg: '이용약관에 동의해주세요');
+                                  return;
+                                }
+                                if (!agreePrivacy) {
+                                  Fluttertoast.showToast(msg: '개인정보처리 취급방침에 동의해주세요');
+                                  return;
+                                }
+                                Navigator.of(ctx).pop(true);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFD4AF37),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                elevation: 2,
+                              ),
+                              child: const Text('동의 및 계속', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -311,6 +444,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     GestureDetector(
                       onTap: () => _loginWithKakao(context),
                       child: Container(
+                        width: double.infinity,
+                        height: 56,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
@@ -332,6 +467,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    
+                    // Apple login button - iOS only
+                    if (Theme.of(context).platform == TargetPlatform.iOS)
+                      GestureDetector(
+                        onTap: () => _loginWithApple(context),
+                        child: SvgPicture.asset(
+                          'assets/icon/apple_login_button.svg',
+                          width: double.infinity,
+                          height: 56,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     const SizedBox(height: 16),
                     // ID/Password login button
                     TextButton(
@@ -532,6 +680,46 @@ class ButlerLogoPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     canvas.drawPath(smilePath, smilePaint);
+  }
+  
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Custom painter for Apple logo
+class AppleLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.fill;
+
+    // Draw Apple logo (simplified version)
+    final applePath = Path()
+      ..moveTo(size.width * 0.5, size.height * 0.2)
+      ..quadraticBezierTo(size.width * 0.6, size.height * 0.15, size.width * 0.7, size.height * 0.2)
+      ..quadraticBezierTo(size.width * 0.8, size.height * 0.25, size.width * 0.75, size.height * 0.35)
+      ..quadraticBezierTo(size.width * 0.7, size.height * 0.45, size.width * 0.6, size.height * 0.4)
+      ..quadraticBezierTo(size.width * 0.5, size.height * 0.35, size.width * 0.4, size.height * 0.4)
+      ..quadraticBezierTo(size.width * 0.3, size.height * 0.45, size.width * 0.25, size.height * 0.35)
+      ..quadraticBezierTo(size.width * 0.2, size.height * 0.25, size.width * 0.3, size.height * 0.2)
+      ..quadraticBezierTo(size.width * 0.4, size.height * 0.15, size.width * 0.5, size.height * 0.2)
+      ..close();
+    
+    canvas.drawPath(applePath, paint);
+    
+    // Draw apple stem
+    final stemPaint = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
+    
+    canvas.drawLine(
+      Offset(size.width * 0.5, size.height * 0.2),
+      Offset(size.width * 0.5, size.height * 0.15),
+      stemPaint,
+    );
   }
   
   @override
