@@ -105,7 +105,7 @@ class PopularEventCard extends StatelessWidget {
       onTap: () => _openEvent(context),
       child: Container(
         width: 240,
-        height: 260,
+        height: 180,
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -128,7 +128,7 @@ class PopularEventCard extends StatelessWidget {
                 CachedNetworkImage(
                   imageUrl: event.thumbnailUrl,
                   width: double.infinity,
-                  height: 120,
+                  height: 155,
                   fit: BoxFit.cover,
                 ),
                 Positioned(
@@ -156,7 +156,7 @@ class PopularEventCard extends StatelessWidget {
 
             // 정보 영역
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
