@@ -38,6 +38,8 @@ dependencies:
   firebase_messaging: ^15.2.7
   uuid: ^4.4.0
   app_tracking_transparency: ^2.0.4
+  sign_in_with_apple: ^6.1.2
+  flutter_svg: ^2.0.0
 
 
 dev_dependencies:
@@ -54,6 +56,8 @@ flutter:
     - assets/images/butler_logo.png
     - assets/images/kakao_login_button.png
     - assets/transparent.png
+    - assets/icon/apple_login.svg
+    - assets/icon/apple_login_button.svg
   fonts:
     - family: Pretendard
       fonts:
