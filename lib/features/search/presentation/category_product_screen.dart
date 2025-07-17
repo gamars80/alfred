@@ -159,7 +159,7 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
               child: Row(
                 children: [
                   Text(
-                    '$_totalCount개의 검색결과22',
+                    '$_totalCount개의 검색결과',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
