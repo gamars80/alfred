@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:alfred_clean/features/search/presentation/food_search_screen.dart';
 import 'package:alfred_clean/common/widget/ad_banner_widget.dart';
 import 'package:alfred_clean/features/search/presentation/widget/food_sort_dropdown.dart';
@@ -225,12 +227,13 @@ class _FoodIngredientProductScreenState extends State<FoodIngredientProductScree
                         SliverPadding(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           sliver: SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                               maxCrossAxisExtent: 220,
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 12,
                               childAspectRatio: 0.60,
-                              mainAxisExtent: 270,
+                              mainAxisExtent: Platform.isIOS ? 285 : 270,
+
                             ),
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {

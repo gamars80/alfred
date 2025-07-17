@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -795,11 +797,12 @@ class _FoodsHistoryDetailScreenState extends State<FoodsHistoryDetailScreen> {
                           child: GridView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 12,
-                              mainAxisExtent: 220,
+                              mainAxisExtent: Platform.isIOS ? 250 : 250,
+
                             ),
                             itemCount: _history.recipes.length,
                             itemBuilder: (context, index) {
