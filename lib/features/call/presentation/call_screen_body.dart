@@ -254,7 +254,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
             // ====== 패션 탭 ======
             if (selectedFashionTab == 0 && _recentCommands.isNotEmpty)
               _buildSection(
-                title: '최신 패션 명령',
+                title: '최신 인기 패션 명령',
                 children: _recentCommands
                     .map((command) => FashionCommandCard(command: command))
                     .toList(),
@@ -263,7 +263,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
             // ====== 시술성형 탭 ======
             if (selectedFashionTab == 1 && _recentBeautyCommands.isNotEmpty)
               _buildSection(
-                title: '최신 뷰티 명령',
+                title: '최신 인기 뷰티 명령',
                 children: _recentBeautyCommands
                     .map((command) => BeautyCommandCard(command: command))
                     .toList(),
@@ -272,7 +272,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
             // ====== 음식/식자재 탭 ======
             if (selectedFashionTab == 2 && _recentFoodsCommands.isNotEmpty)
               _buildSection(
-                title: '최신 음식 명령',
+                title: '최신 인기 음식 명령',
                 children: _recentFoodsCommands
                     .map((command) => FoodsCommandCard(command: command))
                     .toList(),
@@ -281,7 +281,7 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
             // ====== 뷰티케어 탭 ======
             if (selectedFashionTab == 3 && _recentCareCommands.isNotEmpty)
               _buildSection(
-                title: '최신 뷰티케어 명령',
+                title: '최신 인기 뷰티케어 명령',
                 children: _recentCareCommands
                     .map((command) => CareCommandCard(command: command))
                     .toList(),

@@ -7,6 +7,7 @@ class VoiceCommandInputWidget extends StatefulWidget {
   final VoidCallback onMicPressed;
   final VoidCallback onSubmit;
   final String category;
+  final String? errorMessage;
 
   const VoiceCommandInputWidget({
     Key? key,
@@ -16,6 +17,7 @@ class VoiceCommandInputWidget extends StatefulWidget {
     required this.onMicPressed,
     required this.onSubmit,
     this.category = '',
+    this.errorMessage,
   }) : super(key: key);
 
   @override
@@ -47,80 +49,87 @@ class _VoiceCommandInputWidgetState extends State<VoiceCommandInputWidget> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, -4))],
       ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      padding: const EdgeInsets.only(
+        bottom: 16,
         left: 20,
         right: 20,
         top: 24,
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(promptText, style: const TextStyle(color: Colors.black, fontSize: 14)),
-            const SizedBox(height: 16),
-            TextField(
-              controller: widget.controller,
-              style: const TextStyle(color: Colors.black),
-              minLines: 3,
-              maxLines: 5,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[200],
-                hintText: hintText,
-                hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(promptText, style: const TextStyle(color: Colors.black, fontSize: 14)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: widget.controller,
+            style: const TextStyle(color: Colors.black),
+            minLines: 3,
+            maxLines: 5,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.grey[200],
+              hintText: hintText,
+              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            ),
+          ),
+          if (widget.errorMessage != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, left: 4),
+              child: Text(
+                widget.errorMessage!,
+                style: const TextStyle(color: Colors.red, fontSize: 13),
               ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                TextButton.icon(
-                  onPressed: widget.isListening ? null : widget.onMicPressed,
-                  icon: Icon(Icons.mic, color: widget.isListening ? Colors.red : Colors.deepPurple),
-                  label: Row(
-                    children: [
-                      Text(
-                        widget.isListening ? '듣는 중...' : '음성 인식',
-                        style: TextStyle(
-                          color: widget.isListening ? Colors.red : Colors.deepPurple,
-                          fontWeight: FontWeight.bold,
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              TextButton.icon(
+                onPressed: widget.isListening ? null : widget.onMicPressed,
+                icon: Icon(Icons.mic, color: widget.isListening ? Colors.red : Colors.deepPurple),
+                label: Row(
+                  children: [
+                    Text(
+                      widget.isListening ? '듣는 중...' : '음성 인식',
+                      style: TextStyle(
+                        color: widget.isListening ? Colors.red : Colors.deepPurple,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (widget.isListening) ...[
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
                         ),
                       ),
-                      if (widget.isListening) ...[
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
-                          ),
-                        ),
-                      ],
                     ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: widget.onSubmit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  ],
                 ),
               ),
-              child: const Text('명령하기'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: widget.onSubmit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-          ],
-        ),
+            child: const Text('명령하기'),
+          ),
+        ],
       ),
     );
   }
