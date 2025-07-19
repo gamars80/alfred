@@ -61,6 +61,27 @@ import Speech
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
+  // 카카오 URL 스킴 콜백 처리
+  override func application(
+    _ app: UIApplication,
+    open url: URL,
+    options: [UIApplication.OpenURLOptionsKey : Any] = [:]
+  ) -> Bool {
+    // 카카오 SDK가 URL을 처리할 수 있도록 전달
+    let handled = super.application(app, open: url, options: options)
+    if handled {
+      return true
+    }
+    
+    // 카카오 URL 스킴 처리
+    if let scheme = url.scheme, scheme.hasPrefix("kakao") {
+      print("[iOS] 카카오 URL 스킴 수신: \(url)")
+      return true
+    }
+    
+    return false
+  }
+
   func startSpeechRecognition(result: @escaping FlutterResult) {
     // 권한 확인
     SFSpeechRecognizer.requestAuthorization { authStatus in
