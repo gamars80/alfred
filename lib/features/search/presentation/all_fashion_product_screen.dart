@@ -211,13 +211,13 @@ class _AllFashionProductScreenState extends State<AllFashionProductScreen> {
                             mainAxisSpacing: 16,
                             crossAxisSpacing: 12,
                             childAspectRatio: 0.85,
-                            mainAxisExtent: 255, // 필요시 주석처리
+                            mainAxisExtent: 325, // 카드 높이 줄임
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
                               final productIndex = i + index;
                               if (productIndex >= _products.length || productIndex >= i + 10) return null;
-                              return ProductCard(product: _products[productIndex], cardHeight: cardHeight);
+                              return ProductCard(product: _products[productIndex], cardHeight: 310);
                             },
                             childCount: 10,
                           ),
