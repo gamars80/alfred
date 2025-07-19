@@ -210,7 +210,7 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
                         mainAxisSpacing: 16,
                         crossAxisSpacing: 12,
                         childAspectRatio: 0.60,
-                        mainAxisExtent: 255, // 필요시 주석처리
+                        mainAxisExtent: 325, // 필요시 주석처리
                       ),
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
