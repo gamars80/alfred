@@ -24,11 +24,13 @@ class VoiceCommandBottomSheet {
     required ValueChanged<String?> onAgeChanged,
     required ValueChanged<String> onCategoryChanged,
   }) {
+    final _bottomSheetScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
     String? localGender = selectedGender;
     String? localAge = selectedAge;
     String? localCategory = selectedCategory.isEmpty ? null : selectedCategory;
     bool modalIsListening = false;
     int? remainingCommands;
+    String? localErrorMessage;
 
     return showModalBottomSheet<String>(
       context: context,
@@ -36,66 +38,26 @@ class VoiceCommandBottomSheet {
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
-          // 명령권 조회 API 호출
-          Future<void> fetchRemainingCommands() async {
-            try {
-              final response = await _dio.get('/api/self/command-authority');
-              
-              if (response.statusCode == 200) {
-                final data = response.data;
-                remainingCommands = data['remainingCount'] as int;
-                setModalState(() {});
-              }
-            } on DioException catch (e) {
-              debugPrint('Error fetching remaining commands: ${e.message}');
-            } catch (e) {
-              debugPrint('Error fetching remaining commands: $e');
-            }
-          }
-
-          // 컴포넌트가 처음 빌드될 때 명령권 조회
-          if (remainingCommands == null) {
-            fetchRemainingCommands();
-          }
-
-          // ↓ 네이티브 음성인식을 호출하는 부분
           Future<void> handleMic() async {
             modalIsListening = true;
             setModalState(() {});
-
             try {
               const platform = MethodChannel('com.alfred/voice');
               final result = await platform.invokeMethod<String>('startListening');
-              print('음성인식 결과: '
-                  '${result == null ? 'null' : result.isEmpty ? '빈 문자열' : result}');
               controller.text = result ?? '';
             } catch (e) {
               if (e.toString().contains('PERMISSION_DENIED')) {
                 final shouldOpenSettings = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text(
-                      '마이크 권한 필요',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    content: const Text(
-                      '음성 인식을 위해\n마이크 권한이 필요합니다.',
-                      style: TextStyle(fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
+                    title: const Text('마이크 권한 필요', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    content: const Text('음성 인식을 위해\n마이크 권한이 필요합니다.', style: TextStyle(fontSize: 14), textAlign: TextAlign.center),
                     actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('취소'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('권한 설정하기'),
-                      ),
+                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('취소')),
+                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('권한 설정하기')),
                     ],
                   ),
                 );
-
                 if (shouldOpenSettings == true) {
                   await openAppSettings();
                 }
@@ -107,74 +69,87 @@ class VoiceCommandBottomSheet {
               setModalState(() {});
             }
           }
-
-          return Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFFFDFDFD),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              boxShadow: [
-                BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, -4))
-              ],
-            ),
+          return Padding(
             padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-              left: 20,
-              right: 20,
-              top: 24,
+              bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildCategorySelector(
-                    localCategory,
-                    (v) {
-                      localCategory = v;
-                      onCategoryChanged(v ?? '');
-                      setModalState(() {});
-                    },
-                    remainingCommands,
-                  ),
-                  const SizedBox(height: 16),
-                  if (errorMessage == null)
-                    VoiceCommandInputWidget(
-                      controller: controller,
-                      isListening: modalIsListening,
-                      isLoading: isLoading,
-                      onMicPressed: handleMic, // 네이티브 startListening 호출
-                      onSubmit: () {
-                        final q = controller.text.trim();
-                        if ((localCategory ?? '').isEmpty) {
-                          Fluttertoast.showToast(msg: '카테고리를 먼저 선택하세요');
-                          return;
-                        }
-                        if (q.isEmpty) {
-                          Fluttertoast.showToast(msg: '검색어를 입력해주세요.');
-                          return;
-                        }
-                        Navigator.pop(context, q);
-                      },
-                      category: localCategory ?? '',
-                    )
-                  else
-                    _buildErrorInputs(
-                      errorMessage,
-                      localGender,
-                      localAge,
-                      (v) {
-                        localGender = v;
-                        onGenderChanged(v);
-                        setModalState(() {});
-                      },
-                      (v) {
-                        localAge = v;
-                        onAgeChanged(v);
-                        setModalState(() {});
-                      },
-                      context,
-                      controller,
+            child: SafeArea(
+              child: ScaffoldMessenger(
+                key: _bottomSheetScaffoldMessengerKey,
+                child: SingleChildScrollView(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFDFDFD),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, -4))
+                      ],
                     ),
-                ],
+                    padding: const EdgeInsets.only(
+                      bottom: 16,
+                      left: 20,
+                      right: 20,
+                      top: 24,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildCategorySelector(
+                          localCategory,
+                          (v) {
+                            localCategory = v;
+                            onCategoryChanged(v ?? '');
+                            setModalState(() {});
+                          },
+                          remainingCommands,
+                        ),
+                        const SizedBox(height: 16),
+                        if (errorMessage == null)
+                          VoiceCommandInputWidget(
+                            controller: controller,
+                            isListening: modalIsListening,
+                            isLoading: isLoading,
+                            onMicPressed: handleMic, // 네이티브 startListening 호출
+                            onSubmit: () {
+                              final q = controller.text.trim();
+                              if ((localCategory ?? '').isEmpty) {
+                                setModalState(() {
+                                  localErrorMessage = '카테고리를 먼저 선택하세요';
+                                });
+                                return;
+                              }
+                              if (q.isEmpty) {
+                                Fluttertoast.showToast(msg: '검색어를 입력해주세요.');
+                                return;
+                              }
+                              Navigator.pop(context, q);
+                            },
+                            category: localCategory ?? '',
+                            errorMessage: localErrorMessage,
+                          )
+                        else
+                          _buildErrorInputs(
+                            errorMessage,
+                            localGender,
+                            localAge,
+                            (v) {
+                              localGender = v;
+                              onGenderChanged(v);
+                              setModalState(() {});
+                            },
+                            (v) {
+                              localAge = v;
+                              onAgeChanged(v);
+                              setModalState(() {});
+                            },
+                            context,
+                            controller,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           );
