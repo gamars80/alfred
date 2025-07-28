@@ -1,6 +1,7 @@
 import 'package:alfred_clean/routing/router.dart';
 import 'package:flutter/material.dart';
 import 'features/auth/presentation/kakao_callback_screen.dart';
+import 'common/theme/app_theme.dart';
 
 class AlfredApp extends StatelessWidget {
   const AlfredApp({super.key});
@@ -10,7 +11,7 @@ class AlfredApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Alfred',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
+      theme: AppTheme.lightTheme,
       routerDelegate: router.routerDelegate,
       routeInformationParser: router.routeInformationParser,
       routeInformationProvider: router.routeInformationProvider,

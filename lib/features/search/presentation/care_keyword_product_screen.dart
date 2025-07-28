@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:alfred_clean/common/widget/ad_banner_widget.dart';
 import 'package:alfred_clean/features/search/presentation/widget/care_sort_dropdown.dart';
 import 'package:alfred_clean/features/search/presentation/widget/care_product_card.dart';
@@ -214,12 +216,13 @@ class _CareKeywordProductScreenState extends State<CareKeywordProductScreen> {
                         SliverPadding(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           sliver: SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                               maxCrossAxisExtent: 220,
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 12,
                               childAspectRatio: 0.60,
-                              mainAxisExtent: 290,
+                              // mainAxisExtent: 290,
+                                mainAxisExtent: Platform.isIOS ? 290 : 300
                             ),
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {

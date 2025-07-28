@@ -12,6 +12,7 @@ import '../model/product.dart';
 import '../model/youtube_video.dart';
 import '../service/recommendation_service.dart';
 import 'package:alfred_clean/features/call/presentation/call_screen_body.dart';
+import 'package:go_router/go_router.dart';
 
 class CallScreen extends StatefulWidget {
   const CallScreen({super.key});
@@ -20,7 +21,7 @@ class CallScreen extends StatefulWidget {
   State<CallScreen> createState() => _CallScreenState();
 }
 
-class _CallScreenState extends State<CallScreen> {
+class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   final TextEditingController _commandController = TextEditingController();
 
   bool _isLoading = false;
@@ -43,6 +44,74 @@ class _CallScreenState extends State<CallScreen> {
   List<String>? _choiceItemTypes;
   int _createdAt = 0;
   int _id = 0;
+
+  // 애니메이션 컨트롤러들
+  late AnimationController _pulseController;
+  late AnimationController _floatController;
+  late AnimationController _glowController;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _floatAnimation;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAnimations();
+  }
+
+  void _initializeAnimations() {
+    // 펄스 애니메이션 (알프레드 호출 느낌)
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.1,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
+
+    // 플로팅 애니메이션 (부드러운 움직임)
+    _floatController = AnimationController(
+      duration: const Duration(milliseconds: 3000),
+      vsync: this,
+    );
+    _floatAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _floatController,
+      curve: Curves.easeInOut,
+    ));
+
+    // 글로우 애니메이션 (빛나는 효과)
+    _glowController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _glowAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _glowController,
+      curve: Curves.easeInOut,
+    ));
+
+    // 애니메이션 시작
+    _pulseController.repeat(reverse: true);
+    _floatController.repeat(reverse: true);
+    _glowController.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _floatController.dispose();
+    _glowController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,11 +150,152 @@ class _CallScreenState extends State<CallScreen> {
           floatingActionButton: Builder(
             builder: (context) {
               if (_isLoading) return const SizedBox.shrink();
-              return FloatingActionButton.extended(
-                onPressed: _handleVoiceCommand,
-                label: const Text('알프레드~'),
-                icon: const Icon(Icons.mic),
-                backgroundColor: Colors.deepPurple,
+              return AnimatedBuilder(
+                animation: Listenable.merge([_pulseAnimation, _floatAnimation, _glowAnimation]),
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: Offset(0, _floatAnimation.value * 4 - 2),
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          // 메인 그림자
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                            spreadRadius: 2,
+                          ),
+                          // 글로우 효과
+                          BoxShadow(
+                            color: const Color(0xFF667eea).withOpacity(_glowAnimation.value * 0.3),
+                            blurRadius: 20 + (_glowAnimation.value * 10),
+                            offset: const Offset(0, 0),
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            context.go('/guided-chat');
+                          },
+                          borderRadius: BorderRadius.circular(40),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                // 펄스 애니메이션 배경
+                                Transform.scale(
+                                  scale: _pulseAnimation.value,
+                                  child: Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: const LinearGradient(
+                                        colors: [Colors.white, Color(0xFFf8f9ff)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                // 알프레드 아이콘
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: const DecorationImage(
+                                      image: AssetImage('assets/icon/alfred_icon.png'),
+                                      fit: BoxFit.cover,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // 채팅 버블 효과 (애니메이션)
+                                Positioned(
+                                  right: -2,
+                                  top: -2,
+                                  child: Transform.scale(
+                                    scale: 0.8 + (_pulseAnimation.value * 0.2),
+                                    child: Container(
+                                      width: 16,
+                                      height: 16,
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white, width: 2),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.2),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.chat_bubble,
+                                        size: 8,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // "알프레드" 텍스트 (호버 시 표시)
+                                Positioned(
+                                  bottom: -30,
+                                  child: AnimatedOpacity(
+                                    opacity: _glowAnimation.value * 0.8,
+                                    duration: const Duration(milliseconds: 300),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.7),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Text(
+                                        '알프레드',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),
