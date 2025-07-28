@@ -3,6 +3,24 @@ import 'package:alfred_clean/features/history/model/care_review.dart';
 import 'package:alfred_clean/common/util/date_formatter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+// 🎨 Modern Care Review Card Theme
+class CareReviewCardTheme {
+  static const Color primaryGradientStart = Color(0xFF667eea);
+  static const Color primaryGradientEnd = Color(0xFF764ba2);
+  static const Color secondaryGradientStart = Color(0xFFf093fb);
+  static const Color secondaryGradientEnd = Color(0xFFf5576c);
+  static const Color successGradientStart = Color(0xFF48bb78);
+  static const Color successGradientEnd = Color(0xFF38a169);
+  static const Color cardBackground = Color(0xFFffffff);
+  static const Color textPrimary = Color(0xFF2d3748);
+  static const Color textSecondary = Color(0xFF718096);
+  static const Color accentColor = Color(0xFFed8936);
+  static const Color reviewAccent = Color(0xFF7B1FA2);
+  static const double borderRadius = 16.0;
+  static const double cardElevation = 12.0;
+  static const Duration animationDuration = Duration(milliseconds: 300);
+}
+
 class CareReviewCard extends StatefulWidget {
   final CareReview review;
   final VoidCallback? onTap;
@@ -17,8 +35,34 @@ class CareReviewCard extends StatefulWidget {
   State<CareReviewCard> createState() => _CareReviewCardState();
 }
 
-class _CareReviewCardState extends State<CareReviewCard> {
+class _CareReviewCardState extends State<CareReviewCard> with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
+  
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: CareReviewCardTheme.animationDuration,
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   Future<void> _openReviewInBrowser() async {
     final url = 'https://unpa.me/reviews/${widget.review.reviewId}';
@@ -71,201 +115,350 @@ class _CareReviewCardState extends State<CareReviewCard> {
     
     print('Review ID: ${widget.review.id}, Should show more: $shouldShowMoreButton, Content length: ${processedContent.length}');
     
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: Container(
-        width: 220,
-        // height: 280, // 카드 높이를 줄여서 더 콤팩트하게
-        margin: const EdgeInsets.only(right: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 상품 이미지 (클릭 가능)
-            GestureDetector(
-              onTap: _openReviewInBrowser,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: AspectRatio(
-                  aspectRatio: 1.2, // 이미지 비율을 더 넓게 조정
-                  child: Image.network(
-                    widget.review.thumbnailImageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[100],
-                        child: const Icon(
-                          Icons.image_not_supported,
-                          color: Colors.grey,
-                          size: 24,
-                        ),
-                      );
-                    },
-                  ),
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: GestureDetector(
+              onTap: widget.onTap,
+                              child: Container(
+                  width: 240, // 카드 너비 증가
+                  height: 350, // 카드 높이 증가 (2.2px 오버플로우 해결)
+                  margin: const EdgeInsets.only(right: 16),
+                decoration: BoxDecoration(
+                  color: CareReviewCardTheme.cardBackground,
+                  borderRadius: BorderRadius.circular(CareReviewCardTheme.borderRadius),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-            
-            // 상품 정보 (더 콤팩트하게)
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 브랜드명과 쇼핑몰명
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            widget.review.brandName,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            widget.review.mallName,
-                            style: const TextStyle(
-                              fontSize: 9,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                    
-                    // 상품명
-                    Text(
-                      widget.review.productName,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                        height: 1.1,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 3),
-                    
-                    // 리뷰 내용 (4줄 강제 제한 + 더보기 기능)
-                    Text(
-                      processedContent,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.black54,
-                        height: 1.2,
-                      ),
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    
-                    // 더보기 버튼 (내용이 길 때만 표시)
-                    if (shouldShowMoreButton)
-                      GestureDetector(
-                        onTap: _openReviewInBrowser,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Text(
-                            '더보기',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFF7B1FA2),
-                              fontWeight: FontWeight.w500,
-                            ),
+                    // 상품 이미지 (클릭 가능)
+                    GestureDetector(
+                      onTap: _openReviewInBrowser,
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(CareReviewCardTheme.borderRadius)),
+                        child: AspectRatio(
+                          aspectRatio: 1.1, // 이미지 비율 조정
+                          child: Stack(
+                            children: [
+                              Image.network(
+                                widget.review.thumbnailImageUrl,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.grey.shade200,
+                                          Colors.grey.shade100,
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey,
+                                      size: 32,
+                                    ),
+                                  );
+                                },
+                              ),
+                              // 클릭 오버레이
+                              Positioned.fill(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.transparent,
+                                        Colors.black.withOpacity(0.1),
+                                      ],
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-
-                    const SizedBox(height: 6),
-
-                    // 하단 정보 (더 콤팩트하게)
-                    Row(
-                      children: [
-                        // 좋아요 수
-                        Row(
+                    ),
+                    
+                    // 상품 정보 (더 여유롭게)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(
-                              Icons.favorite_border,
-                              size: 10,
-                              color: Colors.grey,
+                            // 브랜드명과 쇼핑몰명
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          CareReviewCardTheme.textSecondary.withOpacity(0.1),
+                                          CareReviewCardTheme.textSecondary.withOpacity(0.05),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      widget.review.brandName,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: CareReviewCardTheme.textSecondary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        CareReviewCardTheme.primaryGradientStart.withOpacity(0.1),
+                                        CareReviewCardTheme.primaryGradientEnd.withOpacity(0.1),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: CareReviewCardTheme.primaryGradientStart.withOpacity(0.3),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    widget.review.mallName,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: CareReviewCardTheme.primaryGradientStart,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 2),
+                            const SizedBox(height: 8),
+                            
+                            // 상품명
                             Text(
-                              '${widget.review.likeCount}',
+                              widget.review.productName,
                               style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: CareReviewCardTheme.textPrimary,
+                                height: 1.3,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            
+                                                        // 리뷰 내용 (4줄 강제 제한 + 더보기 기능)
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    CareReviewCardTheme.textSecondary.withOpacity(0.05),
+                                    CareReviewCardTheme.textSecondary.withOpacity(0.02),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                processedContent,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: CareReviewCardTheme.textPrimary,
+                                  height: 1.3,
+                                ),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            
+                            // 더보기 버튼 (내용이 길 때만 표시)
+                            if (shouldShowMoreButton)
+                              GestureDetector(
+                                onTap: _openReviewInBrowser,
+                                child: Container(
+                                  margin: const EdgeInsets.only(top: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        CareReviewCardTheme.reviewAccent.withOpacity(0.1),
+                                        CareReviewCardTheme.reviewAccent.withOpacity(0.05),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: CareReviewCardTheme.reviewAccent.withOpacity(0.3),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.open_in_new,
+                                        size: 10,
+                                        color: CareReviewCardTheme.reviewAccent,
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        '더보기',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: CareReviewCardTheme.reviewAccent,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                            const SizedBox(height: 4),
+
+                            // 하단 정보 (더 현대적으로)
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    CareReviewCardTheme.textSecondary.withOpacity(0.05),
+                                    CareReviewCardTheme.textSecondary.withOpacity(0.02),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  // 좋아요 수
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.red.shade400.withOpacity(0.1),
+                                          Colors.red.shade400.withOpacity(0.05),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.favorite_border,
+                                          size: 10,
+                                          color: Colors.red.shade400,
+                                        ),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          '${widget.review.likeCount}',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.red.shade400,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  
+                                  // 조회수
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          CareReviewCardTheme.textSecondary.withOpacity(0.1),
+                                          CareReviewCardTheme.textSecondary.withOpacity(0.05),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.visibility_outlined,
+                                          size: 10,
+                                          color: CareReviewCardTheme.textSecondary,
+                                        ),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          '${widget.review.viewCount}',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: CareReviewCardTheme.textSecondary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  
+                                  // 리뷰 아이콘
+                                  Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          CareReviewCardTheme.reviewAccent.withOpacity(0.2),
+                                          CareReviewCardTheme.reviewAccent.withOpacity(0.1),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: CareReviewCardTheme.reviewAccent.withOpacity(0.3),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      Icons.rate_review_outlined,
+                                      size: 12,
+                                      color: CareReviewCardTheme.reviewAccent,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(width: 8),
-                        
-                        // 조회수
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.visibility_outlined,
-                              size: 10,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              '${widget.review.viewCount}',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        
-                        // 리뷰 아이콘
-                        Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF3E5F5),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Icon(
-                            Icons.rate_review_outlined,
-                            size: 10,
-                            color: Color(0xFF7B1FA2),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 } 

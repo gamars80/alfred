@@ -1,4 +1,4 @@
-// ✅ call_screen.dart (리팩토링된 메인 파일)
+// 🎨 Modern Call Screen - Redesigned with enhanced UI/UX
 import 'package:alfred_clean/features/call/presentation/voice_command_bottom_sheet.dart';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +13,23 @@ import '../model/youtube_video.dart';
 import '../service/recommendation_service.dart';
 import 'package:alfred_clean/features/call/presentation/call_screen_body.dart';
 import 'package:go_router/go_router.dart';
+
+// 🎨 Modern Design Constants
+class CallScreenTheme {
+  static const Color primaryGradientStart = Color(0xFF667eea);
+  static const Color primaryGradientEnd = Color(0xFF764ba2);
+  static const Color secondaryGradientStart = Color(0xFFf093fb);
+  static const Color secondaryGradientEnd = Color(0xFFf5576c);
+  static const Color backgroundGradientStart = Color(0xFF667eea);
+  static const Color backgroundGradientEnd = Color(0xFF764ba2);
+  static const Color cardBackground = Color(0xFFffffff);
+  static const Color textPrimary = Color(0xFF2d3748);
+  static const Color textSecondary = Color(0xFF718096);
+  static const Color accentColor = Color(0xFFed8936);
+  static const double borderRadius = 20.0;
+  static const double cardElevation = 8.0;
+  static const Duration animationDuration = Duration(milliseconds: 300);
+}
 
 class CallScreen extends StatefulWidget {
   const CallScreen({super.key});
@@ -34,7 +51,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   String? _recipeSummary;
   String? _requiredIngredients;
   String? _suggestionReason;
-  String? _reason; // 뷰티케어 추천 이유
+  String? _reason;
 
   Map<String, List<Product>> _categorizedProducts = {};
   List<CommunityPost> _communityPosts = [];
@@ -45,13 +62,15 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   int _createdAt = 0;
   int _id = 0;
 
-  // 애니메이션 컨트롤러들
+  // Enhanced Animation Controllers
   late AnimationController _pulseController;
   late AnimationController _floatController;
   late AnimationController _glowController;
+  late AnimationController _scaleController;
   late Animation<double> _pulseAnimation;
   late Animation<double> _floatAnimation;
   late Animation<double> _glowAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -60,22 +79,22 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
   }
 
   void _initializeAnimations() {
-    // 펄스 애니메이션 (알프레드 호출 느낌)
+    // Enhanced Pulse Animation
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
     _pulseAnimation = Tween<double>(
       begin: 1.0,
-      end: 1.1,
+      end: 1.15,
     ).animate(CurvedAnimation(
       parent: _pulseController,
-      curve: Curves.easeInOut,
+      curve: Curves.elasticOut,
     ));
 
-    // 플로팅 애니메이션 (부드러운 움직임)
+    // Smooth Floating Animation
     _floatController = AnimationController(
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 4000),
       vsync: this,
     );
     _floatAnimation = Tween<double>(
@@ -86,9 +105,9 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
       curve: Curves.easeInOut,
     ));
 
-    // 글로우 애니메이션 (빛나는 효과)
+    // Enhanced Glow Animation
     _glowController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
     _glowAnimation = Tween<double>(
@@ -99,7 +118,20 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
       curve: Curves.easeInOut,
     ));
 
-    // 애니메이션 시작
+    // Scale Animation for Interactions
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(
+      parent: _scaleController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Start Animations
     _pulseController.repeat(reverse: true);
     _floatController.repeat(reverse: true);
     _glowController.repeat(reverse: true);
@@ -110,197 +142,230 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
     _pulseController.dispose();
     _floatController.dispose();
     _glowController.dispose();
+    _scaleController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            title: const Text('추천 결과', style: TextStyle(fontSize: 20, color: Colors.black)),
-            backgroundColor: Colors.white,
-            elevation: 0.5,
-            iconTheme: const IconThemeData(color: Colors.black),
-          ),
-          body: Stack(
-            children: [
-              _isLoading
-                  ? const AlfredLoadingOverlay()
-                  : CallScreenBody(
-                      key: UniqueKey(),
-                      id: _id,
-                      createdAt: _createdAt,
-                      categorizedProducts: _categorizedProducts,
-                      communityPosts: _communityPosts,
-                      events: _events,
-                      hospitals: _hospitals,
-                      youtubeVideos: _youtubeVideos,
-                      selectedCategory: _resultCategory,
-                      recipeSummary: _recipeSummary,
-                      requiredIngredients: _requiredIngredients,
-                      suggestionReason: _suggestionReason,
-                      reason: _reason,
-                    ),
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFf8fafc),
+              Color(0xFFe2e8f0),
+              Color(0xFFcbd5e0),
             ],
           ),
-          floatingActionButton: Builder(
-            builder: (context) {
-              if (_isLoading) return const SizedBox.shrink();
-              return AnimatedBuilder(
-                animation: Listenable.merge([_pulseAnimation, _floatAnimation, _glowAnimation]),
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(0, _floatAnimation.value * 4 - 2),
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: [
-                          // 메인 그림자
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
-                            spreadRadius: 2,
-                          ),
-                          // 글로우 효과
-                          BoxShadow(
-                            color: const Color(0xFF667eea).withOpacity(_glowAnimation.value * 0.3),
-                            blurRadius: 20 + (_glowAnimation.value * 10),
-                            offset: const Offset(0, 0),
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            context.go('/guided-chat');
-                          },
-                          borderRadius: BorderRadius.circular(40),
+        ),
+        child: Stack(
+          children: [
+            _isLoading
+                ? const AlfredLoadingOverlay()
+                : CallScreenBody(
+                    key: UniqueKey(),
+                    id: _id,
+                    createdAt: _createdAt,
+                    categorizedProducts: _categorizedProducts,
+                    communityPosts: _communityPosts,
+                    events: _events,
+                    hospitals: _hospitals,
+                    youtubeVideos: _youtubeVideos,
+                    selectedCategory: _resultCategory,
+                    recipeSummary: _recipeSummary,
+                    requiredIngredients: _requiredIngredients,
+                    suggestionReason: _suggestionReason,
+                    reason: _reason,
+                  ),
+          ],
+        ),
+      ),
+      floatingActionButton: _buildModernFloatingActionButton(),
+    );
+  }
+
+
+
+  Widget _buildModernFloatingActionButton() {
+    if (_isLoading) return const SizedBox.shrink();
+    
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        _pulseAnimation,
+        _floatAnimation,
+        _glowAnimation,
+        _scaleAnimation,
+      ]),
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _floatAnimation.value * 6 - 3),
+          child: Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [
+                    CallScreenTheme.primaryGradientStart,
+                    CallScreenTheme.primaryGradientEnd,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  // Primary Shadow
+                  BoxShadow(
+                    color: CallScreenTheme.primaryGradientStart.withOpacity(0.4),
+                    blurRadius: 20 + (_glowAnimation.value * 15),
+                    offset: const Offset(0, 8),
+                    spreadRadius: 2,
+                  ),
+                  // Glow Effect
+                  BoxShadow(
+                    color: CallScreenTheme.primaryGradientStart.withOpacity(_glowAnimation.value * 0.6),
+                    blurRadius: 30 + (_glowAnimation.value * 20),
+                    offset: const Offset(0, 0),
+                    spreadRadius: 8,
+                  ),
+                  // Ambient Light
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                    spreadRadius: 0,
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    _scaleController.forward().then((_) {
+                      _scaleController.reverse();
+                    });
+                    context.go('/guided-chat');
+                  },
+                  borderRadius: BorderRadius.circular(44),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Pulse Background
+                        Transform.scale(
+                          scale: _pulseAnimation.value,
                           child: Container(
-                            padding: const EdgeInsets.all(16),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                // 펄스 애니메이션 배경
-                                Transform.scale(
-                                  scale: _pulseAnimation.value,
-                                  child: Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient: const LinearGradient(
-                                        colors: [Colors.white, Color(0xFFf8f9ff)],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                // 알프레드 아이콘
-                                Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: const DecorationImage(
-                                      image: AssetImage('assets/icon/alfred_icon.png'),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // 채팅 버블 효과 (애니메이션)
-                                Positioned(
-                                  right: -2,
-                                  top: -2,
-                                  child: Transform.scale(
-                                    scale: 0.8 + (_pulseAnimation.value * 0.2),
-                                    child: Container(
-                                      width: 16,
-                                      height: 16,
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.white, width: 2),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.2),
-                                            blurRadius: 4,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: const Icon(
-                                        Icons.chat_bubble,
-                                        size: 8,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // "알프레드" 텍스트 (호버 시 표시)
-                                Positioned(
-                                  bottom: -30,
-                                  child: AnimatedOpacity(
-                                    opacity: _glowAnimation.value * 0.8,
-                                    duration: const Duration(milliseconds: 300),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.7),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Text(
-                                        '알프레드',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [Colors.white, Color(0xFFf8f9ff)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                      ),
+                        // Alfred Icon
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: const DecorationImage(
+                              image: AssetImage('assets/icon/alfred_icon.png'),
+                              fit: BoxFit.cover,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Chat Bubble Indicator
+                        Positioned(
+                          right: -4,
+                          top: -4,
+                          child: Transform.scale(
+                            scale: 0.8 + (_pulseAnimation.value * 0.3),
+                            child: Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: CallScreenTheme.accentColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.chat_bubble,
+                                size: 10,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Alfred Label
+                        Positioned(
+                          bottom: -35,
+                          child: AnimatedOpacity(
+                            opacity: _glowAnimation.value * 0.9,
+                            duration: const Duration(milliseconds: 300),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Text(
+                                '알프레드',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                },
-              );
-            },
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -341,7 +406,6 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
           _requiredIngredients = data.requiredIngredients?.join(', ');
           _suggestionReason = data.suggestionReason;
           _reason = data.reason;
-          // ── 여기서 성별/연령대 초기화 ───────────────────
           _selectedGender = null;
           _selectedAge = null;
           _errorMessage = null;
@@ -365,7 +429,7 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
             message: '현재 결과는 일부입니다. 히스토리에서 모두 확인하세요 🛍️',
             duration: const Duration(seconds: 3),
             margin: const EdgeInsets.fromLTRB(12, kToolbarHeight + 12, 12, 0),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
             backgroundColor: Colors.black87,
             flushbarPosition: FlushbarPosition.TOP,
             animationDuration: const Duration(milliseconds: 500),
@@ -408,10 +472,12 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
         });
         _commandController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('어떤 물건인지 더 구체적으로 말씀해 주세요! 예: "여성용 여름 반팔 티셔츠" 같이요 😊'),
+          SnackBar(
+            content: const Text('어떤 물건인지 더 구체적으로 말씀해 주세요! 예: "여성용 여름 반팔 티셔츠" 같이요 😊'),
             behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 5),
+            duration: const Duration(seconds: 5),
+            backgroundColor: CallScreenTheme.primaryGradientStart,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
         break;
@@ -421,17 +487,14 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
         final wasShopping = _selectedCategory == '쇼핑';
 
         setState(() {
-          // 쇼핑이었을 때만 카테고리를 '쇼핑'으로 설정 (실제로는 이미 '쇼핑' 상태이므로 유지)
           if (wasShopping) {
             _selectedCategory = '쇼핑';
           }
-          // 시술/성형이었을 땐 _selectedCategory를 그대로 두어야 하므로 별도 처리 없음
           _errorMessage = null;
         });
 
         _commandController.clear();
 
-        // 쇼핑 메시지와 일반 메시지를 분기
         final snackMessage = wasShopping
             ? '주인님 이미 유사한 조건의 상품 추천이 존재 합니다. 24시간 뒤에 새롭게 추천 됩니다. 😊'
             : '주인님 이미 유사한 조건의 추천이 존재 합니다. 24시간 뒤에 새롭게 추천 됩니다. 😊';
@@ -441,6 +504,8 @@ class _CallScreenState extends State<CallScreen> with TickerProviderStateMixin {
             content: Text(snackMessage),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 5),
+            backgroundColor: CallScreenTheme.primaryGradientStart,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
 

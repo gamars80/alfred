@@ -1,4 +1,4 @@
-// lib/features/history/presentation/history_screen.dart
+// 🎨 Modern History Screen - Redesigned with enhanced UI/UX
 import 'package:flutter/material.dart';
 import 'package:alfred_clean/features/history/data/history_repository.dart';
 import 'package:alfred_clean/features/history/model/recommendation_history.dart';
@@ -13,6 +13,27 @@ import 'package:alfred_clean/features/history/presentation/history_detail_screen
 import 'beauty_history_detail_screen.dart';
 import 'foods_history_detail_screen.dart';
 import 'care_history_detail_screen.dart';
+
+// 🎨 Modern Design System
+class HistoryScreenTheme {
+  static const Color primaryGradientStart = Color(0xFF667eea);
+  static const Color primaryGradientEnd = Color(0xFF764ba2);
+  static const Color secondaryGradientStart = Color(0xFFf093fb);
+  static const Color secondaryGradientEnd = Color(0xFFf5576c);
+  static const Color backgroundGradientStart = Color(0xFFf8fafc);
+  static const Color backgroundGradientEnd = Color(0xFFe2e8f0);
+  static const Color cardBackground = Color(0xFFffffff);
+  static const Color textPrimary = Color(0xFF2d3748);
+  static const Color textSecondary = Color(0xFF718096);
+  static const Color accentColor = Color(0xFFed8936);
+  static const Color successColor = Color(0xFF48bb78);
+  static const Color warningColor = Color(0xFFed8936);
+  static const Color errorColor = Color(0xFFf56565);
+  static const double borderRadius = 20.0;
+  static const double cardElevation = 12.0;
+  static const double spacing = 20.0;
+  static const Duration animationDuration = Duration(milliseconds: 300);
+}
 
 class HistoryScreen extends StatefulWidget {
   final int? selectedBeautyTab;
@@ -233,9 +254,9 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
     try {
       final response = await repository.fetchFoodsHistories(limit: _limit);
       setState(() {
-        _foodsHistories = response.histories;
-        _foodsNextPageKey = response.nextPageKey;
-        _hasMoreFoods = (_foodsNextPageKey?.isNotEmpty ?? false);
+        _foodsHistories  = response.histories;
+        _foodsNextPageKey= response.nextPageKey;
+        _hasMoreFoods    = (_foodsNextPageKey?.isNotEmpty ?? false);
       });
     } catch (e) {
       debugPrint('Error loading foods histories: $e');
@@ -274,9 +295,9 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
     try {
       final response = await repository.fetchCareHistories(limit: _limit);
       setState(() {
-        _careHistories = response.histories;
-        _careNextPageKey = response.nextPageKey;
-        _hasMoreCare = (_careNextPageKey?.isNotEmpty ?? false);
+        _careHistories  = response.histories;
+        _careNextPageKey= response.nextPageKey;
+        _hasMoreCare    = (_careNextPageKey?.isNotEmpty ?? false);
       });
     } catch (e) {
       debugPrint('Error loading care histories: $e');
@@ -310,22 +331,6 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
     }
   }
 
-  Widget _buildSkeleton() {
-    return ListView.builder(
-      itemCount: 5,
-      itemBuilder: (_, __) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Container(
-          height: 90,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   void dispose() {
     _tabController.dispose();
@@ -339,64 +344,250 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        centerTitle: true,
-        title: const Text('히스토리',
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 17,
-                fontWeight: FontWeight.bold)),
-        iconTheme: const IconThemeData(color: Colors.black),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Container(
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Color(0xFFE0E0E0),
-                  width: 1.0,
-                ),
-              ),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              indicator: const UnderlineTabIndicator(
-                borderSide: BorderSide(
-                  width: 2.0,
-                  color: Colors.deepPurple,
-                ),
-              ),
-              indicatorSize: TabBarIndicatorSize.label,
-              labelColor: Colors.deepPurple,
-              unselectedLabelColor: Colors.grey,
-              labelStyle: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w600),
-              unselectedLabelStyle: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w400),
-              tabs: const [
-                Tab(text: '패션쇼핑'), 
-                Tab(text: '시술/성형'),
-                Tab(text: '음식/식자재'),
-                Tab(text: '뷰티'),
-              ],
-            ),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              HistoryScreenTheme.backgroundGradientStart,
+              HistoryScreenTheme.backgroundGradientEnd,
+            ],
           ),
         ),
+        child: Column(
+          children: [
+            // Modern Header
+            _buildModernHeader(),
+            // Modern Tab Bar
+            _buildModernTabBar(),
+            // Content
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildShoppingTab(),
+                  _buildCommunityTab(),
+                  _buildFoodsTab(),
+                  _buildCareTab(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        physics: const BouncingScrollPhysics(),
-        children: [
-          _buildShoppingTab(),
-          _buildCommunityTab(),
-          _buildFoodsTab(),
-          _buildCareTab(),
+    );
+  }
+
+  Widget _buildModernHeader() {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: HistoryScreenTheme.spacing, vertical: 16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    HistoryScreenTheme.primaryGradientStart,
+                    HistoryScreenTheme.primaryGradientEnd,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: HistoryScreenTheme.primaryGradientStart.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.history,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '히스토리',
+                    style: TextStyle(
+                      color: HistoryScreenTheme.textPrimary,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '나의 추천 기록을 확인해보세요',
+                    style: TextStyle(
+                      color: HistoryScreenTheme.textSecondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernTabBar() {
+    final tabs = [
+      {'name': '쇼핑', 'icon': Icons.shopping_bag, 'color': const Color(0xFF667eea)},
+      {'name': '시술커뮤니티', 'icon': Icons.face, 'color': const Color(0xFFf093fb)},
+      {'name': '음식/식자재', 'icon': Icons.restaurant, 'color': const Color(0xFFed8936)},
+      {'name': '뷰티', 'icon': Icons.spa, 'color': const Color(0xFF48bb78)},
+    ];
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: HistoryScreenTheme.spacing),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: HistoryScreenTheme.cardBackground,
+        borderRadius: BorderRadius.circular(HistoryScreenTheme.borderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
+      child: Row(
+        children: tabs.asMap().entries.map((entry) {
+          final index = entry.key;
+          final tab = entry.value;
+          final isSelected = _tabController.index == index;
+          
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                _tabController.animateTo(index);
+              },
+              child: AnimatedContainer(
+                duration: HistoryScreenTheme.animationDuration,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                decoration: BoxDecoration(
+                  gradient: isSelected
+                      ? LinearGradient(
+                          colors: [
+                            tab['color'] as Color,
+                            (tab['color'] as Color).withOpacity(0.8),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: isSelected ? null : Colors.transparent,
+                  borderRadius: BorderRadius.circular(HistoryScreenTheme.borderRadius - 4),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: (tab['color'] as Color).withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedContainer(
+                      duration: HistoryScreenTheme.animationDuration,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isSelected 
+                            ? Colors.white.withOpacity(0.2)
+                            : Colors.grey.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        tab['icon'] as IconData,
+                        color: isSelected ? Colors.white : HistoryScreenTheme.textSecondary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      tab['name'] as String,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : HistoryScreenTheme.textSecondary,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildSkeleton() {
+    return ListView.builder(
+      itemCount: 5,
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: HistoryScreenTheme.spacing, vertical: 8),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: HistoryScreenTheme.cardBackground,
+            borderRadius: BorderRadius.circular(HistoryScreenTheme.borderRadius),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 20,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                height: 16,
+                width: 200,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                height: 16,
+                width: 150,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -406,34 +597,31 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
       child: _isInitialLoading
           ? _buildSkeleton()
           : _histories.isEmpty
-          ? const Center(
-        child: Text('히스토리 데이터가 없습니다.',
-            style: TextStyle(fontSize: 16, color: Colors.grey)),
-      )
+          ? _buildEmptyState('쇼핑 히스토리가 없습니다.', Icons.shopping_bag)
           : ListView.builder(
         controller: _shoppingController,
         itemCount: _histories.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, idx) {
           if (idx == _histories.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Center(child: CircularProgressIndicator()),
-            );
+            return _buildLoadingIndicator();
           }
-          return HistoryCard(
-            history: _histories[idx],
-            extractTags: _extractTags,
-            onTap: () async {
-              final updated = await Navigator.push<RecommendationHistory>(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => HistoryDetailScreen(history: _histories[idx]),
-                ),
-              );
-              if (updated != null) {
-                setState(() => _histories[idx] = updated);
-              }
-            },
+          return AnimatedContainer(
+            duration: HistoryScreenTheme.animationDuration,
+            child: HistoryCard(
+              history: _histories[idx],
+              extractTags: _extractTags,
+              onTap: () async {
+                final updated = await Navigator.push<RecommendationHistory>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HistoryDetailScreen(history: _histories[idx]),
+                  ),
+                );
+                if (updated != null) {
+                  setState(() => _histories[idx] = updated);
+                }
+              },
+            ),
           );
         },
       ),
@@ -446,39 +634,36 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
       child: _isBeautyInitialLoading
           ? _buildSkeleton()
           : _beautyHistories.isEmpty
-          ? const Center(
-        child: Text('시술커뮤니티 데이터가 없습니다.',
-            style: TextStyle(fontSize: 16, color: Colors.grey)),
-      )
+          ? _buildEmptyState('시술커뮤니티 히스토리가 없습니다.', Icons.face)
           : ListView.builder(
         controller: _communityController,
         itemCount:
         _beautyHistories.length + (_isBeautyLoadingMore ? 1 : 0),
         itemBuilder: (context, idx) {
           if (idx == _beautyHistories.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Center(child: CircularProgressIndicator()),
-            );
+            return _buildLoadingIndicator();
           }
 
           final history = _beautyHistories[idx];
-          return BeautyHistoryCard(
-            history: history,
-            onTap: () async {
-              final updated = await Navigator.push<BeautyHistory>(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BeautyHistoryDetailScreen(history: history), // ✅ 올바른 화면과 객체 전달
-                ),
-              );
-              if (updated != null) {
-                setState(() {
-                  final idx = _beautyHistories.indexWhere((h) => h.createdAt == updated.createdAt);
-                  if (idx != -1) _beautyHistories[idx] = updated;
-                });
-              }
-            },
+          return AnimatedContainer(
+            duration: HistoryScreenTheme.animationDuration,
+            child: BeautyHistoryCard(
+              history: history,
+              onTap: () async {
+                final updated = await Navigator.push<BeautyHistory>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BeautyHistoryDetailScreen(history: history),
+                  ),
+                );
+                if (updated != null) {
+                  setState(() {
+                    final idx = _beautyHistories.indexWhere((h) => h.createdAt == updated.createdAt);
+                    if (idx != -1) _beautyHistories[idx] = updated;
+                  });
+                }
+              },
+            ),
           );
         },
       ),
@@ -491,38 +676,35 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
       child: _isFoodsInitialLoading
           ? _buildSkeleton()
           : _foodsHistories.isEmpty
-          ? const Center(
-        child: Text('음식/식자재 히스토리가 없습니다.',
-            style: TextStyle(fontSize: 16, color: Colors.grey)),
-      )
+          ? _buildEmptyState('음식/식자재 히스토리가 없습니다.', Icons.restaurant)
           : ListView.builder(
         controller: _foodController,
         itemCount: _foodsHistories.length + (_isFoodsLoadingMore ? 1 : 0),
         itemBuilder: (context, idx) {
           if (idx == _foodsHistories.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Center(child: CircularProgressIndicator()),
-            );
+            return _buildLoadingIndicator();
           }
 
           final history = _foodsHistories[idx];
-          return FoodsHistoryCard(
-            history: history,
-            onTap: () async {
-              final updated = await Navigator.push<FoodsHistory>(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => FoodsHistoryDetailScreen(history: history),
-                ),
-              );
-              if (updated != null) {
-                setState(() {
-                  final idx = _foodsHistories.indexWhere((h) => h.id == updated.id);
-                  if (idx != -1) _foodsHistories[idx] = updated;
-                });
-              }
-            },
+          return AnimatedContainer(
+            duration: HistoryScreenTheme.animationDuration,
+            child: FoodsHistoryCard(
+              history: history,
+              onTap: () async {
+                final updated = await Navigator.push<FoodsHistory>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FoodsHistoryDetailScreen(history: history),
+                  ),
+                );
+                if (updated != null) {
+                  setState(() {
+                    final idx = _foodsHistories.indexWhere((h) => h.id == updated.id);
+                    if (idx != -1) _foodsHistories[idx] = updated;
+                  });
+                }
+              },
+            ),
           );
         },
       ),
@@ -535,40 +717,92 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
       child: _isCareInitialLoading
           ? _buildSkeleton()
           : _careHistories.isEmpty
-          ? const Center(
-        child: Text('뷰티 히스토리가 없습니다.',
-            style: TextStyle(fontSize: 16, color: Colors.grey)),
-      )
+          ? _buildEmptyState('뷰티 히스토리가 없습니다.', Icons.spa)
           : ListView.builder(
         controller: _careController,
         itemCount: _careHistories.length + (_isCareLoadingMore ? 1 : 0),
         itemBuilder: (context, idx) {
           if (idx == _careHistories.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Center(child: CircularProgressIndicator()),
-            );
+            return _buildLoadingIndicator();
           }
 
           final history = _careHistories[idx];
-          return CareHistoryCard(
-            history: history,
-            onTap: () async {
-              final updated = await Navigator.push<CareHistory>(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CareHistoryDetailScreen(history: history),
-                ),
-              );
-              if (updated != null) {
-                setState(() {
-                  final idx = _careHistories.indexWhere((h) => h.id == updated.id);
-                  if (idx != -1) _careHistories[idx] = updated;
-                });
-              }
-            },
+          return AnimatedContainer(
+            duration: HistoryScreenTheme.animationDuration,
+            child: CareHistoryCard(
+              history: history,
+              onTap: () async {
+                final updated = await Navigator.push<CareHistory>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CareHistoryDetailScreen(history: history),
+                  ),
+                );
+                if (updated != null) {
+                  setState(() {
+                    final idx = _careHistories.indexWhere((h) => h.id == updated.id);
+                    if (idx != -1) _careHistories[idx] = updated;
+                  });
+                }
+              },
+            ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String message, IconData icon) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  HistoryScreenTheme.primaryGradientStart,
+                  HistoryScreenTheme.primaryGradientEnd,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 48,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            message,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: HistoryScreenTheme.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '새로운 추천을 받아보세요!',
+            style: TextStyle(
+              fontSize: 14,
+              color: HistoryScreenTheme.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(HistoryScreenTheme.primaryGradientStart),
+        ),
       ),
     );
   }

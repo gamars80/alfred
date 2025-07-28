@@ -329,7 +329,7 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
                               mainAxisSpacing: 12,
                               crossAxisSpacing: 12,
                               // mainAxisExtent: 280,
-                                mainAxisExtent: Platform.isIOS ? 290 : 260
+                                mainAxisExtent: Platform.isIOS ? 350 : 355
                             ),
                             itemCount: _filteredRecommendations.length,
                             itemBuilder: (context, index) {
@@ -659,7 +659,7 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
               },
             ),
           ),
-          const SizedBox(height: 20), // 하단 여백
+          const SizedBox(height: 24), // 하단 여백 증가
         ],
       ),
     );
@@ -673,7 +673,7 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
         children: [
           // 섹션 제목
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             child: Row(
               children: [
                 const Icon(Icons.rate_review_outlined, size: 20, color: Colors.black87),
@@ -691,7 +691,7 @@ class _CareHistoryDetailScreenState extends State<CareHistoryDetailScreen> {
           ),
           // 리뷰 카드들 (가로 스크롤)
           SizedBox(
-            height: 365, // 카드 높이를 더 늘려서 오버플로우 방지
+            height: 450, // 섹션 전체 높이 증가 (2.2px 오버플로우 해결)
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
