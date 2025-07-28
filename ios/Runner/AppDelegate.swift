@@ -11,7 +11,7 @@ import Speech
   var recognitionTask: SFSpeechRecognitionTask?
   var silenceTimer: Timer?
   var lastSpeechTime: Date?
-  let silenceTimeout: TimeInterval = 4.5
+  let silenceTimeout: TimeInterval = 3.5
   var resultCallback: FlutterResult?
   var alreadyReturned = false
   var lastTranscription: String = ""
@@ -146,7 +146,7 @@ import Speech
       recognitionRequest.shouldReportPartialResults = true
 
       // 침묵 타이머 시작
-      self.startSilenceTimer(result: result)
+      self.startSilenceTimer()
 
       self.recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
         guard let self = self else { return }
@@ -155,15 +155,21 @@ import Speech
           print("[iOS] 음성인식 중간 결과: \(transcript)")
           self.lastTranscription = transcript
           self.lastSpeechTime = Date()
+          // isFinal이 true여도 타이머를 재시작해서 더 말할 수 있도록 함
           if recognitionResult.isFinal {
-            print("[iOS] 음성인식 최종 결과: \(transcript)")
-            self.stopRecognitionSession()
-            self.returnResultOnce(transcript)
+            print("[iOS] 음성인식 최종 결과 수신, 타이머 재시작: \(transcript)")
+            self.startSilenceTimer()
           }
         } else if let error = error {
           print("[iOS] 음성인식 에러: \(error.localizedDescription)")
-          self.stopRecognitionSession()
-          self.returnErrorOnce(code: "RECOGNITION_ERROR", message: error.localizedDescription)
+          // 에러가 발생해도 부분 결과가 있으면 타이머 재시작
+          if !self.lastTranscription.isEmpty {
+            print("[iOS] 부분 결과가 있으므로 타이머 재시작")
+            self.startSilenceTimer()
+          } else {
+            self.stopRecognitionSession()
+            self.returnErrorOnce(code: "RECOGNITION_ERROR", message: error.localizedDescription)
+          }
         }
         // 침묵 타임아웃이 발생했고, isFinal 콜백이 오지 않은 경우 fallback
         if self.silenceTimeoutFired, !self.alreadyReturned {
@@ -188,10 +194,10 @@ import Speech
     }
   }
 
-  func startSilenceTimer(result: @escaping FlutterResult) {
+  func startSilenceTimer() {
     self.silenceTimer?.invalidate()
     self.silenceTimer = Timer.scheduledTimer(withTimeInterval: self.silenceTimeout, repeats: false) { _ in
-      print("[iOS] 침묵 타임아웃 발생, recognitionRequest.endAudio() 호출")
+      print("[iOS] 3.5초 침묵 타임아웃 발생, recognitionRequest.endAudio() 호출")
       self.silenceTimeoutFired = true
       self.recognitionRequest?.endAudio()
     }

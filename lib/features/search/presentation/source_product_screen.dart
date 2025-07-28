@@ -136,7 +136,7 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
     debugPrint('SourceProductScreen - build called, products length: ${_products.length}');
     // 동적으로 카드 높이 계산: 카드 너비의 1.25배
     final double gridWidth = (MediaQuery.of(context).size.width - 16 * 2 - 12) / 2; // 패딩, crossAxisSpacing 반영
-    final double cardHeight = gridWidth * 1.85;
+    final double cardHeight = gridWidth * 2.38;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

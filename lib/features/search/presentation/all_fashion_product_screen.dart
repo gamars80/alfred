@@ -211,7 +211,7 @@ class _AllFashionProductScreenState extends State<AllFashionProductScreen> {
                             mainAxisSpacing: 16,
                             crossAxisSpacing: 12,
                             childAspectRatio: 0.85,
-                            mainAxisExtent: 325, // 카드 높이 줄임
+                            mainAxisExtent: 330, // 카드 높이 줄임
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {

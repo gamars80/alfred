@@ -232,7 +232,7 @@ class _FoodIngredientProductScreenState extends State<FoodIngredientProductScree
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 12,
                               childAspectRatio: 0.60,
-                              mainAxisExtent: Platform.isIOS ? 285 : 270,
+                              mainAxisExtent: Platform.isIOS ? 285 : 300,
 
                             ),
                             delegate: SliverChildBuilderDelegate(

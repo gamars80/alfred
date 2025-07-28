@@ -267,7 +267,7 @@ class _WeeklyTopKeywordSectionState extends State<WeeklyTopKeywordSection> with 
           if (maxCount < 1) maxCount = 1;
         }
         final int maxVisible = 5;
-        final double rowHeight = 36;
+        final double rowHeight = 45;
         final double minHeight = 48;
         final double height = (maxCount > maxVisible ? maxVisible : maxCount) * rowHeight;
         return SizedBox(

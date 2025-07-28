@@ -224,6 +224,8 @@ class _SignupScreenState extends State<SignupScreen> {
                               controller: _idController,
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFF1A1A1A),
                                 floatingLabelBehavior: FloatingLabelBehavior.always,
                                 labelText: '아이디',
                                 labelStyle: TextStyle(
@@ -236,6 +238,9 @@ class _SignupScreenState extends State<SignupScreen> {
                                   fontSize: 12,
                                 ),
                                 border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 isDense: true,
                               ),
@@ -251,6 +256,8 @@ class _SignupScreenState extends State<SignupScreen> {
                               controller: _passwordController,
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFF1A1A1A),
                                 floatingLabelBehavior: FloatingLabelBehavior.always,
                                 labelText: '비밀번호',
                                 labelStyle: TextStyle(
@@ -263,6 +270,9 @@ class _SignupScreenState extends State<SignupScreen> {
                                   fontSize: 12,
                                 ),
                                 border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 isDense: true,
                                 suffixIcon: IconButton(
@@ -287,6 +297,8 @@ class _SignupScreenState extends State<SignupScreen> {
                               controller: _passwordConfirmController,
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFF1A1A1A),
                                 floatingLabelBehavior: FloatingLabelBehavior.always,
                                 labelText: '비밀번호 확인',
                                 labelStyle: TextStyle(
@@ -299,6 +311,9 @@ class _SignupScreenState extends State<SignupScreen> {
                                   fontSize: 12,
                                 ),
                                 border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 isDense: true,
                                 suffixIcon: IconButton(

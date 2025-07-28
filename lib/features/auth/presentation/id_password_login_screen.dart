@@ -26,55 +26,99 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
   }
 
   String? _validateId(String? value) {
+    debugPrint('🔐 [검증] 아이디 검증 시작: "$value"');
     if (value == null || value.isEmpty) {
+      debugPrint('🔐 [검증] 아이디 검증 실패: 빈 값');
       return '아이디를 입력해주세요';
     }
     if (value.length >= 10) {
+      debugPrint('🔐 [검증] 아이디 검증 실패: 길이 ${value.length} >= 10');
       return '아이디는 10자 미만이어야 합니다';
     }
     if (!RegExp(r'^[a-z0-9]+$').hasMatch(value)) {
+      debugPrint('🔐 [검증] 아이디 검증 실패: 영문 소문자와 숫자만 가능');
       return '아이디는 영문 소문자와 숫자만 가능합니다';
     }
+    debugPrint('🔐 [검증] 아이디 검증 통과');
     return null;
   }
 
   String? _validatePassword(String? value) {
+    debugPrint('🔐 [검증] 비밀번호 검증 시작: 길이 ${value?.length ?? 0}');
     if (value == null || value.isEmpty) {
+      debugPrint('🔐 [검증] 비밀번호 검증 실패: 빈 값');
       return '비밀번호를 입력해주세요';
     }
     if (value.length >= 15) {
+      debugPrint('🔐 [검증] 비밀번호 검증 실패: 길이 ${value.length} >= 15');
       return '비밀번호는 15자 미만이어야 합니다';
     }
     if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$').hasMatch(value)) {
+      debugPrint('🔐 [검증] 비밀번호 검증 실패: 영문, 숫자, 특수문자 포함 필요');
       return '비밀번호는 영문, 숫자, 특수문자를 모두 포함해야 합니다';
     }
+    debugPrint('🔐 [검증] 비밀번호 검증 통과');
     return null;
   }
 
   Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
+    debugPrint('🔐 [로그인] 시작');
+    debugPrint('🔐 [로그인] 아이디: ${_idController.text}');
+    debugPrint('🔐 [로그인] 비밀번호 길이: ${_passwordController.text.length}');
+    
+    if (!_formKey.currentState!.validate()) {
+      debugPrint('🔐 [로그인] 폼 검증 실패');
+      return;
+    }
+    debugPrint('🔐 [로그인] 폼 검증 통과');
 
     setState(() => _isLoading = true);
+    debugPrint('🔐 [로그인] 로딩 상태 설정 완료');
 
     try {
+      debugPrint('🔐 [로그인] API 호출 시작');
       final loginResp = await my_auth.AuthApi.loginWithIdPassword(
         loginId: _idController.text,
         password: _passwordController.text,
       );
+      debugPrint('🔐 [로그인] API 호출 완료');
+      debugPrint('🔐 [로그인] 응답: needSignup=${loginResp.needSignup}, token=${loginResp.token != null ? "있음" : "없음"}');
 
       if (loginResp.needSignup) {
+        debugPrint('🔐 [로그인] 회원가입 필요');
         Fluttertoast.showToast(msg: '회원가입을 먼저 해주세요');
         return;
       }
 
       if (loginResp.token != null) {
+        debugPrint('🔐 [로그인] 토큰 저장 시작');
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('accessToken', loginResp.token!);
-        if (mounted) context.go('/main');
+        debugPrint('🔐 [로그인] 토큰 저장 완료');
+        if (mounted) {
+          debugPrint('🔐 [로그인] 메인 화면으로 이동');
+          context.go('/main');
+        }
+      } else {
+        debugPrint('🔐 [로그인] 토큰이 null');
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: '로그인에 실패했습니다');
+      debugPrint('🔐 [로그인] 에러 발생: $e');
+      debugPrint('🔐 [로그인] 에러 타입: ${e.runtimeType}');
+      
+      // 구체적인 에러 메시지 표시
+      String errorMessage = '로그인에 실패했습니다';
+      if (e.toString().contains('Invalid password')) {
+        errorMessage = '비밀번호가 올바르지 않습니다';
+      } else if (e.toString().contains('User not found')) {
+        errorMessage = '존재하지 않는 계정입니다';
+      } else if (e.toString().contains('Account locked')) {
+        errorMessage = '계정이 잠겨있습니다';
+      }
+      
+      Fluttertoast.showToast(msg: errorMessage);
     } finally {
+      debugPrint('🔐 [로그인] finally 블록 실행');
       setState(() => _isLoading = false);
     }
   }
@@ -93,7 +137,7 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: Container(
+        body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -173,6 +217,8 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
                               controller: _idController,
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFF1A1A1A),
                                 floatingLabelBehavior: FloatingLabelBehavior.always,
                                 labelText: '아이디',
                                 labelStyle: TextStyle(
@@ -185,6 +231,9 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
                                   fontSize: 12,
                                 ),
                                 border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 isDense: true,
                               ),
@@ -200,6 +249,8 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
                               controller: _passwordController,
                               style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFF1A1A1A),
                                 floatingLabelBehavior: FloatingLabelBehavior.always,
                                 labelText: '비밀번호',
                                 labelStyle: TextStyle(
@@ -212,6 +263,9 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
                                   fontSize: 12,
                                 ),
                                 border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 isDense: true,
                                 suffixIcon: IconButton(

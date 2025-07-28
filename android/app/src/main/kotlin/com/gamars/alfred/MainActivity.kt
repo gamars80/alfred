@@ -33,7 +33,7 @@ class MainActivity : FlutterActivity() {
     private var partialTextBuffer: String = ""
     private var isUserSpeaking = false
 
-    // 침묵 타이머
+    // 침묵 타이머 (3.5초로 조정)
     private val silenceTimeout = 3500L
     private val silenceHandler = Handler(Looper.getMainLooper())
     private val silenceRunnable = Runnable {
@@ -183,14 +183,22 @@ class MainActivity : FlutterActivity() {
 
             override fun onBufferReceived(buffer: ByteArray?) {}
             override fun onEndOfSpeech() {
-                Log.d("Voice", "onEndOfSpeech: 말하는 끝 감지")
+                Log.d("Voice", "onEndOfSpeech: 말하는 끝 감지, 타이머 재시작")
+                // 말하는 끝을 감지했지만 더 말할 수 있도록 타이머 재시작
+                silenceHandler.removeCallbacks(silenceRunnable)
+                silenceHandler.postDelayed(silenceRunnable, silenceTimeout)
             }
 
             override fun onError(error: Int) {
                 Log.e("Voice", "에러 발생: $error")
                 silenceHandler.removeCallbacks(silenceRunnable)
-                if (!hasResponded) {
-                    resultHandler?.success(if (partialTextBuffer.isNotEmpty()) partialTextBuffer else "")
+                // 에러가 발생해도 부분 결과가 있으면 타이머를 다시 시작
+                if (partialTextBuffer.isNotEmpty()) {
+                    Log.d("Voice", "부분 결과가 있으므로 타이머 재시작")
+                    silenceHandler.postDelayed(silenceRunnable, silenceTimeout)
+                } else if (!hasResponded) {
+                    Log.d("Voice", "부분 결과가 없으므로 빈 결과 반환")
+                    resultHandler?.success("")
                     hasResponded = true
                 }
             }
