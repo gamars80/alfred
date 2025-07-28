@@ -136,53 +136,73 @@ class _CallScreenBodyState extends State<CallScreenBody> with TickerProviderStat
 
   Future<void> _loadRecentCommands() async {
     if (_isLoadingCommands) return;
+    if (!mounted) return;
     setState(() => _isLoadingCommands = true);
     try {
       final commands = await ProductApi().fetchRecentFashionCommands();
-      setState(() => _recentCommands = commands);
+      if (mounted) {
+        setState(() => _recentCommands = commands);
+      }
     } catch (e) {
       debugPrint('❌ Failed to load recent commands: $e');
     } finally {
-      setState(() => _isLoadingCommands = false);
+      if (mounted) {
+        setState(() => _isLoadingCommands = false);
+      }
     }
   }
 
   Future<void> _loadRecentBeautyCommands() async {
     if (_isLoadingBeautyCommands) return;
+    if (!mounted) return;
     setState(() => _isLoadingBeautyCommands = true);
     try {
       final beautyCommands = await BeautyApi().fetchRecentBeautyCommands(limit: 10);
-      setState(() => _recentBeautyCommands = beautyCommands);
+      if (mounted) {
+        setState(() => _recentBeautyCommands = beautyCommands);
+      }
     } catch (e) {
       debugPrint('❌ Failed to load recent beauty commands: $e');
     } finally {
-      setState(() => _isLoadingBeautyCommands = false);
+      if (mounted) {
+        setState(() => _isLoadingBeautyCommands = false);
+      }
     }
   }
 
   Future<void> _loadRecentFoodsCommands() async {
     if (_isLoadingFoodsCommands) return;
+    if (!mounted) return;
     setState(() => _isLoadingFoodsCommands = true);
     try {
       final commands = await FoodApi().fetchRecentFoodsCommands();
-      setState(() => _recentFoodsCommands = commands);
+      if (mounted) {
+        setState(() => _recentFoodsCommands = commands);
+      }
     } catch (e) {
       debugPrint('❌ Failed to load recent foods commands: $e');
     } finally {
-      setState(() => _isLoadingFoodsCommands = false);
+      if (mounted) {
+        setState(() => _isLoadingFoodsCommands = false);
+      }
     }
   }
 
   Future<void> _loadRecentCareCommands() async {
     if (_isLoadingCareCommands) return;
+    if (!mounted) return;
     setState(() => _isLoadingCareCommands = true);
     try {
       final commands = await CareApi().fetchRecentCareCommands();
-      setState(() => _recentCareCommands = commands);
+      if (mounted) {
+        setState(() => _recentCareCommands = commands);
+      }
     } catch (e) {
       debugPrint('❌ Failed to load recent care commands: $e');
     } finally {
-      setState(() => _isLoadingCareCommands = false);
+      if (mounted) {
+        setState(() => _isLoadingCareCommands = false);
+      }
     }
   }
 
