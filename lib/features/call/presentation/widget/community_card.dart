@@ -6,27 +6,62 @@ import '../../model/community_post.dart';
 import 'gallery_page.dart';
 import 'dart:ui';
 
+// 🎨 Modern Community Card Theme
+class CommunityCardTheme {
+  static const Color primaryGradientStart = Color(0xFF667eea);
+  static const Color primaryGradientEnd = Color(0xFF764ba2);
+  static const Color secondaryGradientStart = Color(0xFFf093fb);
+  static const Color secondaryGradientEnd = Color(0xFFf5576c);
+  static const Color cardBackground = Color(0xFFffffff);
+  static const Color textPrimary = Color(0xFF2d3748);
+  static const Color textSecondary = Color(0xFF718096);
+  static const Color accentColor = Color(0xFFed8936);
+  static const Color successColor = Color(0xFF48bb78);
+  static const Color warningColor = Color(0xFFed8936);
+  static const Color errorColor = Color(0xFFf56565);
+  static const double borderRadius = 20.0;
+  static const double cardElevation = 12.0;
+  static const Duration animationDuration = Duration(milliseconds: 300);
+}
+
 class _IconText extends StatelessWidget {
   final IconData icon;
   final int count;
 
-  const _IconText({required this.icon, required this.count});
+  _IconText({required this.icon, required this.count});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: const Color(0xFFE091B3)),
-        const SizedBox(width: 6),
-        Text(
-          count.toString(),
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF4A4A4A),
-          ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            CommunityCardTheme.primaryGradientStart.withOpacity(0.1),
+            CommunityCardTheme.primaryGradientEnd.withOpacity(0.1),
+          ],
         ),
-      ],
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: CommunityCardTheme.primaryGradientStart.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: CommunityCardTheme.primaryGradientStart),
+          const SizedBox(width: 6),
+          Text(
+            count.toString(),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: CommunityCardTheme.textPrimary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -52,18 +87,42 @@ class CommunityCard extends StatefulWidget {
   State<CommunityCard> createState() => _CommunityCardState();
 }
 
-class _CommunityCardState extends State<CommunityCard> {
+class _CommunityCardState extends State<CommunityCard>
+    with SingleTickerProviderStateMixin {
   static const _limit = 100;
   late bool isLiked;
   late CommunityPost _post;
   final LikeRepository _likeRepo = LikeRepository();
+  
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
     isLiked = widget.initialLiked;
     _post = widget.post;
+    
+    _animationController = AnimationController(
+      duration: CommunityCardTheme.animationDuration,
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _animationController.forward();
+    
     debugPrint('🕒 CommunityCard.init: historyCreatedAt=${widget.historyCreatedAt}, initialLiked=${widget.initialLiked}');
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -72,188 +131,294 @@ class _CommunityCardState extends State<CommunityCard> {
     final isLong = content.length > _limit;
     final displayText = isLong ? content.substring(0, _limit) + '...' : content;
 
-    return RepaintBoundary(
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              displayText,
-              style: const TextStyle(
-                fontSize: 11,
-                height: 1.5,
-                color: Color(0xFF2D2D2D),
-              ),
-            ),
-            if (isLong) ...[
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () async {
-                      final baseUrl = widget.source == '강남언니'
-                          ? 'https://www.gangnamunni.com/community/'
-                          : 'https://web.babitalk.com/community/';
-                      final uri = Uri.parse('$baseUrl${_post.id}');
-
-                      if (await canLaunchUrl(uri)) {
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('URL을 열 수 없습니다.')),
-                        );
-                      }
-                    },
-                    child: const Text(
-                      '[더보기]',
-                      style: TextStyle(
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: RepaintBoundary(
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: CommunityCardTheme.cardBackground,
+                  borderRadius: BorderRadius.circular(CommunityCardTheme.borderRadius),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      displayText,
+                      style: const TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFE091B3),
-                        decoration: TextDecoration.underline,
+                        height: 1.5,
+                        color: CommunityCardTheme.textPrimary,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: _toggleLike,
-                    child: Row(
-                      children: [
-                        Icon(
-                          isLiked ? Icons.favorite : Icons.favorite_border,
-                          size: 24,
-                          color: isLiked ? const Color(0xFFFF4D6D) : Colors.grey,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            if (_post.photoUrls.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 96,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _post.photoUrls.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (_, i) {
-                    final url = _post.photoUrls[i];
-                    final showBlur = i > 0 && _post.photoUrls.length > 1;
-
-                    return GestureDetector(
-                      onTap: () async {
-                        if (showBlur) {
-                          final uri = Uri.parse('https://www.gangnamunni.com/community/${_post.id}');
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri, mode: LaunchMode.externalApplication);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('URL을 열 수 없습니다.')),
-                            );
-                          }
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => GalleryPage(
-                                images: _post.photoUrls,
-                                initialIndex: i,
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      child: Stack(
+                    if (isLong) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: ColorFiltered(
-                              colorFilter: showBlur
-                                  ? ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken)
-                                  : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
-                              child: ImageFiltered(
-                                imageFilter: showBlur
-                                    ? ImageFilter.blur(sigmaX: 6, sigmaY: 6)
-                                    : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                                child: CachedNetworkImage(
-                                  imageUrl: url,
-                                  width: 96,
-                                  height: 96,
-                                  fit: BoxFit.cover,
-                                  fadeInDuration: const Duration(milliseconds: 200),
-                                  memCacheWidth: 192,
-                                  errorWidget: (context, url, error) => Container(
-                                    color: Colors.grey[200],
-                                    child: const Icon(Icons.error),
+                          GestureDetector(
+                            onTap: () async {
+                              final baseUrl = widget.source == '강남언니'
+                                  ? 'https://www.gangnamunni.com/community/'
+                                  : 'https://web.babitalk.com/community/';
+                              final uri = Uri.parse('$baseUrl${_post.id}');
+
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('URL을 열 수 없습니다.')),
+                                );
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    CommunityCardTheme.secondaryGradientStart,
+                                    CommunityCardTheme.secondaryGradientEnd,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: CommunityCardTheme.secondaryGradientStart.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
                                   ),
+                                ],
+                              ),
+                              child: const Text(
+                                '[더보기]',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
                           ),
-                          if (showBlur)
-                            const Positioned.fill(
-                              child: Center(
-                                child: Text(
-                                  'Click',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    shadows: [
-                                      Shadow(
-                                        color: Colors.black54,
-                                        offset: Offset(1, 1),
-                                        blurRadius: 2,
-                                      )
+                          GestureDetector(
+                            onTap: _toggleLike,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: isLiked
+                                      ? [Colors.red.shade400, Colors.red.shade600]
+                                      : [Colors.grey.shade300, Colors.grey.shade400],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (isLiked ? Colors.red : Colors.grey).withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Icon(
+                                  isLiked ? Icons.favorite : Icons.favorite_border,
+                                  size: 20,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (_post.photoUrls.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 120,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _post.photoUrls.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 12),
+                          itemBuilder: (_, i) {
+                            final url = _post.photoUrls[i];
+                            final showBlur = i > 0 && _post.photoUrls.length > 1;
+
+                            return GestureDetector(
+                              onTap: () async {
+                                if (showBlur) {
+                                  final baseUrl = widget.source == '강남언니'
+                                      ? 'https://www.gangnamunni.com/community/'
+                                      : 'https://web.babitalk.com/community/';
+                                  final uri = Uri.parse('$baseUrl${_post.id}');
+                                  if (await canLaunchUrl(uri)) {
+                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('URL을 열 수 없습니다.')),
+                                    );
+                                  }
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => GalleryPage(
+                                        images: _post.photoUrls,
+                                        initialIndex: i,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Stack(
+                                    children: [
+                                      ColorFiltered(
+                                        colorFilter: showBlur
+                                            ? ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken)
+                                            : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+                                        child: ImageFiltered(
+                                          imageFilter: showBlur
+                                              ? ImageFilter.blur(sigmaX: 6, sigmaY: 6)
+                                              : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                                          child: CachedNetworkImage(
+                                            imageUrl: url,
+                                            width: 120,
+                                            height: 120,
+                                            fit: BoxFit.cover,
+                                            fadeInDuration: const Duration(milliseconds: 200),
+                                            memCacheWidth: 240,
+                                            placeholder: (context, url) => Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Colors.grey.shade200,
+                                                    Colors.grey.shade100,
+                                                  ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
+                                              ),
+                                            ),
+                                            errorWidget: (context, url, error) => Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Colors.grey.shade300,
+                                                    Colors.grey.shade200,
+                                                  ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
+                                              ),
+                                              child: const Icon(
+                                                Icons.error,
+                                                color: Colors.grey,
+                                                size: 32,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      if (showBlur)
+                                        Positioned.fill(
+                                          child: Center(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Colors.black.withOpacity(0.8),
+                                                    Colors.black.withOpacity(0.6),
+                                                  ],
+                                                ),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                'Click',
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                     ],
                                   ),
                                 ),
                               ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _IconText(icon: Icons.thumb_up, count: _post.thumbUpCount),
+                          const SizedBox(width: 12),
+                          _IconText(icon: Icons.comment, count: _post.commentCount),
+                          const SizedBox(width: 12),
+                          _IconText(icon: Icons.visibility, count: _post.viewCount),
+                          const SizedBox(width: 16),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  CommunityCardTheme.textSecondary.withOpacity(0.1),
+                                  CommunityCardTheme.textSecondary.withOpacity(0.05),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(6),
                             ),
+                            child: Text(
+                              '출처: ${widget.source}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: CommunityCardTheme.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    );
-                  },
+                    )
+                  ],
                 ),
               ),
-            ],
-            const SizedBox(height: 12),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _IconText(icon: Icons.thumb_up, count: _post.thumbUpCount),
-                  const SizedBox(width: 24),
-                  _IconText(icon: Icons.comment, count: _post.commentCount),
-                  const SizedBox(width: 24),
-                  _IconText(icon: Icons.visibility, count: _post.viewCount),
-                  const SizedBox(width: 16),
-                  Text(
-                    '출처: ${widget.source}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                  ),
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 
