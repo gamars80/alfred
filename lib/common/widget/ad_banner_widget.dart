@@ -24,10 +24,10 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
   void _loadAd() {
     debugPrint('AdBannerWidget - Loading ad...');
     
-    // 플랫폼별 광고 단위 ID 분기 (iOS는 실제 광고 단위)
+    // 플랫폼별 광고 단위 ID 분기
     final adUnitId = Platform.isAndroid
         ? 'ca-app-pub-4542840362692423/4003152127' // Android 광고 단위 ID
-        : 'ca-app-pub-4542840362692423/8125225348'; // iOS 실제 광고 단위 ID
+        : 'ca-app-pub-4542840362692423/8125225348'; // iOS 광고 단위 ID
     
     debugPrint('AdBannerWidget - Creating BannerAd with ID: $adUnitId');
 
@@ -37,7 +37,7 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (_) {
-          debugPrint('AdBannerWidget - Ad loaded successfully');
+          debugPrint('AdBannerWidget - ✅ Ad loaded successfully');
           if (mounted) {
             setState(() {
               _isLoaded = true;
@@ -46,19 +46,22 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
           }
         },
         onAdFailedToLoad: (ad, error) {
-          debugPrint('AdBannerWidget - Ad failed to load: ${error.message}');
-          debugPrint('AdBannerWidget - Error code: ${error.code}');
-          debugPrint('AdBannerWidget - Error domain: ${error.domain}');
+          debugPrint('AdBannerWidget - ❌ Ad failed to load: ${error.message}');
+          debugPrint('AdBannerWidget - ❌ Error code: ${error.code}');
+          debugPrint('AdBannerWidget - ❌ Error domain: ${error.domain}');
+          debugPrint('AdBannerWidget - ❌ Error responseInfo: ${error.responseInfo}');
+          debugPrint('AdBannerWidget - ❌ Platform: ${Platform.operatingSystem}');
+          debugPrint('AdBannerWidget - ❌ AdUnitId: $adUnitId');
           ad.dispose();
           _bannerAd = null;
         },
-        onAdOpened: (_) => debugPrint('AdBannerWidget - Ad opened'),
-        onAdClosed: (_) => debugPrint('AdBannerWidget - Ad closed'),
-        onAdImpression: (_) => debugPrint('AdBannerWidget - Ad impression'),
+        onAdOpened: (_) => debugPrint('AdBannerWidget - 📱 Ad opened'),
+        onAdClosed: (_) => debugPrint('AdBannerWidget - 📱 Ad closed'),
+        onAdImpression: (_) => debugPrint('AdBannerWidget - 📱 Ad impression'),
       ),
     );
 
-    debugPrint('AdBannerWidget - Calling load() on BannerAd');
+    debugPrint('AdBannerWidget - 🚀 Calling load() on BannerAd');
     _bannerAd?.load();
   }
 

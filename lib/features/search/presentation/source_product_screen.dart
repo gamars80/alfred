@@ -46,7 +46,7 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
   }
 
   void _onScroll() {
-    debugPrint('SourceProductScreen - onScroll called, position: ${_scrollController.position.pixels}, maxExtent: ${_scrollController.position.maxScrollExtent}');
+    // debugPrint('SourceProductScreen - onScroll called, position: ${_scrollController.position.pixels}, maxExtent: ${_scrollController.position.maxScrollExtent}');
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200 &&
         !_isLoading &&
@@ -56,7 +56,7 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
   }
 
   Future<void> _fetchProducts({bool refresh = false}) async {
-    debugPrint('SourceProductScreen - fetchProducts called, refresh: $refresh');
+    // debugPrint('SourceProductScreen - fetchProducts called, refresh: $refresh');
 
     if (_isLoading) return; // 이미 로딩 중이면 중복 요청 방지
 

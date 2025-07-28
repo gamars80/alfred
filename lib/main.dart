@@ -13,12 +13,24 @@ void main() async {
 
   // ✅ Google Mobile Ads SDK 초기화
   await MobileAds.instance.initialize();
+  debugPrint('MobileAds initialized successfully');
 
   // ✅ ATT 권한 요청 (iOS 14+)
   if (Platform.isIOS) {
     final status = await AppTrackingTransparency.trackingAuthorizationStatus;
+    debugPrint('Initial ATT status: $status');
+    
     if (status == TrackingStatus.notDetermined) {
-      await AppTrackingTransparency.requestTrackingAuthorization();
+      debugPrint('Requesting ATT permission...');
+      final newStatus = await AppTrackingTransparency.requestTrackingAuthorization();
+      debugPrint('ATT permission result: $newStatus');
+    }
+    
+    // ATT 상태에 따른 광고 설정
+    if (status == TrackingStatus.authorized || status == TrackingStatus.denied) {
+      debugPrint('ATT status is: $status - Ads should work');
+    } else {
+      debugPrint('ATT status is: $status - Ads may be limited');
     }
   }
 

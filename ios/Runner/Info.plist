@@ -46,7 +46,7 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>GADApplicationIdentifier</key>
-    <string>ca-app-pub-4542840362692423~1999745247</string>
+    <string>ca-app-pub-4542840362692423~9447165437</string>
     <key>NSUserTrackingUsageDescription</key>
     <string>이 앱은 맞춤형 광고 제공을 위해 기기 식별자를 사용할 수 있습니다.</string>
     <key>SKAdNetworkItems</key>
