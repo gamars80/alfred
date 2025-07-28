@@ -15,7 +15,10 @@ import 'foods_history_detail_screen.dart';
 import 'care_history_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({Key? key}) : super(key: key);
+  final int? selectedBeautyTab;
+  final int? selectedFoodTab;
+  final int? selectedBeautyCareTab;
+  const HistoryScreen({Key? key, this.selectedBeautyTab, this.selectedFoodTab, this.selectedBeautyCareTab}) : super(key: key);
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
@@ -63,8 +66,21 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this)
-      ..addListener(_handleTabSelection);
+    
+    // selectedBeautyTab, selectedFoodTab, selectedBeautyCareTab이 설정되어 있으면 해당 탭을 초기 인덱스로 설정
+    final initialIndex = widget.selectedBeautyCareTab ?? widget.selectedFoodTab ?? widget.selectedBeautyTab ?? 0;
+    _tabController = TabController(
+      length: 4, 
+      vsync: this,
+      initialIndex: initialIndex,
+    )..addListener(_handleTabSelection);
+
+    // selectedBeautyTab, selectedFoodTab, selectedBeautyCareTab이 설정되어 있으면 해당 탭의 데이터도 로드
+    if (widget.selectedBeautyTab != null || widget.selectedFoodTab != null || widget.selectedBeautyCareTab != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleTabSelection();
+      });
+    }
 
     // 쇼핑 탭 스크롤 리스너
     _shoppingController.addListener(() {
@@ -103,12 +119,17 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
       }
     });
 
-    // 첫 번째 탭 초기 로딩
-    _loadInitialHistories();
+    // selectedBeautyTab이 설정되지 않은 경우에만 첫 번째 탭 초기 로딩
+    if (widget.selectedBeautyTab == null) {
+      _loadInitialHistories();
+    }
   }
 
   void _handleTabSelection() {
     if (_tabController.indexIsChanging) return;
+    
+    debugPrint('🔄 탭 변경: ${_tabController.index}');
+    
     if (_tabController.index == 0) {
       setState(() => _isInitialLoading = true);
       _loadInitialHistories();

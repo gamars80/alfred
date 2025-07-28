@@ -34,22 +34,27 @@ class DioClient {
         }
         handler.next(options);
       },
-        onError: (error, handler) async {
-          if (error.response?.statusCode == 401) {
-            debugPrint('[Dio] 401 Unauthorized → 자동 로그아웃 처리');
-
-            await TokenManager.clearToken();
-
-            final context = navigatorKey.currentContext;
-            if (context != null) {
-              context.go('/login'); // ✅ 무조건 로그인 화면으로 이동
-            }
-
-            return; // handler.next(error) 호출하지 않음
-          }
-
-          handler.next(error);
+      onError: (error, handler) async {
+        debugPrint('[Dio] 에러 발생: ${error.response?.statusCode} - ${error.message}');
+        debugPrint('[Dio] 요청 URL: ${error.requestOptions.uri}');
+        
+        // 401 에러 처리 일시적으로 비활성화 (디버깅용)
+        if (error.response?.statusCode == 401) {
+          debugPrint('[Dio] 401 Unauthorized 감지됨 (자동 로그아웃 비활성화)');
+          debugPrint('[Dio] 에러 응답: ${error.response?.data}');
+          
+          // 자동 로그아웃 비활성화
+          // await TokenManager.clearToken();
+          // final context = navigatorKey.currentContext;
+          // if (context != null) {
+          //   debugPrint('[Dio] 로그인 화면으로 리다이렉트');
+          //   context.go('/login');
+          // }
+          // return;
         }
+
+        handler.next(error);
+      },
     ),
   );
 }

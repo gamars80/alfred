@@ -10,6 +10,8 @@ import '../features/auth/presentation/splash_screen.dart';
 import '../features/auth/presentation/webview_screen.dart';
 import '../features/call/model/hostpital.dart';
 import '../features/call/presentation/call_screen.dart';
+import '../features/chat/presentation/chat_screen.dart';
+import '../features/chat/presentation/guided_chat_screen.dart';
 import '../features/hospital/presentation/hospital_detail_screen.dart';
 import '../features/mypage/presentation/mypage_screen.dart';
 import '../features/mypage/presentation/settings_screen.dart';
@@ -39,7 +41,25 @@ final router = GoRouter(
       path: '/main',
       builder: (context, state) => MainTab(selectedIndex: 2),
     ),
+    GoRoute(
+      path: '/history',
+      builder: (context, state) => MainTab(selectedIndex: 1),
+    ),
+            GoRoute(
+          path: '/history/beauty',
+          builder: (context, state) => MainTab(selectedIndex: 1, selectedBeautyTab: 1),
+        ),
+        GoRoute(
+          path: '/history/food',
+          builder: (context, state) => MainTab(selectedIndex: 1, selectedFoodTab: 2),
+        ),
+        GoRoute(
+          path: '/history/beauty-care',
+          builder: (context, state) => MainTab(selectedIndex: 1, selectedBeautyCareTab: 3),
+        ),
     GoRoute(path: '/call', builder: (context, state) => const CallScreen()),
+    GoRoute(path: '/chat', builder: (context, state) => const ChatScreen()),
+    GoRoute(path: '/guided-chat', builder: (context, state) => const GuidedChatScreen()),
     GoRoute(
       path: '/webview',
       builder: (context, state) {

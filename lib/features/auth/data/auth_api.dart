@@ -21,12 +21,38 @@ class AuthApi {
     required String loginId,
     required String password,
   }) async {
-    final response = await _dio.post('/auth/login', data: {
-      'loginId': loginId,
-      'password': password,
-      'loginType': 'NORMAL',
-    });
-    return LoginResponse.fromJson(response.data);
+    debugPrint('🔐 [AuthApi] loginWithIdPassword 시작');
+    debugPrint('🔐 [AuthApi] loginId: $loginId');
+    debugPrint('🔐 [AuthApi] password 길이: ${password.length}');
+    
+    try {
+      final payload = {
+        'loginId': loginId,
+        'password': password,
+        'loginType': 'NORMAL',
+      };
+      debugPrint('🔐 [AuthApi] 요청 페이로드: $payload');
+      
+      final response = await _dio.post('/auth/login', data: payload);
+      debugPrint('🔐 [AuthApi] API 응답 성공: ${response.statusCode}');
+      debugPrint('🔐 [AuthApi] 응답 데이터: ${response.data}');
+      
+      final loginResponse = LoginResponse.fromJson(response.data);
+      debugPrint('🔐 [AuthApi] 파싱 완료: needSignup=${loginResponse.needSignup}, token=${loginResponse.token != null ? "있음" : "없음"}');
+      
+      // 백엔드에서 success: false인 경우 에러 처리
+      if (response.data['success'] == false) {
+        final errorMessage = response.data['message'] ?? '로그인에 실패했습니다';
+        debugPrint('🔐 [AuthApi] 백엔드 에러: $errorMessage');
+        throw Exception(errorMessage);
+      }
+      
+      return loginResponse;
+    } catch (e) {
+      debugPrint('🔐 [AuthApi] 에러 발생: $e');
+      debugPrint('🔐 [AuthApi] 에러 타입: ${e.runtimeType}');
+      rethrow;
+    }
   }
 
   static Future<LoginResponse> loginWithAppleId(String loginId) async {

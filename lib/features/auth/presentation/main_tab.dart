@@ -12,7 +12,10 @@ import '../../mypage/presentation/mypage_screen.dart';
 class MainTab extends StatefulWidget {
 
   final int selectedIndex;
-  const MainTab({super.key, this.selectedIndex = 0});
+  final int? selectedBeautyTab;
+  final int? selectedFoodTab;
+  final int? selectedBeautyCareTab;
+  const MainTab({super.key, this.selectedIndex = 0, this.selectedBeautyTab, this.selectedFoodTab, this.selectedBeautyCareTab});
 
   @override
   State<MainTab> createState() => _MainTabState();
@@ -30,7 +33,7 @@ class _MainTabState extends State<MainTab> {
     debugPrint('✅ MainTab selectedIndex: $_selectedIndex'); // 🔍 로그
     _screens.addAll([
       const CallScreen(),
-      const HistoryScreen(),
+      HistoryScreen(selectedBeautyTab: widget.selectedBeautyTab, selectedFoodTab: widget.selectedFoodTab, selectedBeautyCareTab: widget.selectedBeautyCareTab),
       const HomeScreen(),
       const LikedProductScreen(),
       const MyPageScreen(),
