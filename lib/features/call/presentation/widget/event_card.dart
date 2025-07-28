@@ -10,6 +10,23 @@ import '../../../like/data/like_repository.dart';
 import '../../model/event.dart';
 import '../event_webview_screen.dart';
 
+// 🎨 Modern Event Card Theme
+class EventCardTheme {
+  static const Color primaryGradientStart = Color(0xFF667eea);
+  static const Color primaryGradientEnd = Color(0xFF764ba2);
+  static const Color secondaryGradientStart = Color(0xFFf093fb);
+  static const Color secondaryGradientEnd = Color(0xFFf5576c);
+  static const Color cardBackground = Color(0xFFffffff);
+  static const Color textPrimary = Color(0xFF2d3748);
+  static const Color textSecondary = Color(0xFF718096);
+  static const Color accentColor = Color(0xFFed8936);
+  static const Color successColor = Color(0xFF48bb78);
+  static const Color warningColor = Color(0xFFed8936);
+  static const Color errorColor = Color(0xFFf56565);
+  static const double borderRadius = 20.0;
+  static const double cardElevation = 12.0;
+  static const Duration animationDuration = Duration(milliseconds: 300);
+}
 
 class EventCard extends StatefulWidget {
   final Event event;
@@ -27,14 +44,36 @@ class EventCard extends StatefulWidget {
   State<EventCard> createState() => _EventCardState();
 }
 
-class _EventCardState extends State<EventCard> {
+class _EventCardState extends State<EventCard> with SingleTickerProviderStateMixin {
   late Event _event;
   final likeRepo = LikeRepository();
+  
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
     _event = widget.event;
+    
+    _animationController = AnimationController(
+      duration: EventCardTheme.animationDuration,
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _toggleLike() async {
@@ -96,19 +135,56 @@ class _EventCardState extends State<EventCard> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('API 호출 실패: ${response.statusCode}')),
+            SnackBar(
+              content: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      EventCardTheme.errorColor,
+                      EventCardTheme.errorColor.withOpacity(0.8),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'API 호출 실패: ${response.statusCode}',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('오류가 발생했습니다: $e')),
+          SnackBar(
+            content: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    EventCardTheme.errorColor,
+                    EventCardTheme.errorColor.withOpacity(0.8),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '오류가 발생했습니다: $e',
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+          ),
         );
       }
     }
   }
-
 
   Future<void> _openDetailImage(BuildContext context) async {
     try {
@@ -166,164 +242,265 @@ class _EventCardState extends State<EventCard> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('EventCard build: id=${widget.event.id}, source=${widget.event.source}');
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F7F8),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: IntrinsicHeight(
-        child: InkWell(
-          onTap: _openWebView,
-          borderRadius: BorderRadius.circular(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 좌측 이미지 영역
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  bottomLeft: Radius.circular(12),
-                ),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.35,
-                  height: 110,
-                  child: Stack(
-                    children: [
-                      CachedNetworkImage(
-                        imageUrl: _event.thumbnailUrl,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                        filterQuality: FilterQuality.low,
-                        fadeInDuration: const Duration(milliseconds: 0),
-                        placeholderFadeInDuration: const Duration(milliseconds: 0),
-                        memCacheHeight: (110 * MediaQuery.of(context).devicePixelRatio).toInt(),
-                        memCacheWidth: (MediaQuery.of(context).size.width * 0.35 * MediaQuery.of(context).devicePixelRatio).toInt(),
-                        maxHeightDiskCache: (110 * 2).toInt(),
-                        maxWidthDiskCache: (MediaQuery.of(context).size.width * 0.35 * 2).toInt(),
-                        placeholder: (context, url) => Container(
-                          color: const Color(0xFFEEEEEE),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: Colors.grey[400],
-                          child: const Icon(Icons.error, color: Colors.white),
-                        ),
-                      ),
-                      Positioned(
-                        top: 6,
-                        left: 6,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color.fromRGBO(0, 0, 0, 0.6),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            _event.source,
-                            style: const TextStyle(
-                              fontSize: 9,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+    // debugPrint('EventCard build: id=${widget.event.id}, source=${widget.event.source}');
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: EventCardTheme.cardBackground,
+                borderRadius: BorderRadius.circular(EventCardTheme.borderRadius),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
-                ),
+                ],
               ),
-              // 우측 정보 영역
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              child: IntrinsicHeight(
+                child: InkWell(
+                  onTap: _openWebView,
+                  borderRadius: BorderRadius.circular(EventCardTheme.borderRadius),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              _event.title,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          TextButton(
-                            onPressed: () async {
-                              if (_event.source == '바비톡') {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ImageWebViewScreen(imageUrl: _event.detailImage),
+                      // 좌측 이미지 영역
+                      ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(EventCardTheme.borderRadius),
+                          bottomLeft: Radius.circular(EventCardTheme.borderRadius),
+                        ),
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.35,
+                          height: 110,
+                          child: Stack(
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl: _event.thumbnailUrl,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                                filterQuality: FilterQuality.low,
+                                fadeInDuration: const Duration(milliseconds: 0),
+                                placeholderFadeInDuration: const Duration(milliseconds: 0),
+                                memCacheHeight: (110 * MediaQuery.of(context).devicePixelRatio).toInt(),
+                                memCacheWidth: (MediaQuery.of(context).size.width * 0.35 * MediaQuery.of(context).devicePixelRatio).toInt(),
+                                maxHeightDiskCache: (110 * 2).toInt(),
+                                maxWidthDiskCache: (MediaQuery.of(context).size.width * 0.35 * 2).toInt(),
+                                placeholder: (context, url) => Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.grey.shade200,
+                                        Colors.grey.shade100,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
                                   ),
-                                );
-                              } else {
-                                await _openDetailImage(context);
-                              }
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              minimumSize: const Size(40, 24),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: const Text('상세보기', 
-                              style: TextStyle(fontSize: 10, color: Colors.blue)
-                            ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.grey.shade300,
+                                        Colors.grey.shade200,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                  ),
+                                  child: const Icon(Icons.error, color: Colors.grey),
+                                ),
+                              ),
+                              Positioned(
+                                top: 6,
+                                left: 6,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.black.withOpacity(0.8),
+                                        Colors.black.withOpacity(0.6),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(6),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    _event.source,
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${_event.location} · ${_event.hospitalName}',
-                        style: const TextStyle(fontSize: 10, color: Colors.grey),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _buildPriceSection(),
-                                const SizedBox(height: 2),
-                                _buildRatingSection(),
-                              ],
-                            ),
+                      // 우측 정보 영역
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _event.title,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: EventCardTheme.textPrimary,
+                                        height: 1.3,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      if (_event.source == '바비톡') {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => ImageWebViewScreen(imageUrl: _event.detailImage),
+                                          ),
+                                        );
+                                      } else {
+                                        await _openDetailImage(context);
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            EventCardTheme.secondaryGradientStart,
+                                            EventCardTheme.secondaryGradientEnd,
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(6),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: EventCardTheme.secondaryGradientStart.withOpacity(0.3),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Text(
+                                        '상세보기',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      EventCardTheme.textSecondary.withOpacity(0.1),
+                                      EventCardTheme.textSecondary.withOpacity(0.05),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '${_event.location} · ${_event.hospitalName}',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: EventCardTheme.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        _buildPriceSection(),
+                                        const SizedBox(height: 4),
+                                        _buildRatingSection(),
+                                      ],
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: _toggleLike,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: _event.liked
+                                              ? [Colors.red.shade400, Colors.red.shade600]
+                                              : [Colors.grey.shade300, Colors.grey.shade400],
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: (_event.liked ? Colors.red : Colors.grey).withOpacity(0.3),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6),
+                                        child: Icon(
+                                          _event.liked ? Icons.favorite : Icons.favorite_border,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                          IconButton(
-                            icon: Icon(
-                              _event.liked ? Icons.favorite : Icons.favorite_border,
-                              size: 18,
-                              color: _event.liked ? Colors.red : Colors.grey,
-                            ),
-                            onPressed: _toggleLike,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -333,14 +510,34 @@ class _EventCardState extends State<EventCard> {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (_event.discountRate > 0)
-          Text(
-            '${_event.discountRate}%',
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  EventCardTheme.warningColor.withOpacity(0.2),
+                  EventCardTheme.warningColor.withOpacity(0.1),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              '${_event.discountRate}%',
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: EventCardTheme.warningColor,
+              ),
+            ),
           ),
         if (_event.discountRate > 0) const SizedBox(width: 4),
         Text(
           '${formatter.format(_event.discountedPrice)}원',
-          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black),
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: EventCardTheme.textPrimary,
+          ),
         ),
       ],
     );
@@ -359,12 +556,19 @@ class _EventCardState extends State<EventCard> {
         const SizedBox(width: 2),
         Text(
           ratingStr,
-          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black87),
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: EventCardTheme.textPrimary,
+          ),
         ),
         const SizedBox(width: 2),
         Text(
           '(${_event.ratingCount})',
-          style: const TextStyle(fontSize: 9, color: Colors.grey),
+          style: TextStyle(
+            fontSize: 9,
+            color: EventCardTheme.textSecondary,
+          ),
         ),
       ],
     );
