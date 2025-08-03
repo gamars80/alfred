@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../like/presentation/liked_product_screen.dart';
 import '../../mypage/presentation/mypage_screen.dart';
+import '../data/device_info_service.dart';
 
 class MainTab extends StatefulWidget {
 
@@ -38,6 +39,27 @@ class _MainTabState extends State<MainTab> {
       const LikedProductScreen(),
       const MyPageScreen(),
     ]);
+    
+    // 홈 화면 진입 시 디바이스 정보 체크
+    _checkDeviceInfoOnHomeEnter();
+  }
+
+  /// 홈 화면 진입 시 디바이스 정보 체크
+  void _checkDeviceInfoOnHomeEnter() {
+    debugPrint('🏠 [MainTab] 홈 화면 진입 - 디바이스 정보 체크 예약');
+    
+    // 백그라운드에서 실행하여 UI 블로킹 방지
+    Future.delayed(const Duration(milliseconds: 500), () async {
+      debugPrint('🏠 [MainTab] 디바이스 정보 체크 시작 (500ms 지연 후)');
+      try {
+        await DeviceInfoService.checkDeviceInfoOnHomeEnter();
+        debugPrint('✅ [MainTab] 디바이스 정보 체크 완료');
+      } catch (e) {
+        debugPrint('❌ [MainTab] 디바이스 정보 체크 실패');
+        debugPrint('❌ [MainTab] 에러 메시지: $e');
+        debugPrint('❌ [MainTab] 에러 타입: ${e.runtimeType}');
+      }
+    });
   }
 
   void _onItemTapped(int index) {

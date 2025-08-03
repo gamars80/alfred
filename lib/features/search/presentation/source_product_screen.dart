@@ -216,7 +216,7 @@ class _SourceProductScreenState extends State<SourceProductScreen> {
                             mainAxisSpacing: 16,
                             crossAxisSpacing: 12,
                             childAspectRatio: 0.60,
-                            mainAxisExtent: cardHeight,
+                            mainAxisExtent: 330,
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {

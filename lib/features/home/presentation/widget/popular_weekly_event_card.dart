@@ -6,6 +6,25 @@ import '../../model/popular_weekly_event.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 
+class PopularWeeklyEventCardTheme {
+  // 색상 팔레트
+  static const Color primaryGradientStart = Color(0xFF667eea);
+  static const Color primaryGradientEnd = Color(0xFF764ba2);
+  static const Color secondaryGradientStart = Color(0xFFf093fb);
+  static const Color secondaryGradientEnd = Color(0xFFf5576c);
+  static const Color accentGradientStart = Color(0xFF4facfe);
+  static const Color accentGradientEnd = Color(0xFF00f2fe);
+  
+  // 배경 색상
+  static const Color backgroundColor = Colors.white;
+  static const Color cardBackgroundColor = Colors.white;
+  
+  // 간격
+  static const double spacing = 16.0;
+  static const double cardRadius = 20.0;
+  static const double imageRadius = 16.0;
+}
+
 class PopularWeeklyEventCard extends StatelessWidget {
   final PopularWeeklyEvent event;
 
@@ -57,97 +76,206 @@ class PopularWeeklyEventCard extends StatelessWidget {
     }
   }
 
+  Widget _buildSourceBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        event.source,
+        style: const TextStyle(
+          fontSize: 11,
+          color: Color(0xFF1F2937),
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRatingSection() {
+    return Row(
+      children: [
+        const Icon(
+          Icons.star_rounded,
+          size: 16,
+          color: Color(0xFFFFD700),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '${event.rating.toStringAsFixed(1)}',
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1F2937),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '(${event.ratingCount})',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriceSection() {
+    return Row(
+      children: [
+        if (event.discountRate > 0) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  PopularWeeklyEventCardTheme.primaryGradientStart,
+                  PopularWeeklyEventCardTheme.primaryGradientEnd,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              '${event.discountRate.toInt()}%',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+        Expanded(
+          child: Text(
+            _formatPrice(event.discountedPrice),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Color(0xFF1F2937),
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 140,
+    return Container(
+      width: 200,
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 썸네일 이미지 + 좌측 상단 source 라벨
+          // 이미지 섹션
           Stack(
             children: [
               GestureDetector(
                 onTap: () => _openEvent(context),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
-                    imageUrl: event.thumbnailUrl,
-                    width: 140,
-                    height: 140,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 6,
-                left: 6,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  width: double.infinity,
+                  height: 160,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(PopularWeeklyEventCardTheme.imageRadius),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    event.source,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(PopularWeeklyEventCardTheme.imageRadius),
+                    child: CachedNetworkImage(
+                      imageUrl: event.thumbnailUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              PopularWeeklyEventCardTheme.primaryGradientStart.withOpacity(0.1),
+                              PopularWeeklyEventCardTheme.primaryGradientEnd.withOpacity(0.1),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(PopularWeeklyEventCardTheme.imageRadius),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.image_rounded,
+                            size: 32,
+                            color: Color(0xFF667eea),
+                          ),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              PopularWeeklyEventCardTheme.primaryGradientStart.withOpacity(0.1),
+                              PopularWeeklyEventCardTheme.primaryGradientEnd.withOpacity(0.1),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(PopularWeeklyEventCardTheme.imageRadius),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.error_outline_rounded,
+                            size: 32,
+                            color: Color(0xFF667eea),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
+              // 소스 배지
+              Positioned(
+                top: 8,
+                left: 8,
+                child: _buildSourceBadge(),
+              ),
             ],
           ),
-          const SizedBox(height: 4),
-
+          
+          const SizedBox(height: 12),
+          
           // 병원명
           Text(
             event.hospitalName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Color(0xFF1F2937),
+              height: 1.2,
             ),
           ),
-
-          // 할인율 + 가격
-          Row(
-            children: [
-              if (event.discountRate > 0)
-                Text(
-                  '${event.discountRate.toInt()}%',
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              const SizedBox(width: 4),
-              Text(
-                _formatPrice(event.discountedPrice),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-
-          // 평점
-          Text(
-            '⭐ ${event.rating.toStringAsFixed(1)} (${event.ratingCount})',
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
+          
+          const SizedBox(height: 8),
+          
+          // 가격 섹션
+          _buildPriceSection(),
+          
+          const SizedBox(height: 8),
+          
+          // 평점 섹션
+          _buildRatingSection(),
         ],
       ),
     );

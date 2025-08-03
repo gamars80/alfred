@@ -10,6 +10,7 @@ import 'dart:math';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../data/auth_api.dart' as my_auth;
+import '../data/device_info_service.dart';
 import '../model/login_response.dart';
 import '../model/signup_response.dart';
 
@@ -214,6 +215,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('accessToken', token);
+    
+    // 로그인 성공 - 홈 화면에서 디바이스 정보 체크할 예정
+    debugPrint('🔐 [로그인] 로그인 성공 - 홈 화면에서 디바이스 정보 체크 예정');
+    
     if (!mounted) return;
     context.go(route);
   }

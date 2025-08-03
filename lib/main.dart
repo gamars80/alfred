@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'app.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
+import 'features/auth/data/device_info_service.dart';
 // ✅ 전역 navigatorKey 선언 (Dio 인터셉터에서 사용)
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -42,5 +43,21 @@ void main() async {
   // ✅ .env 환경변수 로드
   await dotenv.load();
 
+  // ✅ 디바이스 정보 초기화 및 업데이트 (백그라운드에서 실행)
+  _initializeDeviceInfoInBackground();
+
   runApp(const AlfredApp());
+}
+
+/// 백그라운드에서 디바이스 정보 초기화 및 업데이트
+void _initializeDeviceInfoInBackground() {
+  // 앱 시작을 지연시키지 않도록 백그라운드에서 실행
+  Future.delayed(const Duration(seconds: 2), () async {
+    try {
+      // 로그인한 사용자라면 홈 화면에서 체크할 예정
+      debugPrint('[Main] 앱 시작 - 홈 화면에서 디바이스 정보 체크 예정');
+    } catch (e) {
+      debugPrint('[Main] 디바이스 정보 초기화 실패: $e');
+    }
+  });
 }
