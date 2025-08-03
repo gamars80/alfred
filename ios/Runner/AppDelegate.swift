@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import AVFoundation
 import Speech
+import Firebase
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -21,6 +22,9 @@ import Speech
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    // Firebase 초기화
+    FirebaseApp.configure()
+    
     let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
     let voiceChannel = FlutterMethodChannel(name: "com.alfred/voice",
                                             binaryMessenger: controller.binaryMessenger)
