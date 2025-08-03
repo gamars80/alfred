@@ -33,11 +33,11 @@ class MainActivity : FlutterActivity() {
     private var partialTextBuffer: String = ""
     private var isUserSpeaking = false
 
-    // 침묵 타이머 (3.5초로 조정)
-    private val silenceTimeout = 3500L
+    // 침묵 타이머 (5초로 조정 - 더 편안한 사용자 경험)
+    private val silenceTimeout = 5000L
     private val silenceHandler = Handler(Looper.getMainLooper())
     private val silenceRunnable = Runnable {
-        Log.d("Voice", "3.5초간 침묵 - 자동 종료: stopListening 호출")
+        Log.d("Voice", "5초간 침묵 - 자동 종료: stopListening 호출")
         speechRecognizer.stopListening()
     }
 

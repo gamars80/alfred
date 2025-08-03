@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/auth_api.dart' as my_auth;
+import '../data/device_info_service.dart';
 
 class IdPasswordLoginScreen extends StatefulWidget {
   const IdPasswordLoginScreen({Key? key}) : super(key: key);
@@ -95,6 +96,10 @@ class _IdPasswordLoginScreenState extends State<IdPasswordLoginScreen> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('accessToken', loginResp.token!);
         debugPrint('🔐 [로그인] 토큰 저장 완료');
+        
+        // 로그인 성공 - 홈 화면에서 디바이스 정보 체크할 예정
+        debugPrint('🔐 [로그인] 로그인 성공 - 홈 화면에서 디바이스 정보 체크 예정');
+        
         if (mounted) {
           debugPrint('🔐 [로그인] 메인 화면으로 이동');
           context.go('/main');

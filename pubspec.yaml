@@ -1,5 +1,5 @@
 name: alfred_clean
-version: 1.0.3+5
+version: 1.0.4+6
 
 environment:
   sdk: ">=3.7.0 <4.0.0"
