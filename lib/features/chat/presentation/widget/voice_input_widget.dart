@@ -81,68 +81,73 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        GestureDetector(
-          onTapDown: (_) => _onTapDown(),
-          onTapUp: (_) => _onTapUp(),
-          onTapCancel: _onTapCancel,
-          child: AnimatedBuilder(
-            animation: Listenable.merge([_pulseAnimation, _scaleAnimation]),
-            builder: (context, child) {
-              debugPrint('🎤 [VoiceInputWidget] AnimatedBuilder - _isListening: $_isListening');
-              return Transform.scale(
-                scale: _scaleAnimation.value,
-                child: Container(
-                  width: size,
-                  height: size,
-                  decoration: BoxDecoration(
-                    color: _isListening ? activeColor : inactiveColor,
-                    borderRadius: BorderRadius.circular(size / 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (_isListening ? activeColor : inactiveColor).withOpacity(0.3),
-                        blurRadius: _isListening ? 12 : 8,
-                        offset: const Offset(0, 2),
-                        spreadRadius: _isListening ? 2 : 0,
-                      ),
-                      if (_isListening)
-                        BoxShadow(
-                          color: activeColor.withOpacity(0.2),
-                          blurRadius: _pulseAnimation.value * 20,
-                          spreadRadius: _pulseAnimation.value * 5,
-                        ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: null, // GestureDetector에서 처리하므로 여기서는 비활성화
+        Tooltip(
+          message: _isListening 
+            ? '음성 인식 중입니다. 말씀하신 후 잠시 기다려주세요.'
+            : '음성으로 메시지를 입력하세요',
+          child: GestureDetector(
+            onTapDown: (_) => _onTapDown(),
+            onTapUp: (_) => _onTapUp(),
+            onTapCancel: _onTapCancel,
+            child: AnimatedBuilder(
+              animation: Listenable.merge([_pulseAnimation, _scaleAnimation]),
+              builder: (context, child) {
+                debugPrint('🎤 [VoiceInputWidget] AnimatedBuilder - _isListening: $_isListening');
+                return Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Container(
+                    width: size,
+                    height: size,
+                    decoration: BoxDecoration(
+                      color: _isListening ? activeColor : inactiveColor,
                       borderRadius: BorderRadius.circular(size / 2),
-                      child: Center(
-                        child: _buildIcon(),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (_isListening ? activeColor : inactiveColor).withOpacity(0.3),
+                          blurRadius: _isListening ? 12 : 8,
+                          offset: const Offset(0, 2),
+                          spreadRadius: _isListening ? 2 : 0,
+                        ),
+                        if (_isListening)
+                          BoxShadow(
+                            color: activeColor.withOpacity(0.2),
+                            blurRadius: _pulseAnimation.value * 20,
+                            spreadRadius: _pulseAnimation.value * 5,
+                          ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: null, // GestureDetector에서 처리하므로 여기서는 비활성화
+                        borderRadius: BorderRadius.circular(size / 2),
+                        child: Center(
+                          child: _buildIcon(),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-        ),
-        // 상태 텍스트 표시
-        if (_isListening) ...[
-          const SizedBox(height: 8),
-          AnimatedOpacity(
-            opacity: _isListening ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 300),
-            child: Text(
-              '듣는 중... (3.5초 후 자동 종료)',
-              style: TextStyle(
-                fontSize: 12,
-                color: activeColor,
-                fontWeight: FontWeight.w500,
-              ),
+                );
+              },
             ),
           ),
-        ],
+        ),
+        // 상태 텍스트 제거 - 아이콘과 애니메이션으로만 상태 표시
+        // if (_isListening) ...[
+        //   const SizedBox(height: 8),
+        //   AnimatedOpacity(
+        //     opacity: _isListening ? 1.0 : 0.0,
+        //     duration: const Duration(milliseconds: 300),
+        //     child: Text(
+        //       '듣는 중...',
+        //       style: TextStyle(
+        //         fontSize: 12,
+        //         color: activeColor,
+        //         fontWeight: FontWeight.w500,
+        //       ),
+        //     ),
+        //   ),
+        // ],
       ],
     );
   }
@@ -215,18 +220,18 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
 
     debugPrint('🎤 [VoiceInputWidget] 음성인식 시작');
     
-    // 3.5초 후에 자동으로 상태 변경
-    Timer(const Duration(milliseconds: 3500), () {
-      if (mounted && _isListening) {
-        setState(() {
-          _isListening = false;
-        });
-        _scaleController.reverse();
-        _pulseController.stop();
-        _pulseController.reset();
-        debugPrint('🎤 [VoiceInputWidget] 3.5초 후 자동 상태 변경');
-      }
-    });
+    // Flutter 강제 타이머 제거 - 네이티브 침묵 감지 사용
+    // Timer(const Duration(milliseconds: 3500), () {
+    //   if (mounted && _isListening) {
+    //     setState(() {
+    //       _isListening = false;
+    //     });
+    //     _scaleController.reverse();
+    //     _pulseController.stop();
+    //     _pulseController.reset();
+    //     debugPrint('🎤 [VoiceInputWidget] 3.5초 후 자동 상태 변경');
+    //   }
+    // });
     
     try {
       const platform = MethodChannel('com.alfred/voice');
@@ -247,7 +252,47 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
           widget.onVoiceInput(result);
         } else {
           debugPrint('🎤 [VoiceInputWidget] 빈 결과 수신');
-          Fluttertoast.showToast(msg: '음성을 인식하지 못했습니다. 다시 시도해주세요.');
+          // UI 상태 초기화
+          setState(() {
+            _isListening = false;
+          });
+          _scaleController.reverse();
+          _pulseController.stop();
+          _pulseController.reset();
+          
+          // 스낵바로 더 나은 사용자 경험 제공
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    Icon(Icons.mic_off, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        '음성이 감지되지 않았습니다. 다시 말씀해주세요.',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: Colors.orange[600],
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                margin: const EdgeInsets.all(16),
+                duration: const Duration(seconds: 3),
+                action: SnackBarAction(
+                  label: '확인',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  },
+                ),
+              ),
+            );
+          }
         }
       }
     } catch (e) {
@@ -258,10 +303,88 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
           await _handlePermissionDenied();
         } else if (e.toString().contains('No speech detected')) {
           debugPrint('🎤 [VoiceInputWidget] 음성 미감지');
-          Fluttertoast.showToast(msg: '음성이 감지되지 않았습니다. 다시 말씀해주세요.');
+          // UI 상태 초기화
+          setState(() {
+            _isListening = false;
+          });
+          _scaleController.reverse();
+          _pulseController.stop();
+          _pulseController.reset();
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    Icon(Icons.mic_off, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        '음성이 감지되지 않았습니다. 다시 말씀해주세요.',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: Colors.orange[600],
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                margin: const EdgeInsets.all(16),
+                duration: const Duration(seconds: 3),
+                action: SnackBarAction(
+                  label: '확인',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  },
+                ),
+              ),
+            );
+          }
         } else {
           debugPrint('🎤 [VoiceInputWidget] 일반 오류');
-          Fluttertoast.showToast(msg: '음성 인식에 실패했습니다.');
+          // UI 상태 초기화
+          setState(() {
+            _isListening = false;
+          });
+          _scaleController.reverse();
+          _pulseController.stop();
+          _pulseController.reset();
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        '음성 인식에 실패했습니다. 다시 시도해주세요.',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: Colors.red[600],
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                margin: const EdgeInsets.all(16),
+                duration: const Duration(seconds: 3),
+                action: SnackBarAction(
+                  label: '확인',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  },
+                ),
+              ),
+            );
+          }
         }
       }
     } finally {

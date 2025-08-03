@@ -222,7 +222,7 @@ class _CareKeywordProductScreenState extends State<CareKeywordProductScreen> {
                               crossAxisSpacing: 12,
                               childAspectRatio: 0.60,
                               // mainAxisExtent: 290,
-                                mainAxisExtent: Platform.isIOS ? 290 : 300
+                                mainAxisExtent: Platform.isIOS ? 300 : 300
                             ),
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {

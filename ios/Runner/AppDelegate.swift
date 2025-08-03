@@ -11,7 +11,7 @@ import Speech
   var recognitionTask: SFSpeechRecognitionTask?
   var silenceTimer: Timer?
   var lastSpeechTime: Date?
-  let silenceTimeout: TimeInterval = 3.5
+  let silenceTimeout: TimeInterval = 5.0
   var resultCallback: FlutterResult?
   var alreadyReturned = false
   var lastTranscription: String = ""
@@ -197,7 +197,7 @@ import Speech
   func startSilenceTimer() {
     self.silenceTimer?.invalidate()
     self.silenceTimer = Timer.scheduledTimer(withTimeInterval: self.silenceTimeout, repeats: false) { _ in
-      print("[iOS] 3.5초 침묵 타임아웃 발생, recognitionRequest.endAudio() 호출")
+      print("[iOS] 5초 침묵 타임아웃 발생, recognitionRequest.endAudio() 호출")
       self.silenceTimeoutFired = true
       self.recognitionRequest?.endAudio()
     }

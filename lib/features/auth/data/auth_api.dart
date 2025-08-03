@@ -87,6 +87,12 @@ class AuthApi {
       
       final response = await _dio.post('/auth/signup', data: payload);
 
+      // 회원가입 성공 후 디바이스 정보 로컬 저장
+      await DeviceInfoService.saveDeviceInfoOnSignup();
+      
+      // 회원가입 응답에서 deviceId 저장
+      await DeviceInfoService.saveDeviceIdFromSignupResponse(response.data);
+
       return SignupResponse.fromJson(response.data);
     } catch (e) {
       debugPrint("카카오 회원가입 에러: $e");
@@ -154,6 +160,12 @@ class AuthApi {
       
       final response = await _dio.post('/auth/signup', data: payload);
 
+      // 회원가입 성공 후 디바이스 정보 로컬 저장
+      await DeviceInfoService.saveDeviceInfoOnSignup();
+      
+      // 회원가입 응답에서 deviceId 저장
+      await DeviceInfoService.saveDeviceIdFromSignupResponse(response.data);
+
       return SignupResponse.fromJson(response.data);
     } catch (e) {
       debugPrint("일반 회원가입 에러: $e");
@@ -220,6 +232,12 @@ class AuthApi {
       debugPrint("애플 회원가입 페이로드: $payload");
       
       final response = await _dio.post('/auth/signup', data: payload);
+
+      // 회원가입 성공 후 디바이스 정보 로컬 저장
+      await DeviceInfoService.saveDeviceInfoOnSignup();
+      
+      // 회원가입 응답에서 deviceId 저장
+      await DeviceInfoService.saveDeviceIdFromSignupResponse(response.data);
 
       return SignupResponse.fromJson(response.data);
     } catch (e) {

@@ -11,6 +11,26 @@ import 'package:alfred_clean/features/home/presentation/widget/weekly_top_care_k
 import 'package:alfred_clean/features/home/presentation/widget/weekly_top_care_product_section.dart';
 import 'package:alfred_clean/features/home/presentation/widget/popular_care_like_section.dart';
 
+class HomeScreenTheme {
+  // 색상 팔레트
+  static const Color primaryGradientStart = Color(0xFF667eea);
+  static const Color primaryGradientEnd = Color(0xFF764ba2);
+  static const Color secondaryGradientStart = Color(0xFFf093fb);
+  static const Color secondaryGradientEnd = Color(0xFFf5576c);
+  static const Color accentGradientStart = Color(0xFF4facfe);
+  static const Color accentGradientEnd = Color(0xFF00f2fe);
+  
+  // 탭 색상
+  static const Color tabSelectedColor = Color(0xFF667eea);
+  static const Color tabUnselectedColor = Color(0xFF9CA3AF);
+  static const Color tabBackgroundColor = Color(0xFFF8FAFC);
+  
+  // 간격
+  static const double spacing = 16.0;
+  static const double cardRadius = 20.0;
+  static const double tabHeight = 60.0;
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -18,12 +38,48 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   static const List<Tab> tabs = [
-    Tab(icon: Icon(Icons.shopping_bag_outlined), text: '패션쇼핑'),
-    Tab(icon: Icon(Icons.face_retouching_natural), text: '시술성형'),
-    Tab(icon: Icon(Icons.restaurant), text: '음식/식자재'),
-    Tab(icon: Icon(Icons.spa), text: '뷰티'),
+    Tab(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.shopping_bag_outlined, size: 18),
+          SizedBox(width: 6),
+          Text('패션쇼핑', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    ),
+    Tab(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.face_retouching_natural, size: 18),
+          SizedBox(width: 6),
+          Text('시술성형', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    ),
+    Tab(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.restaurant, size: 18),
+          SizedBox(width: 6),
+          Text('음식/식자재', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    ),
+    Tab(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.spa, size: 18),
+          SizedBox(width: 6),
+          Text('뷰티', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    ),
   ];
   
   late TabController _tabController;
@@ -34,52 +90,165 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _tabController = TabController(length: tabs.length, vsync: this);
   }
 
-
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
   }
 
+  Widget _buildModernHeader() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            HomeScreenTheme.primaryGradientStart,
+            HomeScreenTheme.primaryGradientEnd,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: HomeScreenTheme.primaryGradientStart.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.home_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '알프레드',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'AI가 추천하는 맞춤 콘텐츠',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.notifications_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernTabBar() {
+    return Container(
+      height: HomeScreenTheme.tabHeight,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: HomeScreenTheme.tabBackgroundColor,
+        borderRadius: BorderRadius.circular(HomeScreenTheme.cardRadius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              HomeScreenTheme.primaryGradientStart,
+              HomeScreenTheme.primaryGradientEnd,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(HomeScreenTheme.cardRadius - 4),
+          boxShadow: [
+            BoxShadow(
+              color: HomeScreenTheme.primaryGradientStart.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        labelColor: Colors.white,
+        unselectedLabelColor: HomeScreenTheme.tabUnselectedColor,
+        labelStyle: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        dividerColor: Colors.transparent,
+        isScrollable: true,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 12),
+        tabs: tabs,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: NestedScrollView(
-        headerSliverBuilder: (_, __) {
-          return [
-            SliverAppBar(
-              title: const Text('홈'),
-              centerTitle: true,
-              pinned: true,
-              floating: true,
-              snap: true,
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              elevation: 0.5,
-              bottom: TabBar(
-                controller: _tabController,
-                tabs: tabs,
-                indicatorColor: Colors.black,
-                labelColor: Colors.black,
-                unselectedLabelColor: Colors.grey,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                isScrollable: true,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-                tabAlignment: TabAlignment.start,
-              ),
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: Column(
+        children: [
+          _buildModernHeader(),
+          _buildModernTabBar(),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: const [
+                FashionShoppingTab(),
+                SurgeryTab(),
+                FoodShoppingTab(),
+                BeautyTab(),
+              ],
             ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: const [
-            FashionShoppingTab(),
-            SurgeryTab(), // ✅ 연결됨
-            FoodShoppingTab(), // 음식/식자재 탭
-            BeautyTab(), // 뷰티 탭
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -91,14 +260,25 @@ class FashionShoppingTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: const [
-        WeeklyTopKeywordSection(),
-        WeeklyTopProductSection(),
-        PopularSection(),
-        // 👉 오늘의 추천, 히스토리 등 추가 가능
-      ],
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF8FAFC),
+            Color(0xFFF1F5F9),
+          ],
+        ),
+      ),
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: const [
+          WeeklyTopKeywordSection(),
+          WeeklyTopProductSection(),
+          PopularSection(),
+        ],
+      ),
     );
   }
 }
@@ -109,14 +289,25 @@ class FoodShoppingTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: const [
-        WeeklyTopFoodCommandSection(),
-        WeeklyTopFoodProductSection(),
-        WeeklyTopRecipeSection(),
-        // 👉 추가 섹션들 구현 예정
-      ],
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF8FAFC),
+            Color(0xFFF1F5F9),
+          ],
+        ),
+      ),
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: const [
+          WeeklyTopFoodCommandSection(),
+          WeeklyTopFoodProductSection(),
+          WeeklyTopRecipeSection(),
+        ],
+      ),
     );
   }
 }
@@ -127,14 +318,25 @@ class BeautyTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: const [
-        WeeklyTopCareKeywordSection(),
-        WeeklyTopCareProductSection(),
-        PopularCareLikeSection(),
-        // 👉 추가 섹션들 구현 예정
-      ],
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF8FAFC),
+            Color(0xFFF1F5F9),
+          ],
+        ),
+      ),
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: const [
+          WeeklyTopCareKeywordSection(),
+          WeeklyTopCareProductSection(),
+          PopularCareLikeSection(),
+        ],
+      ),
     );
   }
 }

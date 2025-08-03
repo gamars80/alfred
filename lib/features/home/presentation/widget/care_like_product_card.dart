@@ -3,6 +3,50 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../model/popular_care_like.dart';
 
+class CareLikeProductCardTheme {
+  // 뷰티다운 우아한 색상 팔레트
+  static const Color primaryColor = Color(0xFFE91E63); // 핑크
+  static const Color secondaryColor = Color(0xFFF06292); // 연한 핑크
+  static const Color accentColor = Color(0xFFFFC0CB); // 라이트 핑크
+  static const Color elegantBackground = Color(0xFFFFF5F7); // 우아한 크림색
+  static const Color textColor = Color(0xFF2D3748);
+  static const Color subtitleColor = Color(0xFF718096);
+  static const Color priceColor = Color(0xFFE91E63);
+  
+  // 카드 스타일
+  static const double cardRadius = 16.0;
+  static const double imageRadius = 12.0;
+  static const double badgeRadius = 20.0;
+  
+  // 그림자 효과
+  static const List<BoxShadow> cardShadow = [
+    BoxShadow(
+      color: Color(0x1A000000),
+      blurRadius: 12,
+      offset: Offset(0, 6),
+    ),
+    BoxShadow(
+      color: Color(0x0AE91E63),
+      blurRadius: 20,
+      offset: Offset(0, 8),
+    ),
+  ];
+  
+  // 랭킹 배지 그라데이션
+  static const LinearGradient rankGradient = LinearGradient(
+    colors: [Color(0xFFE91E63), Color(0xFFF06292)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  // 소스 배지 그라데이션
+  static const LinearGradient sourceGradient = LinearGradient(
+    colors: [Color(0xFFF06292), Color(0xFFFFC0CB)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+}
+
 class CareLikeProductCard extends StatelessWidget {
   final PopularCareLike? product;
   final int? rank;
@@ -43,6 +87,7 @@ class CareLikeProductCard extends StatelessWidget {
     if (isSkeleton) {
       return Container(
         width: 160,
+        height: 220,
         decoration: BoxDecoration(
           color: Colors.grey.shade100,
           borderRadius: BorderRadius.circular(12),
@@ -78,17 +123,12 @@ class CareLikeProductCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: 160,
+        height: 220,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade100,
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: CareLikeProductCardTheme.elegantBackground,
+          borderRadius: BorderRadius.circular(CareLikeProductCardTheme.cardRadius),
+          border: Border.all(color: CareLikeProductCardTheme.primaryColor.withOpacity(0.3)),
+          boxShadow: CareLikeProductCardTheme.cardShadow,
         ),
         margin: const EdgeInsets.symmetric(vertical: 8),
         child: Column(
@@ -130,8 +170,15 @@ class CareLikeProductCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.deepOrangeAccent,
-                        borderRadius: BorderRadius.circular(8),
+                        gradient: CareLikeProductCardTheme.rankGradient,
+                        borderRadius: BorderRadius.circular(CareLikeProductCardTheme.badgeRadius),
+                        boxShadow: [
+                          BoxShadow(
+                            color: CareLikeProductCardTheme.primaryColor.withOpacity(0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                       child: Text(
                         'TOP $rank',
@@ -149,14 +196,20 @@ class CareLikeProductCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: Colors.purple.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.purple.shade200),
+                      gradient: CareLikeProductCardTheme.sourceGradient,
+                      borderRadius: BorderRadius.circular(CareLikeProductCardTheme.badgeRadius),
+                      boxShadow: [
+                        BoxShadow(
+                          color: CareLikeProductCardTheme.secondaryColor.withOpacity(0.3),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
                     ),
                     child: Text(
                       p.mallName,
                       style: const TextStyle(
-                        color: Colors.purple,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                         letterSpacing: 0.2,
@@ -176,10 +229,10 @@ class CareLikeProductCard extends StatelessWidget {
                     p.productName,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: CareLikeProductCardTheme.textColor,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -187,20 +240,20 @@ class CareLikeProductCard extends StatelessWidget {
                     children: [
                       Text(
                         _formatPrice(p.productPrice),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: Colors.deepOrange,
+                          color: CareLikeProductCardTheme.priceColor,
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Icon(Icons.favorite, size: 13, color: Colors.red),
+                      Icon(Icons.favorite, size: 13, color: CareLikeProductCardTheme.primaryColor),
                       const SizedBox(width: 2),
                       Text(
                         p.cnt.toString(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: Colors.black54,
+                          color: CareLikeProductCardTheme.subtitleColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
