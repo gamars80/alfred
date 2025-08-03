@@ -43,6 +43,7 @@ class CareProductCard extends StatelessWidget {
     if (isSkeleton) {
       return Container(
         width: 160,
+        height: 220,
         decoration: BoxDecoration(
           color: Colors.grey.shade100,
           borderRadius: BorderRadius.circular(12),
@@ -81,6 +82,7 @@ class CareProductCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: 160,
+        height: 220,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
