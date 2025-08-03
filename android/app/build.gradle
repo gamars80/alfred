@@ -19,8 +19,8 @@ android {
         applicationId "com.gamars.alfred"
         minSdk 23 // ✅ 여기만 23으로 변경
         targetSdk 35
-        versionCode 32
-        versionName "1.1.15"
+        versionCode 33
+        versionName "1.1.16"
     }
 
     signingConfigs {
@@ -47,6 +47,7 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -61,4 +62,5 @@ dependencies {
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.22"
     implementation 'com.google.firebase:firebase-analytics:21.5.0'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
