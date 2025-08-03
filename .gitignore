@@ -46,3 +46,7 @@ app.*.map.json
 
 .env
 *.p8
+
+# Firebase configuration files (contain sensitive API keys)
+**/GoogleService-Info.plist
+**/google-services.json
