@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../common/dio/dio_client.dart';
 import '../../../service/token_manager.dart';
+import '../../../service/push_notification_service.dart';
 
 class DeviceInfoService {
   static final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
@@ -58,30 +59,20 @@ class DeviceInfoService {
   /// 푸시 토큰을 가져옵니다
   static Future<String?> getDevicePushToken() async {
     try {
-      debugPrint('🔍 [DeviceInfo] Firebase 토큰 가져오기 시작');
+      debugPrint('🔍 [DeviceInfo] 푸시 알림 서비스에서 토큰 가져오기 시작');
       
-      // Firebase 초기화 확인
-      final messaging = FirebaseMessaging.instance;
-      debugPrint('✅ [DeviceInfo] Firebase Messaging 인스턴스 확인됨');
-      
-      // 권한 요청
-      final settings = await messaging.requestPermission(
-        alert: true,
-        announcement: false,
-        badge: true,
-        carPlay: false,
-        criticalAlert: false,
-        provisional: false,
-        sound: true,
-      );
-      debugPrint('📱 [DeviceInfo] 푸시 권한 상태: ${settings.authorizationStatus}');
-      
-      // 토큰 가져오기
-      String? token = await messaging.getToken();
-      debugPrint('📱 [DeviceInfo] Firebase 토큰: ${token != null ? "${token.substring(0, 20)}..." : "null"}');
+      // 푸시 알림 서비스에서 저장된 토큰 가져오기
+      String? token = await PushNotificationService().getStoredToken();
       
       if (token == null) {
-        debugPrint('❌ [DeviceInfo] Firebase 토큰이 null입니다');
+        debugPrint('📱 [DeviceInfo] 저장된 토큰이 없음, 새로 가져오기 시도');
+        token = await PushNotificationService().refreshToken();
+      }
+      
+      debugPrint('📱 [DeviceInfo] 푸시 토큰: ${token != null ? "${token.substring(0, 20)}..." : "null"}');
+      
+      if (token == null) {
+        debugPrint('❌ [DeviceInfo] 푸시 토큰이 null입니다');
         debugPrint('❌ [DeviceInfo] 가능한 원인:');
         debugPrint('   - Firebase 설정 문제');
         debugPrint('   - 네트워크 연결 문제');
@@ -90,7 +81,7 @@ class DeviceInfoService {
       
       return token;
     } catch (e) {
-      debugPrint('❌ [DeviceInfo] Firebase 토큰 가져오기 실패: $e');
+      debugPrint('❌ [DeviceInfo] 푸시 토큰 가져오기 실패: $e');
       return null;
     }
   }
@@ -136,19 +127,17 @@ class DeviceInfoService {
       debugPrint('📱 [DeviceInfo] 현재 앱 버전: $currentAppVersion');
       debugPrint('📱 [DeviceInfo] 현재 푸시 토큰: ${currentPushToken != null ? "${currentPushToken.substring(0, 10)}..." : "null"}');
       
-      // 저장된 이전 값들과 비교
-      final savedAppVersion = prefs.getString('saved_app_version');
-      final savedPushToken = prefs.getString('saved_push_token');
-      
-      debugPrint('💾 [DeviceInfo] 저장된 앱 버전: $savedAppVersion');
-      debugPrint('💾 [DeviceInfo] 저장된 푸시 토큰: ${savedPushToken != null ? "${savedPushToken.substring(0, 10)}..." : "null"}');
+      // 백엔드에서 현재 디바이스 정보 가져오기
+      debugPrint('🌐 [DeviceInfo] 백엔드에서 디바이스 정보 가져오기 시작');
+      final backendDeviceInfo = await _getBackendDeviceInfo();
       
       bool needsUpdate = false;
       Map<String, dynamic> updateData = {};
       
-      // 앱 버전 변경 확인
-      if (currentAppVersion != null && currentAppVersion != savedAppVersion) {
-        debugPrint('🔄 [DeviceInfo] 앱 버전 변경 감지: $savedAppVersion → $currentAppVersion');
+      // 앱 버전 변경 확인 (백엔드와 비교)
+      final backendAppVersion = backendDeviceInfo?['appVersion'];
+      if (currentAppVersion != null && currentAppVersion != backendAppVersion) {
+        debugPrint('🔄 [DeviceInfo] 앱 버전 변경 감지: $backendAppVersion → $currentAppVersion');
         updateData['appVersion'] = currentAppVersion;
         needsUpdate = true;
         await prefs.setString('saved_app_version', currentAppVersion);
@@ -157,9 +146,10 @@ class DeviceInfoService {
         debugPrint('✅ [DeviceInfo] 앱 버전 변경 없음');
       }
       
-      // 푸시 토큰 변경 확인
-      if (currentPushToken != null && currentPushToken != savedPushToken) {
-        debugPrint('🔄 [DeviceInfo] 푸시 토큰 변경 감지: ${savedPushToken != null ? "${savedPushToken.substring(0, 10)}..." : "null"} → ${currentPushToken.substring(0, 10)}...');
+      // 푸시 토큰 변경 확인 (백엔드와 비교)
+      final backendPushToken = backendDeviceInfo?['devicePushToken'];
+      if (currentPushToken != null && currentPushToken != backendPushToken) {
+        debugPrint('🔄 [DeviceInfo] 푸시 토큰 변경 감지: ${backendPushToken != null ? "${backendPushToken.toString().substring(0, 10)}..." : "null"} → ${currentPushToken.substring(0, 10)}...');
         updateData['devicePushToken'] = currentPushToken;
         needsUpdate = true;
         await prefs.setString('saved_push_token', currentPushToken);
@@ -167,8 +157,6 @@ class DeviceInfoService {
       } else {
         debugPrint('✅ [DeviceInfo] 푸시 토큰 변경 없음');
       }
-      
-      // 실제 변경사항이 있을 때만 업데이트
       
       // 변경사항이 있으면 백엔드에 업데이트
       if (needsUpdate) {
@@ -228,6 +216,45 @@ class DeviceInfoService {
       }
       
       // 실패해도 앱 동작에는 영향 없도록 함
+    }
+  }
+
+  /// 백엔드에서 현재 사용자의 디바이스 정보를 가져오는 메서드
+  static Future<Map<String, dynamic>?> _getBackendDeviceInfo() async {
+    try {
+      debugPrint('🔍 [DeviceInfo] 백엔드에서 디바이스 정보 가져오기 시작');
+      debugPrint('🌐 [DeviceInfo] API 호출: GET /api/user/device');
+      
+      final response = await DioClient.dio.get('/api/user/device');
+      debugPrint('📊 [DeviceInfo] 디바이스 정보 API 응답 상태: ${response.statusCode}');
+      
+      final responseData = response.data as Map<String, dynamic>;
+      debugPrint('📄 [DeviceInfo] 디바이스 정보 응답 데이터: $responseData');
+      
+      final devices = responseData['devices'] as List<dynamic>?;
+      
+      if (devices != null && devices.isNotEmpty) {
+        final firstDevice = devices.first as Map<String, dynamic>;
+        debugPrint('✅ [DeviceInfo] 백엔드 디바이스 정보 가져옴: $firstDevice');
+        return firstDevice;
+      }
+      
+      debugPrint('❌ [DeviceInfo] 백엔드에서 디바이스 정보를 찾을 수 없음');
+      return null;
+      
+    } catch (e) {
+      debugPrint('❌ [DeviceInfo] 백엔드 디바이스 정보 가져오기 실패');
+      debugPrint('❌ [DeviceInfo] 에러 메시지: $e');
+      debugPrint('❌ [DeviceInfo] 에러 타입: ${e.runtimeType}');
+      
+      if (e is DioException) {
+        debugPrint('❌ [DeviceInfo] DioException 상세 정보:');
+        debugPrint('   - 상태 코드: ${e.response?.statusCode}');
+        debugPrint('   - 응답 데이터: ${e.response?.data}');
+        debugPrint('   - 요청 URL: ${e.requestOptions.uri}');
+      }
+      
+      return null;
     }
   }
 

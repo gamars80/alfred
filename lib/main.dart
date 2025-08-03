@@ -6,8 +6,26 @@ import 'app.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'features/auth/data/device_info_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'service/push_notification_service.dart';
 // ✅ 전역 navigatorKey 선언 (Dio 인터셉터에서 사용)
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+// 백그라운드 메시지 핸들러 (최상위 레벨 함수여야 함)
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Firebase 초기화
+  await Firebase.initializeApp();
+  
+  debugPrint('🔔 [Background] 백그라운드 메시지 수신');
+  debugPrint('🔔 [Background] 메시지 데이터: ${message.data}');
+  debugPrint('🔔 [Background] 메시지 알림: ${message.notification?.title}');
+  
+  // 백그라운드에서는 Firebase가 자동으로 시스템 알림을 표시함
+  // 추가 로컬 알림은 불필요하므로 로깅만 수행
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +52,15 @@ void main() async {
       debugPrint('ATT status is: $status - Ads may be limited');
     }
   }
+
+  // Firebase 초기화
+  await Firebase.initializeApp();
+  
+  // 백그라운드 메시지 핸들러 등록
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  
+  // 푸시 알림 서비스 초기화
+  await PushNotificationService().initialize();
 
   // ✅ Kakao SDK 초기화
   KakaoSdk.init(
